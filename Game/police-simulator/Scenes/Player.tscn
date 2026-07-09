@@ -7,9 +7,11 @@
 [node name="Player" type="CharacterBody3D" unique_id=1417239302]
 
 [node name="PlayerCollision" type="CollisionShape3D" parent="." unique_id=2021703068]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 shape = SubResource("CapsuleShape3D_qjvm4")
 
 [node name="PlayerBody" type="MeshInstance3D" parent="." unique_id=1284249446]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 mesh = SubResource("CapsuleMesh_7oaoy")
 
 [node name="CameraPivot" type="Node3D" parent="." unique_id=162239239]
