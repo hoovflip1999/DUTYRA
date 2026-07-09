@@ -1,0 +1,655 @@
+# Dispatch and Calls System
+
+## Purpose
+
+The dispatch system creates, assigns, updates, and tracks calls for service.
+
+Calls should not feel like random missions.
+
+A call should feel like something happened in the city, someone reported it, dispatch received information, and officers responded.
+
+The player is not the center of the world. Other officers can handle calls if the player is busy, unavailable, or chooses not to respond.
+
+---
+
+## Core Call Flow
+
+Every call should follow this structure:
+
+1. Something happens in the city.
+2. A citizen, officer, business, or system reports it.
+3. Dispatch receives information.
+4. The information may be accurate, incomplete, or wrong.
+5. Units are assigned or the call becomes available.
+6. The situation can change over time.
+7. The player or another unit responds.
+8. The call is investigated.
+9. The officer makes decisions.
+10. The call is resolved, escalates, or continues later.
+11. The world remembers the outcome.
+
+---
+
+## Call Creation
+
+Call creation uses a hybrid system.
+
+Most calls should come from the city simulation.
+
+Example:
+
+Citizen drinks at bar.
+
+Citizen drives home.
+
+Citizen crashes into a parked vehicle.
+
+Neighbor calls 911.
+
+Dispatch creates a crash or DUI call.
+
+Some larger events can be designed.
+
+Examples:
+
+* City festival
+* Storm
+* Parade
+* Election event
+* Sports event
+* Large emergency
+
+Designed events should still feel like part of the world instead of scripted missions.
+
+---
+
+## Dispatch Information Accuracy
+
+Dispatch information can be accurate, incomplete, or wrong.
+
+The call type represents what was reported, not always what is actually happening.
+
+Example:
+
+Dispatch reports a suspicious person, but it may actually be:
+
+* Nothing
+* A burglary attempt
+* A medical emergency
+* A lost person
+* A wanted person
+* A false report
+
+This keeps calls unpredictable.
+
+---
+
+## Call Assignment
+
+The game uses both assigned calls and available calls.
+
+Priority calls may be directly assigned by dispatch.
+
+Lower-priority calls may appear on the MDT as available calls.
+
+The player can accept some calls, decline some calls, or recommend another unit when appropriate.
+
+---
+
+## Other Units
+
+Other officers can handle calls.
+
+If the player ignores a call, is busy, or is outside the area, another unit may respond.
+
+The city continues operating even when the player is not involved.
+
+---
+
+## Call Updates
+
+Calls can change while the player is responding.
+
+Example:
+
+Original call:
+
+Noise complaint.
+
+Update:
+
+Caller now reports people fighting outside.
+
+Update:
+
+One person left in a red pickup truck.
+
+Call updates make responding feel alive instead of simply driving to a marker.
+
+---
+
+## Priority Levels
+
+The game uses three call priority levels.
+
+### Priority 1 — Emergency
+
+Examples:
+
+* Officer needs assistance
+* Active shooter
+* Armed robbery
+* Major crash with injuries
+* Shots fired
+
+### Priority 2 — Urgent
+
+Examples:
+
+* Domestic disturbance
+* Burglary in progress
+* Assault
+* DUI driver
+* Stolen vehicle sighting
+
+### Priority 3 — Routine
+
+Examples:
+
+* Noise complaint
+* Parking complaint
+* Minor crash
+* Welfare check
+* Suspicious person
+
+---
+
+## Lights and Sirens
+
+The player chooses whether to use lights and sirens.
+
+If the player does not use lights and sirens:
+
+* Traffic does not move over
+* Response is slower
+* The player may arrive late
+* The situation may change before arrival
+
+If the player uses lights and sirens:
+
+* Traffic tries to pull over
+* Response is faster
+* Crash risk increases
+* Bad driving can be reviewed later
+
+Using lights and sirens should be a decision, not an automatic button press.
+
+---
+
+## Declining Calls
+
+Declining calls depends on priority and unit availability.
+
+Priority 1 calls usually cannot be declined unless the player is already handling another serious incident.
+
+Priority 2 calls require a good reason to decline.
+
+Priority 3 calls can usually be declined if another unit is available.
+
+If no other unit is available and the player refuses an appropriate assignment, the player may face supervisor review or discipline.
+
+---
+
+## Call Holding
+
+Calls can wait if no unit is available.
+
+While holding, a call may:
+
+* Resolve itself
+* Get worse
+* Generate another call
+* Lower public trust
+* Be handled by another unit later
+
+Example:
+
+Priority 3 noise complaint.
+
+Holding for 14 minutes.
+
+No available units.
+
+---
+
+## Unit Availability Display
+
+The MDT should show unit availability.
+
+Example:
+
+Available Units:
+
+Unit 12 — Available
+
+Unit 18 — On Call
+
+Unit 21 — Transporting
+
+Unit 30 — Available
+
+Pending Calls:
+
+P1 — Robbery in Progress
+
+P2 — Domestic Disturbance
+
+P3 — Noise Complaint
+
+This helps the player understand why dispatch is assigning certain calls.
+
+---
+
+# Version 1 Call Types
+
+Version 1 should focus on a small number of call types with multiple possible outcomes.
+
+The Version 1 call types are:
+
+1. Traffic enforcement / traffic stops
+2. Suspicious person
+3. Noise complaint
+4. Welfare check
+5. Minor crash
+6. Shoplifting
+7. Domestic disturbance
+8. DUI driver
+
+The goal is not to create 100 call types.
+
+The goal is to create 8 call types that can play out many different ways.
+
+---
+
+## Traffic Enforcement / Traffic Stops
+
+Purpose:
+
+Make everyday patrol unpredictable.
+
+Traffic enforcement is usually officer-initiated.
+
+The player may notice:
+
+* Speeding
+* Reckless driving
+* Expired registration
+* Broken lights
+* ALPR hit
+* BOLO match
+* Suspicious driving
+
+Possible outcomes:
+
+* No action
+* Warning
+* Citation
+* Arrest
+* DUI
+* Stolen vehicle
+* Wanted person
+* Medical emergency
+* Pursuit
+* Evidence tied to another case
+
+Design rule:
+
+Traffic stops should feel routine most of the time, but always carry the possibility of becoming something bigger.
+
+---
+
+## Suspicious Person
+
+Purpose:
+
+A flexible call that can be harmless, strange, serious, or dangerous.
+
+Dispatch gives:
+
+* Location
+* Caller statement
+* General description
+* Reported behavior
+* Basic overview
+
+Possible outcomes:
+
+* Nothing wrong
+* Lost person
+* Waiting for ride
+* Mental health issue
+* Trespassing
+* Vehicle burglary attempt
+* Stalking
+* Wanted person
+* Person casing homes or businesses
+* Armed suspect
+
+Design rule:
+
+The person may not still be there when the officer arrives. Witnesses, cameras, or later MDT alerts can continue the investigation.
+
+---
+
+## Noise Complaint
+
+Purpose:
+
+A low-priority call that can stay simple or unexpectedly escalate.
+
+Dispatch gives:
+
+* Location
+* Caller statement
+* Type of noise
+* Time reported
+* Whether caller wants contact
+* Prior calls at location
+
+Possible outcomes:
+
+* Loud TV
+* Party
+* Kids playing
+* Neighbor dispute
+* False complaint
+* Fight
+* Domestic disturbance
+* Underage drinking
+* Drugs
+* Medical emergency
+* Gunshots mistaken as fireworks
+
+Design rule:
+
+Repeat locations matter. A house with repeated noise calls should eventually become known to officers and flagged in the MDT.
+
+---
+
+## Welfare Check
+
+Purpose:
+
+A call type that can be calm, emotional, medical, dangerous, or tragic.
+
+Dispatch gives:
+
+* Location
+* Who requested the check
+* Reason for concern
+* Last known contact
+* Person description if known
+* Prior calls at location
+
+Possible harmless outcomes:
+
+* Person was sleeping
+* Phone died
+* Person forgot to call family
+* Person is out of town
+* Miscommunication
+* Neighbor overreacted
+
+Possible serious outcomes:
+
+* Medical emergency
+* Mental health crisis
+* Domestic violence
+* Death investigation
+* Child neglect
+* Person trapped or injured
+* Armed person in crisis
+
+Player options:
+
+* Knock
+* Call out
+* Contact caller
+* Look through windows if justified
+* Request EMS
+* Request fire department
+* Request supervisor
+* Force entry if legally justified
+* Clear call if person is okay
+
+Forced entry rule:
+
+The player cannot force entry just because someone does not answer.
+
+Forced entry needs justification, such as screams, visible injury, smell of smoke, medical distress, child crying alone, or strong evidence of danger.
+
+Design rule:
+
+Welfare checks should teach patience and judgment. The right answer is not always arrest. Sometimes the right answer is EMS, backup, or simply confirming someone is safe.
+
+---
+
+## Minor Crash
+
+Purpose:
+
+A call type that teaches investigation, traffic control, report decisions, and hidden causes.
+
+Dispatch gives:
+
+* Location
+* Number of vehicles if known
+* Injuries reported or unknown
+* Whether traffic is blocked
+* Caller statement
+* Weather or road condition if relevant
+
+Possible outcomes:
+
+* Simple property damage crash
+* One driver has no insurance
+* One driver has suspended license
+* DUI discovered
+* Hit-and-run
+* Road rage
+* Medical issue caused crash
+* Vehicle was stolen
+* Wanted person involved
+* Minor crash becomes fight
+
+Player options:
+
+* Check for injuries
+* Request EMS or fire
+* Control traffic
+* Interview drivers
+* Interview witnesses
+* Run licenses and plates
+* Determine crash cause
+* Issue citation if justified
+* Arrest if crime exists
+* Request tow
+* Complete crash report
+
+Design rule:
+
+Minor crashes should not always be boring paperwork. They should sometimes reveal bigger problems, but most should stay normal.
+
+---
+
+## Shoplifting
+
+Purpose:
+
+A beginner-friendly call involving witnesses, suspects, evidence, business owners, and discretion.
+
+Dispatch gives:
+
+* Store location
+* Caller statement
+* Suspect description
+* Whether suspect is detained or left
+* What was stolen if known
+* Whether security is involved
+
+Possible outcomes:
+
+* Suspect still on scene
+* Suspect left before arrival
+* False accusation
+* Employee misunderstanding
+* Juvenile shoplifter
+* Repeat offender
+* Wanted person
+* Suspect flees
+* Suspect has drugs or weapons
+* Organized retail theft connection
+
+Player options:
+
+* Talk to employee
+* Talk to suspect
+* Review store statement
+* Check security footage summary
+* Run suspect
+* Recover stolen property
+* Warning
+* Citation
+* Arrest
+* Trespass warning
+* Report only
+
+Design rule:
+
+Not every shoplifting call should become an arrest. The player should consider value stolen, suspect age, criminal history, cooperation, store preference, and evidence.
+
+---
+
+## Domestic Disturbance
+
+Purpose:
+
+One of the most serious Version 1 calls. It should be unpredictable and require good judgment.
+
+Dispatch gives:
+
+* Location
+* Caller statement
+* Relationship if known
+* Reported violence or argument
+* Weapons mentioned or unknown
+* Children present if known
+* Prior calls at address
+
+Possible outcomes:
+
+* Verbal argument only
+* One person leaves voluntarily
+* Mutual argument
+* Domestic assault
+* Injured victim
+* Children present
+* Protective order violation
+* Suspect fled before arrival
+* Weapon involved
+* False or exaggerated report
+* Victim afraid to speak
+
+Player options:
+
+* Request backup
+* Knock and announce
+* Separate people
+* Interview each person
+* Check for injuries
+* Check children or other occupants
+* Run names
+* Check prior calls
+* Arrest if probable cause exists
+* Request EMS
+* Request supervisor
+* Complete report
+
+Design rule:
+
+Domestic calls should not be treated like simple arguments. They should require caution, separation, observation, and good documentation.
+
+---
+
+## DUI Driver
+
+Purpose:
+
+A traffic-related call that tests observation, driving behavior, breath testing, and medical awareness.
+
+Dispatch gives:
+
+* Last known location
+* Vehicle description
+* Driving behavior reported
+* Direction of travel
+* Caller statement
+* Plate if known
+
+Possible outcomes:
+
+* Driver is sober
+* Driver is tired
+* Driver is distracted
+* Driver is impaired by alcohol
+* Driver is impaired by drugs
+* Medical emergency
+* Driver refuses test
+* Open container found
+* Crash before arrival
+* Vehicle gone before arrival
+
+Player options:
+
+* Locate vehicle
+* Observe driving
+* Initiate traffic stop
+* Speak with driver
+* Observe impairment clues
+* Order driver out if justified
+* Breath test
+* Request EMS if medical issue suspected
+* Warning or citation if minor issue
+* Arrest if justified
+* Tow or release vehicle decision
+
+Design rule:
+
+DUI should not just be “breath test equals arrest.” The player should observe behavior, consider medical issues, use the breath test, and make a decision based on the full situation.
+
+---
+
+## Call Frequency Balance
+
+Version 1 call frequency should roughly follow this structure:
+
+Common:
+
+* Traffic stops
+* Suspicious person
+* Noise complaint
+* Minor crash
+
+Moderate:
+
+* Welfare check
+* Shoplifting
+* DUI driver
+
+Less common but serious:
+
+* Domestic disturbance
+
+Most days should not feel like nonstop chaos, but every shift should have the chance to surprise the player.
+
+----------------------------------------------------------------------------------------------------------------------

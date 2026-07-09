@@ -1,0 +1,109 @@
+# Technical Notes
+
+## Development Rule
+
+The game will be built in small testable pieces.
+
+No full script rewrites unless approved first.
+
+Every code change must explain:
+
+* What file is being changed
+* What section is being changed
+* Why it is being changed
+* How to test it afterward
+
+---
+
+## Backup Rule
+
+Before major changes, create a checkpoint.
+
+A checkpoint can be:
+
+* A copied backup folder
+* A Git commit
+* A saved working version
+
+The project should always have a version that works.
+
+---
+
+## Version 1 Scope
+
+The first playable version will be small.
+
+Version 1 should include:
+
+* One small district
+* One police station
+* One patrol car
+* Basic academy tutorial
+* Basic patrol gameplay
+* Basic dispatch
+* Basic traffic stops
+* Basic guided reports
+* Basic citizen memory
+* Basic save/load system
+
+Version 1 should not include:
+
+* SWAT
+* K-9
+* Detective career
+* Huge open world
+* Full house system
+* Advanced criminal organizations
+* Fully accessible large city
+
+---
+
+## Coding Philosophy
+
+Build expandable systems instead of throwaway features.
+
+Example:
+
+Do not build a traffic stop system that only works for one mission.
+
+Build an interaction system that can later support:
+
+* Traffic stops
+* Witness interviews
+* Suspect questioning
+* Citizen conversations
+* Officer interactions
+
+---
+
+## Testing Rule
+
+Every feature must have a simple test.
+
+Example:
+
+Feature:
+Traffic stop begins when player activates lights behind a vehicle.
+
+Test:
+Drive behind a civilian vehicle, activate emergency lights, confirm the vehicle pulls over and the traffic stop state begins.
+
+---
+
+## AI Coding Rule
+
+AI may help write code, but AI does not make final design decisions.
+
+The design decisions come from the project documents.
+
+AI should only build what has already been approved.
+
+---
+
+## Controller Rule
+
+The game is designed for PC but must support controller.
+
+Menus, interaction wheels, driving, walking, radio, and reports should all be usable with a controller.
+
+-------------------------------------------------------------------------------------------------------------------

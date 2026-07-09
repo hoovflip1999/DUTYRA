@@ -1,0 +1,243 @@
+# Version 1 District
+
+## Purpose
+
+The Version 1 district is the first playable patrol area.
+
+It should be small enough to build and run on limited hardware, but detailed enough to test the core gameplay loop.
+
+The district should support:
+
+* Patrol driving
+* Walking
+* Traffic stops
+* Dispatch calls
+* Citizen memory
+* Repeat locations
+* Police station gameplay
+* Basic interiors
+* Reports
+* Vehicle interactions
+
+The goal is not to build the full city yet.
+
+The goal is to build one strong district that can expand later.
+
+---
+
+## District Name
+
+The first district is called:
+
+Cedar Heights District
+
+This is a fictional Midwest-inspired suburban city district.
+
+The city can later expand district by district.
+
+Future districts may include:
+
+* Downtown
+* Industrial area
+* Highway zone
+* Rural county
+* Airport or transit area
+* Parks or outskirts
+
+---
+
+## Map Style
+
+Cedar Heights should feel like a clean, safe suburban district.
+
+This does not mean nothing bad happens.
+
+It means the area is mostly normal, with calls that can still become serious depending on the situation.
+
+The district should include:
+
+* Neighborhood streets
+* Stores
+* Apartments
+* Parking lots
+* A park
+* A small office building
+* A faster road for traffic enforcement
+* A police station near the center
+
+---
+
+## Police Station Location
+
+The police station should be near the center of the district.
+
+Reason:
+
+* Easy access to all calls
+* Good for testing
+* Short travel time
+* Makes the first version easier to play
+* Lets the player return for reports, gear, and shift changes without long drives
+
+---
+
+## Police Station Interior
+
+The police station should be small but walkable.
+
+Version 1 police station areas:
+
+* Lobby
+* Front desk
+* Locker room
+* Briefing room
+* Report area
+* Armory / gear room
+* Holding area
+* Garage / parking lot
+
+The station should not be huge in Version 1.
+
+It should only include what supports gameplay.
+
+---
+
+## Building Access Rule
+
+The game should not make every single building fully enterable in Version 1.
+
+Instead, use a balanced system.
+
+Main public buildings should be enterable.
+
+Some homes and offices should be enterable.
+
+Background buildings can be exterior-only.
+
+This gives the world a realistic feeling without making the project too large.
+
+---
+
+## Enterable Buildings
+
+Version 1 should include these enterable or partially enterable locations:
+
+* Police station — enterable
+* Gas station / convenience store — enterable
+* Grocery or retail store — enterable
+* Diner or small restaurant — enterable
+* Apartment building — lobby, hallways, and selected units
+* About 50% of normal homes — enterable
+* Small office building — first floor only
+* Community center or small school — main areas only
+* Park restroom or shelter building — enterable
+
+---
+
+## Background Buildings
+
+Some buildings can be exterior-only in Version 1.
+
+Examples:
+
+* Extra houses
+* Closed offices
+* Decorative storefronts
+* Buildings not tied to calls yet
+* Buildings outside the active patrol area
+
+These can be made enterable later if needed.
+
+---
+
+## Roads
+
+The district should include:
+
+* One main road
+* One faster road or small highway edge
+* Several neighborhood streets
+* A few alleys or back streets
+* Parking lots
+* Driveways
+* Sidewalks
+
+The faster road supports:
+
+* Speeding
+* DUI calls
+* Traffic enforcement
+* Minor crashes
+* Pursuits
+
+Alleys and back streets support:
+
+* Suspicious person calls
+* Foot chases
+* Vehicle pursuits
+* Hidden vehicles
+* Repeat problem locations
+
+---
+
+## Apartment Building
+
+The apartment building should be one of the main repeat-call locations.
+
+It can support:
+
+* Noise complaints
+* Domestic disturbances
+* Welfare checks
+* Suspicious person calls
+* Medical calls
+* Repeat location history
+
+The MDT should be able to flag the apartment building if repeated calls happen there.
+
+---
+
+## Version 1 Building List
+
+Recommended Version 1 building count:
+
+* 1 police station
+* 1 gas station / convenience store
+* 1 grocery or retail store
+* 1 diner or restaurant
+* 1 apartment building
+* 6 to 8 houses
+* 1 small office building
+* 1 community center or small school
+* 1 park restroom or shelter building
+* Several exterior-only background buildings
+
+This keeps the district manageable while still giving enough places for calls.
+
+---
+
+## Expansion Rule
+
+The city should expand district by district.
+
+Do not build the full city first.
+
+Build Cedar Heights first.
+
+Once Cedar Heights works, future districts can be added around it.
+
+Each new district should reuse existing systems instead of requiring everything to be rebuilt.
+
+---
+
+## Core Rule
+
+Version 1 should feel small but real.
+
+The player should be able to patrol the district, learn the streets, recognize repeat locations, and feel like the area has history.
+
+The district should prove the main idea:
+
+The city remembers, and every shift can play differently.
+
+--------------------------------------------------------------------------

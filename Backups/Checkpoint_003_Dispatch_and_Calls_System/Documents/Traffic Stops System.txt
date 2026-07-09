@@ -1,0 +1,658 @@
+# Traffic Stops System
+
+## Purpose
+
+Traffic stops should be one of the core gameplay systems.
+
+The main reason traffic stops are fun is unpredictability.
+
+The player should never instantly know whether a stop is routine, serious, dangerous, or connected to a larger story.
+
+Every traffic stop should begin with a question:
+
+"What is really going on here?"
+
+---
+
+## Core Philosophy
+
+Traffic stops should not feel like repeated missions.
+
+The stop should begin before the player activates emergency lights.
+
+A traffic stop begins when the officer notices something worth investigating.
+
+Examples:
+
+* Speeding
+* Reckless driving
+* Expired registration
+* Broken equipment
+* Suspicious behavior
+* Vehicle matching a BOLO
+* ALPR hit
+* Citizen report
+* Officer observation
+
+The player chooses whether the stop is worth making.
+
+---
+
+## Stop Decision
+
+Before activating emergency lights, the player should consider:
+
+* Is the violation worth stopping?
+* Is another call more important?
+* Is this a safe place to initiate the stop?
+* Should the plate be run first?
+* Should the vehicle be followed briefly?
+* Is backup needed?
+
+The game should not force every violation to become a traffic stop.
+
+---
+
+## Discovery Tools
+
+The player may discover violations or suspicious activity through:
+
+* Visual observation
+* Radar
+* LIDAR
+* ALPR
+* Citizen reports
+* BOLO alerts
+* Dispatch information
+* Officer experience
+
+---
+
+## Serious Stop Balance
+
+Out of 100 traffic stops, around 10 to 15 should become major incidents.
+
+Most stops should remain routine or moderately serious.
+
+Major incidents should be uncommon enough that they feel memorable.
+
+Examples of major outcomes:
+
+* Wanted suspect
+* Stolen vehicle
+* Kidnapping victim
+* Illegal weapon
+* Large drug transport
+* Pursuit
+* Connection to a larger investigation
+
+---
+
+## Driver Behavior
+
+Driver behavior should depend on the person, situation, vehicle, and environment.
+
+Drivers may:
+
+* Pull over immediately
+* Look for a safer place to stop
+* Delay briefly
+* Act nervous
+* Refuse to stop
+* Flee
+
+Behavior should not be purely random. It should be influenced by the citizen’s current goal, personality, criminal history, stress level, and what is happening in their life.
+
+---
+
+## Passenger Behavior
+
+Passengers should matter.
+
+Passengers may:
+
+* Stay quiet
+* Be nervous
+* Interrupt the driver
+* Record the officer
+* Hide something
+* Warn the driver not to talk
+* Try to flee
+* Give helpful information
+* Escalate the situation
+
+Passengers should not only exist to create danger. Most passengers should be normal people.
+
+---
+
+## Hidden Story Layer
+
+Every traffic stop should have three layers:
+
+1. The reason for the stop
+2. What the officer discovers during the stop
+3. The hidden story behind the situation
+
+Examples:
+
+A driver may be speeding because:
+
+* They are late for work
+* They are scared
+* They are impaired
+* They are fleeing a crime
+* They are rushing someone to the hospital
+* They simply made a mistake
+
+The player uncovers the truth through investigation and decisions.
+
+---
+
+## Legal Justification
+
+The game should track what the officer is legally justified in doing.
+
+The player should not see a simple suspicion number.
+
+Instead, the interaction system should show what actions are currently justified.
+
+Example:
+
+If the only issue is speeding, the player may be able to warn or cite the driver, but a vehicle search is not justified.
+
+If the officer observes facts that create probable cause, the vehicle search option becomes legally justified.
+
+The game may still allow unjustified actions, but those actions can create consequences later.
+
+---
+
+## Consent Searches
+
+The player can request consent to search a vehicle.
+
+If consent is denied, the player needs legal justification to continue.
+
+Searching without consent or legal justification may result in:
+
+* Evidence being excluded
+* Case dismissal
+* Supervisor review
+* Discipline
+* Loss of trust
+* Training requirement
+
+---
+
+## Case Outcomes
+
+Arresting someone is not the end of the case.
+
+The legal process may review:
+
+* Reason for stop
+* Search justification
+* Arrest justification
+* Report accuracy
+* Body camera evidence
+* Chain of custody
+
+If the officer acted incorrectly, evidence may be thrown out and the case may fail.
+
+The game should explain why this happened so the player learns from the outcome.
+
+---
+
+## Player Memory Support
+
+The player should not have to remember every past interaction.
+
+The MDT should help.
+
+When running a person, plate, or vehicle, the MDT may show:
+
+* Previous stops
+* Prior arrests
+* Past warnings
+* Known officer safety concerns
+* Previous interaction with the player
+* Related case history
+
+This makes the city feel persistent without forcing the player to memorize everything.
+
+---------------------------------------------------------------------------------------------
+
+## Pursuits
+
+Pursuits should be rare enough to feel exciting, but common enough that players know they can happen.
+
+Around 10 out of 100 traffic stops may involve some type of fleeing behavior, but not all fleeing should become a full vehicle pursuit.
+
+Fleeing behavior may include:
+
+* Delaying before stopping
+* Refusing to stop
+* Stopping and then fleeing
+* Driver running on foot
+* Passenger running
+* Driver abandoning the vehicle
+* Full vehicle pursuit
+
+Pursuits should be about risk management, not simply chasing until the player wins.
+
+The player should consider:
+
+* Reason for the pursuit
+* Traffic conditions
+* Weather
+* Time of day
+* Pedestrians
+* School zones
+* Speed
+* Public safety
+* Department policy
+
+When a vehicle flees, dispatch is automatically notified so the player does not have to fight menus while driving.
+
+The player may still update dispatch with:
+
+* Direction of travel
+* Speed
+* Traffic conditions
+* Suspect vehicle description
+* Reason for pursuit
+* Backup needs
+
+Suspects can escape.
+
+If a suspect escapes, the game should remember the vehicle, person, and incident. Later, the MDT or ALPR may alert the player that the same vehicle or person fled from a previous stop.
+
+Pursuits may end when:
+
+* Suspect stops voluntarily
+* Suspect crashes
+* Officer performs PIT maneuver
+* Spike strips are used
+* Suspect bails on foot
+* Suspect escapes
+* Supervisor terminates pursuit
+* Vehicle becomes disabled
+* Another unit catches the suspect later
+
+Backup units should help during pursuits.
+
+Backup may:
+
+* Join the pursuit
+* Take secondary position
+* Block traffic
+* Set a perimeter
+* Search the area
+* Handle passengers
+* Transport suspects
+* Deploy spike strips if qualified
+
+A supervisor can approve, continue, or terminate a pursuit.
+
+If a supervisor orders the player to terminate a pursuit, the player can continue anyway, but doing so creates serious consequences unless there is a strong justification.
+
+PIT maneuvers, spike strips, and advanced pursuit tactics require training, qualification, and sometimes supervisor authorization.
+
+Patrol cars, suspect vehicles, and civilian vehicles can take damage during pursuits.
+
+Civilian traffic should react to lights, sirens, and pursuits. Drivers may pull over, panic brake, fail to yield, block the road, or cause accidents.
+
+Pursuit consequences should depend on what actually happened.
+
+If the pursuit was reasonable and nothing bad happened, the player should not be punished.
+
+If the pursuit caused injury, property damage, policy violations, or ignored supervisor orders, the department may review the incident.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+## Traffic Stop Flow
+
+A traffic stop should follow a clear but flexible flow.
+
+Basic flow:
+
+1. Officer notices a vehicle or violation.
+2. Officer decides whether the stop is worth making.
+3. Officer targets the vehicle.
+4. Officer activates emergency lights.
+5. Driver reacts and pulls over, delays, stops unsafely, or flees.
+6. Officer runs the plate.
+7. Officer decides how to approach.
+8. Officer contacts the driver.
+9. Officer investigates.
+10. Officer decides the outcome.
+11. Report is generated.
+12. The world remembers the interaction.
+
+---
+
+## Vehicle Targeting
+
+The game should use both automatic and manual targeting.
+
+The game should normally detect the vehicle in front of the patrol car.
+
+The player should also be able to manually target a vehicle if traffic is crowded or the automatic system targets the wrong vehicle.
+
+---
+
+## Pulling Over
+
+Driver behavior depends on the driver, situation, location, traffic, and risk.
+
+Drivers may:
+
+* Pull over safely
+* Look for a better stopping location
+* Stop in an unsafe location
+* Delay briefly
+* Refuse to stop
+* Flee
+
+---
+
+## Unsafe Stop Locations
+
+If the driver stops somewhere unsafe, the player can use the PA system to order them to move forward to a safer location.
+
+Examples of unsafe locations:
+
+* Bridge
+* Sharp curve
+* Busy highway shoulder
+* Intersection
+* Railroad crossing
+* Blind hill
+
+This gives the player officer-safety decisions without adding confusing controls.
+
+---
+
+## Before Approaching
+
+The normal recommended process is:
+
+1. Stop the vehicle.
+2. Run the plate.
+3. Review basic vehicle information.
+4. Decide how to approach.
+
+The player can choose differently if needed, but the game should teach that running the plate before approach is usually smart.
+
+---
+
+## Approach Options
+
+The player should choose how to approach the vehicle.
+
+Options may include:
+
+* Driver-side approach
+* Passenger-side approach
+* Wait in patrol car
+* Request backup
+* Use spotlight
+* Use PA system
+* High-risk approach
+
+Different approaches should matter depending on the situation.
+
+
+----------------------------------------------------------------------------------------------
+## Driver Contact and Interaction
+
+When the officer reaches the driver window, the officer should automatically introduce themselves.
+
+Example:
+
+“Hello, I’m Officer [Last Name] with [Department Name].”
+
+The player should not need to press a separate greeting button.
+
+After the introduction, the interaction wheel should show useful options such as:
+
+* Ask for documents
+* Explain reason for stop
+* Ask questions
+* Observe driver
+* Observe vehicle
+* Use handheld device
+* Request backup
+* End contact
+
+Dialogue should use a mixed system.
+
+Some common lines can be exact dialogue options, while tone and intent affect how the officer speaks.
+
+Examples of tone:
+
+* Professional
+* Firm
+* Friendly
+* Suspicious
+* Calm/de-escalating
+
+Drivers should react based on personality, mood, criminal history, stress, current situation, and past police contact.
+
+---
+
+## Documents
+
+The player can ask for:
+
+* Driver’s license
+* Registration
+* Insurance
+
+The driver physically hands over documents, but the system should remain simple.
+
+After documents are received, the information appears on the officer’s handheld device.
+
+Drivers may fail to provide documents.
+
+Examples:
+
+* No license
+* Suspended license
+* Fake ID
+* Borrowed vehicle
+* Stolen vehicle
+* Forgot wallet
+* Refuses to provide ID
+* Expired insurance
+* Expired registration
+
+---
+
+## Handheld Device
+
+The player should not have to return to the patrol car many times during one stop.
+
+The officer has a department-issued handheld device for quick checks.
+
+The handheld device can be used to:
+
+* Run a person
+* Run a driver’s license
+* Check warrants
+* Check registration
+* Check insurance
+* View previous contacts
+* Request backup
+* Check call notes
+* Add quick notes
+
+The patrol car MDT is still used for deeper information, reports, maps, unit availability, and full call details.
+
+---
+
+## Stop Outcomes
+
+Traffic stop outcomes should remain simple.
+
+The main outcomes are:
+
+* No action
+* Warning
+* Citation
+* Arrest
+
+The game can handle smaller details in the background, but the player-facing choices should stay clean.
+
+---
+
+## Ordering Occupants Out
+
+The player can order the driver out of the vehicle when justified.
+
+Examples:
+
+* DUI suspicion
+* Arrest
+* Safety concern
+* Suspicious behavior
+* Vehicle search
+* Need to separate occupants
+
+The player can also order passengers out when justified.
+
+Example:
+
+A passenger keeps reaching under the seat.
+
+Ordering people out without a good reason may create complaints, supervisor review, or career consequences.
+
+---
+
+## Vehicle Searches
+
+Vehicle searches should be simple.
+
+The player chooses “Search Vehicle.”
+
+The officer performs the search.
+
+The game returns the result.
+
+Example search result:
+
+Found:
+
+* Open alcohol container
+* Unregistered handgun under passenger seat
+* Cash in center console
+* Backpack belonging to rear passenger
+
+The search action should be simple, but the outcome can still create decisions.
+
+Some evidence is obvious.
+
+Examples:
+
+* Firearm
+* Open alcohol
+* Stolen plate
+* Bloody clothing
+
+Some evidence may require testing or processing.
+
+Examples:
+
+* Pills
+* White powder
+* Unknown substance
+* Fingerprints
+* DNA
+* Fake documents
+
+---
+
+## DUI and Impairment
+
+DUI suspicion can come from clues.
+
+Examples:
+
+* Swerving
+* Speeding
+* Running red lights
+* Slurred speech
+* Alcohol smell
+* Open container
+* Confusion
+* Poor driving
+* Driver behavior
+
+The player can use a breath test.
+
+Example:
+
+Breath Test Result: 0.092%
+
+Game Legal Limit: 0.080%
+
+The breath test is helpful evidence, but it is not always the only evidence.
+
+Medical issues can sometimes mimic impairment.
+
+Examples:
+
+* Diabetic emergency
+* Head injury
+* Medication reaction
+* Exhaustion
+* Panic attack
+* Stroke-like symptoms
+
+If a driver is speeding because of a medical emergency, the stop can turn into a medical response instead of enforcement.
+
+---
+
+## Arrests During Traffic Stops
+
+Arrests should be simple but interactive.
+
+A normal arrest flow should be:
+
+1. Order person out
+2. Turn around
+3. Handcuff
+4. Search person
+5. Place in patrol car
+
+Suspects may resist arrest depending on personality, criminal history, warrants, fear, substance use, current crime, backup presence, and weapon involvement.
+
+Resistance may include:
+
+* Verbal argument
+* Pulling away
+* Running
+* Fighting
+* Complying at first, then fleeing
+
+After arrest, the player may transport the suspect or request a transport unit.
+
+The player decides what happens to the suspect vehicle.
+
+Options may include:
+
+* Release vehicle to valid licensed passenger
+* Tow vehicle
+* Search vehicle if legally justified
+* Inventory vehicle before tow
+* Leave vehicle parked legally
+* Release to owner later
+
+Arrest reports should be mostly auto-generated by the game.
+
+The player should confirm key information, add optional notes, and submit.
+
+Reports should be accountability checkpoints, not busywork.
+
+-----------------------------------------------------------------------------------
+
+
+

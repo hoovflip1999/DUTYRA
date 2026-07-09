@@ -1,0 +1,151 @@
+# Decision Log
+
+## Project Direction
+
+Decision:
+The game will be a living police career simulator, not a mission-based police game.
+
+Reason:
+The player should feel like one officer working inside a living city, not the center of the world.
+
+---
+
+## Core Player Role
+
+Decision:
+The player starts as nobody and builds their career through performance.
+
+Reason:
+Career progression should feel earned, not unlocked through XP alone.
+
+---
+
+## Game World
+
+Decision:
+The game will take place in one open world with multiple regions and departments.
+
+Reason:
+This allows the player to experience city, suburban, highway, and rural policing without needing separate maps.
+
+---
+
+## Departments
+
+Decision:
+Players can transfer between departments, but not instantly.
+
+Reason:
+Transfers should work like real job applications. Reputation, qualifications, openings, and history matter.
+
+---
+
+## Academy
+
+Decision:
+The game begins at the police academy, which serves as the tutorial.
+
+Reason:
+Players learn controls and procedures naturally through training instead of pop-up tutorials.
+
+---
+
+## Cutscenes
+
+Decision:
+The game should avoid traditional cutscenes whenever possible.
+
+Reason:
+The player should stay in control and experience events interactively.
+
+---
+
+## Time System
+
+Decision:
+The game will use accelerated in-game time, not real-time.
+
+Reason:
+Players should experience realistic day/night changes without waiting hours in real life.
+
+---
+
+## Work System
+
+Decision:
+The player does not start fixed missions. They clock in, work their assigned role, take breaks, clock out, and continue their career.
+
+Reason:
+This makes the game feel like a real police life/career simulator.
+
+---
+
+## Reports
+
+Decision:
+The game will use guided reports instead of full manual paperwork.
+
+Reason:
+Reports should affect outcomes without becoming boring or overly time-consuming.
+
+---
+
+## Body Cameras
+
+Decision:
+Body cameras are always recording while on duty and automatically submitted with reports.
+
+Reason:
+This keeps accountability realistic without adding unnecessary controls.
+
+---
+
+## Legal System
+
+Decision:
+The game will use laws based on general U.S. policing principles, not exact state-by-state laws.
+
+Reason:
+This keeps the legal system believable, consistent, and easier to understand.
+
+---
+
+## Failure
+
+Decision:
+There should almost never be a game over screen.
+
+Reason:
+Mistakes should create consequences, retraining, discipline, demotion, or career setbacks instead of forcing the player to reload.
+
+---
+
+## Qualifications
+
+Decision:
+Weapons, vehicles, and special roles are earned through training and qualifications, not money or XP unlocks.
+
+Reason:
+This makes progression feel like a real police career.
+
+---
+
+## Controls
+
+Decision:
+The game is primarily a PC game but must fully support controller.
+
+Reason:
+Deep gameplay should still be easy to control.
+
+---
+
+## Development Safety
+
+Decision:
+No full script rewrites unless approved.
+
+Reason:
+Small changes are easier to test, understand, and roll back.
+
+-----------------------------------------------------------------------------------------

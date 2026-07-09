@@ -1,0 +1,243 @@
+# Citizen and Memory System
+
+## Purpose
+
+The Citizen and Memory System makes the city feel alive.
+
+The goal is not to simulate thousands of perfect people in Version 1.
+
+The goal is to create a small group of persistent citizens who the game remembers over time.
+
+The player should feel like people, vehicles, places, and past events matter.
+
+---
+
+## Version 1 Scope
+
+Version 1 should use:
+
+* 25 important persistent citizens
+* 50 to 100 simple background civilians
+* 10 to 20 vehicles
+* 1 small district
+* 1 police station
+* 8 call types
+* Short MDT history summaries
+* Simple citizen routines
+* No live AI required during gameplay
+
+This keeps the game realistic for limited hardware while still proving the core idea.
+
+---
+
+## Important Citizens
+
+Important citizens are persistent.
+
+The game remembers them across shifts and future encounters.
+
+Important citizens may include:
+
+* Repeat offenders
+* Store owners
+* Victims
+* Witnesses
+* Regular callers
+* People tied to traffic stops
+* People tied to dispatch calls
+* People connected to future investigations
+
+---
+
+## Background Civilians
+
+Background civilians exist to make the world feel populated.
+
+They do not need full memory or deep histories in Version 1.
+
+They may walk, drive, shop, or appear in public areas.
+
+Background civilians can become important later if the game needs to remember them.
+
+---
+
+## Citizen Data
+
+Each important citizen should store:
+
+* Name
+* Age
+* Home area
+* Job
+* Vehicle
+* Criminal history
+* Prior police contact
+* Relationship with player
+* Known warnings
+* Known citations
+* Known arrests
+* Active warrants
+* Important notes
+
+Example:
+
+Marcus Reed
+
+Prior Contact:
+
+Stopped by Officer Hoover for speeding.
+
+Warning issued.
+
+Cooperative.
+
+Current Note:
+
+Vehicle later seen near burglary area.
+
+---
+
+## Simple Routines
+
+Important citizens should have simple routines.
+
+Example:
+
+Home → Work → Store → Home
+
+Version 1 should not simulate every tiny life detail.
+
+The game does not need to track:
+
+* Brushing teeth
+* Eating every meal
+* Texting friends
+* Exact emotional state every minute
+* Full family trees
+* Complex social schedules
+
+Simple routines are enough for Version 1.
+
+---
+
+## MDT History
+
+The MDT should show short useful history.
+
+It should not show huge walls of text.
+
+Example:
+
+Prior Contacts:
+
+* Speeding warning, 3 days ago
+* Suspicious person call near Oak Street, 2 weeks ago
+
+Officer Safety:
+
+* Previously fled from traffic stop
+
+The MDT should help the player remember important information without forcing them to memorize every past interaction.
+
+---
+
+## Citizen Memory of Player
+
+Citizens remember the player after meaningful interactions.
+
+Examples of meaningful interactions:
+
+* Arrest
+* Warning
+* Citation
+* Search
+* Pursuit
+* Help during emergency
+* Repeated calls to same location
+* Respectful treatment
+* Bad treatment
+
+Citizens do not need to remember every tiny conversation.
+
+Memory should matter when it affects future behavior.
+
+Example:
+
+A citizen who was treated respectfully may cooperate more later.
+
+A citizen who was arrested by the player may be nervous, angry, or more likely to flee.
+
+---
+
+## Vehicles and Memory
+
+Vehicles should also be remembered.
+
+A vehicle may have history such as:
+
+* Prior traffic stops
+* Prior warnings
+* Prior citations
+* Fled from police
+* Linked to suspicious person call
+* Linked to burglary area
+* Stolen vehicle report
+* Expired registration
+* Insurance issues
+
+When the player runs a plate, the MDT should surface the most relevant history.
+
+---
+
+## Location Memory
+
+Locations should remember important events.
+
+Example:
+
+A house may have:
+
+* 3 noise complaints in one week
+* 1 domestic disturbance last month
+* 1 welfare check last year
+
+The MDT should flag repeat locations when relevant.
+
+This makes the city feel like it has history.
+
+---
+
+## AI Use
+
+Version 1 should not rely on live AI during gameplay.
+
+Live AI could be expensive, slow, inconsistent, or too hard to run on limited hardware.
+
+Instead:
+
+AI can help create content during development.
+
+Examples:
+
+* Citizen names
+* Citizen profiles
+* Dialogue variations
+* Call variations
+* Business names
+* Vehicle histories
+* Criminal histories
+
+The game itself should run using saved data and normal code.
+
+---
+
+## Core Rule
+
+The city should remember meaningful events.
+
+The player should not need to remember everything.
+
+The MDT, dispatch, and call history should help the player understand why a person, vehicle, or location matters.
+
+-----------------------------------------------------------------------------------------------------------------------------
+
