@@ -36,6 +36,18 @@ size = Vector3(0.2, 0.03, 36)
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0v5gy"]
 albedo_color = Color(0.96461207, 0.8553414, 0.20398393, 1)
 
+[sub_resource type="BoxMesh" id="BoxMesh_a0gfy"]
+size = Vector3(0.3, 0.15, 40)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ql10d"]
+albedo_color = Color(0.3180198, 0.31801978, 0.31801975, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_0v5gy"]
+size = Vector3(0.3, 0.15, 40)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4lhpd"]
+albedo_color = Color(0.38928655, 0.38928664, 0.38928658, 1)
+
 [node name="Main" type="Node3D" unique_id=1396415147]
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1181193970]
@@ -66,17 +78,17 @@ mesh = SubResource("BoxMesh_7oaoy")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 5)
 
 [node name="TestRoad" type="MeshInstance3D" parent="." unique_id=351130688]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.21, 0)
 mesh = SubResource("BoxMesh_qjvm4")
 surface_material_override/0 = SubResource("StandardMaterial3D_jjgbg")
 
 [node name="TestSidewalkLeft" type="MeshInstance3D" parent="." unique_id=339579908]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 0.3, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.15, 0.28, 0)
 mesh = SubResource("BoxMesh_uxk45")
 surface_material_override/0 = SubResource("StandardMaterial3D_a0gfy")
 
 [node name="TestSidewalkRight" type="MeshInstance3D" parent="." unique_id=2132623928]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 0.3, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.15, 0.28, 0)
 mesh = SubResource("BoxMesh_47s81")
 surface_material_override/0 = SubResource("StandardMaterial3D_siv4m")
 
@@ -84,3 +96,13 @@ surface_material_override/0 = SubResource("StandardMaterial3D_siv4m")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.32, 0)
 mesh = SubResource("BoxMesh_siv4m")
 surface_material_override/0 = SubResource("StandardMaterial3D_0v5gy")
+
+[node name="TestCurbLeft" type="MeshInstance3D" parent="." unique_id=1314422108]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.15, 0.33, 0)
+mesh = SubResource("BoxMesh_a0gfy")
+surface_material_override/0 = SubResource("StandardMaterial3D_ql10d")
+
+[node name="TestCurbRight" type="MeshInstance3D" parent="." unique_id=421279920]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.15, 0.33, 0)
+mesh = SubResource("BoxMesh_0v5gy")
+surface_material_override/0 = SubResource("StandardMaterial3D_4lhpd")
