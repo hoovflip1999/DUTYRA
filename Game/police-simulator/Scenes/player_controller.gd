@@ -1,6 +1,7 @@
 extends CharacterBody3D
 
-@export var move_speed: float = 5.0
+@export var walk_speed: float = 5.0
+@export var sprint_speed: float = 8.0
 @export var gravity: float = 20.0
 @export var mouse_sensitivity: float = 0.003
 
@@ -45,8 +46,13 @@ func _physics_process(delta: float) -> void:
 
 	var direction := (global_transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 
-	velocity.x = direction.x * move_speed
-	velocity.z = direction.z * move_speed
+	var current_speed := walk_speed
+
+	if Input.is_action_pressed("sprint"):
+		current_speed = sprint_speed
+
+	velocity.x = direction.x * current_speed
+	velocity.z = direction.z * current_speed
 
 	if not is_on_floor():
 		velocity.y -= gravity * delta
