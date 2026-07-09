@@ -6,6 +6,9 @@
 
 [sub_resource type="BoxMesh" id="BoxMesh_jjgbg"]
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_7oaoy"]
+size = Vector3(50, 0.2, 50)
+
 [node name="Main" type="Node3D" unique_id=1396415147]
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1181193970]
@@ -22,3 +25,8 @@ mesh = SubResource("BoxMesh_jjgbg")
 
 [node name="Player" parent="." unique_id=1417239302 instance=ExtResource("1_jjgbg")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+
+[node name="TestGroundBody" type="StaticBody3D" parent="." unique_id=669706749]
+
+[node name="TestGroundCollision" type="CollisionShape3D" parent="TestGroundBody" unique_id=2132921613]
+shape = SubResource("BoxShape3D_7oaoy")
