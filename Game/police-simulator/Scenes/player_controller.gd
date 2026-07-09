@@ -2,6 +2,25 @@ extends CharacterBody3D
 
 @export var move_speed: float = 5.0
 @export var gravity: float = 20.0
+@export var mouse_sensitivity: float = 0.003
+
+@onready var camera_pivot: Node3D = $CameraPivot
+
+var camera_pitch: float = 0.0
+
+func _ready() -> void:
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventMouseMotion:
+		rotate_y(-event.relative.x * mouse_sensitivity)
+
+		camera_pitch -= event.relative.y * mouse_sensitivity
+		camera_pitch = clamp(camera_pitch, deg_to_rad(-80), deg_to_rad(80))
+		camera_pivot.rotation.x = camera_pitch
+
+	if event.is_action_pressed("ui_cancel"):
+		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
 func _physics_process(delta: float) -> void:
 	var input_dir := Vector2.ZERO
@@ -20,7 +39,7 @@ func _physics_process(delta: float) -> void:
 
 	input_dir = input_dir.normalized()
 
-	var direction := Vector3(input_dir.x, 0, input_dir.y)
+	var direction := (global_transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 
 	velocity.x = direction.x * move_speed
 	velocity.z = direction.z * move_speed
