@@ -48,6 +48,12 @@ size = Vector3(0.3, 0.15, 40)
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4lhpd"]
 albedo_color = Color(0.38928655, 0.38928664, 0.38928658, 1)
 
+[sub_resource type="BoxMesh" id="BoxMesh_ql10d"]
+size = Vector3(40, 0.05, 8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ga80x"]
+albedo_color = Color(0.06053035, 0.06053035, 0.060530342, 1)
+
 [node name="Main" type="Node3D" unique_id=1396415147]
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1181193970]
@@ -106,3 +112,8 @@ surface_material_override/0 = SubResource("StandardMaterial3D_ql10d")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.15, 0.33, 0)
 mesh = SubResource("BoxMesh_0v5gy")
 surface_material_override/0 = SubResource("StandardMaterial3D_4lhpd")
+
+[node name="TestCrossRoad" type="MeshInstance3D" parent="." unique_id=214454888]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.22, 0)
+mesh = SubResource("BoxMesh_ql10d")
+surface_material_override/0 = SubResource("StandardMaterial3D_ga80x")
