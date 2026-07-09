@@ -170,6 +170,12 @@ size = Vector3(0.8, 0.25, 0.4)
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_amead"]
 albedo_color = Color(0.51718444, 0.5171845, 0.51718444, 1)
 
+[sub_resource type="BoxMesh" id="BoxMesh_au263"]
+size = Vector3(1, 2, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_4lhpd"]
+size = Vector3(1, 2, 1)
+
 [node name="Main" type="Node3D" unique_id=1396415147]
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1181193970]
@@ -346,6 +352,15 @@ surface_material_override/0 = SubResource("StandardMaterial3D_au263")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.45, 2.1, 0)
 mesh = SubResource("BoxMesh_8q0sn")
 surface_material_override/0 = SubResource("StandardMaterial3D_amead")
+
+[node name="TestInteractableBox" type="StaticBody3D" parent="StreetProps" unique_id=906646618]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 2)
+
+[node name="TestInteractableMesh" type="MeshInstance3D" parent="StreetProps/TestInteractableBox" unique_id=1204400119]
+mesh = SubResource("BoxMesh_au263")
+
+[node name="TestInteractableCollision" type="CollisionShape3D" parent="StreetProps/TestInteractableBox" unique_id=58992192]
+shape = SubResource("BoxShape3D_4lhpd")
 
 [node name="PlayerSetup" type="Node3D" parent="." unique_id=268091430]
 
