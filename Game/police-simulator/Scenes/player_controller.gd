@@ -2,9 +2,12 @@ extends CharacterBody3D
 
 @export var walk_speed: float = 5.0
 @export var sprint_speed: float = 8.0
+@export var crouch_speed: float = 2.5
 @export var jump_velocity: float = 6.0
 @export var gravity: float = 20.0
 @export var mouse_sensitivity: float = 0.003
+@export var standing_camera_height: float = 1.6
+@export var crouching_camera_height: float = 1.0
 
 @onready var camera_pivot: Node3D = $CameraPivot
 
@@ -49,8 +52,14 @@ func _physics_process(delta: float) -> void:
 
 	var current_speed := walk_speed
 
-	if Input.is_action_pressed("sprint"):
+	if Input.is_action_pressed("crouch"):
+		current_speed = crouch_speed
+		camera_pivot.position.y = crouching_camera_height
+	elif Input.is_action_pressed("sprint"):
 		current_speed = sprint_speed
+		camera_pivot.position.y = standing_camera_height
+	else:
+		camera_pivot.position.y = standing_camera_height
 
 	velocity.x = direction.x * current_speed
 	velocity.z = direction.z * current_speed
