@@ -23,3 +23,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
 [node name="PlayerCamera" type="Camera3D" parent="CameraPivot" unique_id=500036245]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.2)
 current = true
+
+[node name="InteractionRay" type="RayCast3D" parent="CameraPivot/PlayerCamera" unique_id=979379544]
+target_position = Vector3(0, 0, -3)
