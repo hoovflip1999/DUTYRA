@@ -18,6 +18,18 @@ size = Vector3(8, 0.05, 40)
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jjgbg"]
 albedo_color = Color(0.072842635, 0.072842635, 0.072842635, 1)
 
+[sub_resource type="BoxMesh" id="BoxMesh_uxk45"]
+size = Vector3(2, 0.08, 40)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_a0gfy"]
+albedo_color = Color(0.31431612, 0.31431612, 0.3143161, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_47s81"]
+size = Vector3(2, 0.08, 40)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_siv4m"]
+albedo_color = Color(0.28485027, 0.28485027, 0.28485027, 1)
+
 [node name="Main" type="Node3D" unique_id=1396415147]
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1181193970]
@@ -48,6 +60,16 @@ mesh = SubResource("BoxMesh_7oaoy")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 5)
 
 [node name="TestRoad" type="MeshInstance3D" parent="." unique_id=351130688]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
 mesh = SubResource("BoxMesh_qjvm4")
 surface_material_override/0 = SubResource("StandardMaterial3D_jjgbg")
+
+[node name="TestSidewalkLeft" type="MeshInstance3D" parent="." unique_id=339579908]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 0.3, 0)
+mesh = SubResource("BoxMesh_uxk45")
+surface_material_override/0 = SubResource("StandardMaterial3D_a0gfy")
+
+[node name="TestSidewalkRight" type="MeshInstance3D" parent="." unique_id=2132623928]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 0.3, 0)
+mesh = SubResource("BoxMesh_47s81")
+surface_material_override/0 = SubResource("StandardMaterial3D_siv4m")
