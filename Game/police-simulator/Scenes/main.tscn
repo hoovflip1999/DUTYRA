@@ -54,6 +54,48 @@ size = Vector3(40, 0.05, 8)
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ga80x"]
 albedo_color = Color(0.06053035, 0.06053035, 0.060530342, 1)
 
+[sub_resource type="BoxMesh" id="BoxMesh_4lhpd"]
+size = Vector3(8, 4, 6)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_sk0y0"]
+albedo_color = Color(0.07058824, 0.07058824, 0.96862745, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ga80x"]
+size = Vector3(7, 3, 5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6xgi7"]
+albedo_color = Color(0.26293245, 0.26293245, 0.26293245, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_6xgi7"]
+size = Vector3(10, 8, 6)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dexas"]
+albedo_color = Color(0.79107594, 0.41049674, 0.16986388, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_sk0y0"]
+size = Vector3(10, 4, 7)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3uyfd"]
+albedo_color = Color(0.38170326, 0.38170323, 0.38170323, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_dexas"]
+size = Vector3(5, 3, 5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xedhy"]
+albedo_color = Color(0.8213685, 0.49952364, 0.25485328, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_3uyfd"]
+size = Vector3(5, 3, 5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_30hvs"]
+albedo_color = Color(0.46666667, 0.24313726, 0.14117648, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_xedhy"]
+size = Vector3(12, 0.05, 8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gn688"]
+albedo_color = Color(0.16206557, 0.1620656, 0.16206557, 1)
+
 [node name="Main" type="Node3D" unique_id=1396415147]
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1181193970]
@@ -117,3 +159,38 @@ surface_material_override/0 = SubResource("StandardMaterial3D_4lhpd")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.22, 0)
 mesh = SubResource("BoxMesh_ql10d")
 surface_material_override/0 = SubResource("StandardMaterial3D_ga80x")
+
+[node name="PoliceStationBlock" type="MeshInstance3D" parent="." unique_id=352785115]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 2, 8)
+mesh = SubResource("BoxMesh_4lhpd")
+surface_material_override/0 = SubResource("StandardMaterial3D_sk0y0")
+
+[node name="GasStationBlock" type="MeshInstance3D" parent="." unique_id=809037014]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 1.5, 8)
+mesh = SubResource("BoxMesh_ga80x")
+surface_material_override/0 = SubResource("StandardMaterial3D_6xgi7")
+
+[node name="ApartmentBlock" type="MeshInstance3D" parent="." unique_id=385027870]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 4, -12)
+mesh = SubResource("BoxMesh_6xgi7")
+surface_material_override/0 = SubResource("StandardMaterial3D_dexas")
+
+[node name="StoreBlock" type="MeshInstance3D" parent="." unique_id=186171359]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 2, -12)
+mesh = SubResource("BoxMesh_sk0y0")
+surface_material_override/0 = SubResource("StandardMaterial3D_3uyfd")
+
+[node name="HouseBlockA" type="MeshInstance3D" parent="." unique_id=814353937]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -24, 1.5, -2)
+mesh = SubResource("BoxMesh_dexas")
+surface_material_override/0 = SubResource("StandardMaterial3D_xedhy")
+
+[node name="HouseBlockB" type="MeshInstance3D" parent="." unique_id=1221746340]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 1.5, -2)
+mesh = SubResource("BoxMesh_3uyfd")
+surface_material_override/0 = SubResource("StandardMaterial3D_30hvs")
+
+[node name="ParkingLotBlock" type="MeshInstance3D" parent="." unique_id=1964593442]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0.35, 2)
+mesh = SubResource("BoxMesh_xedhy")
+surface_material_override/0 = SubResource("StandardMaterial3D_gn688")
