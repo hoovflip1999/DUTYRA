@@ -12,6 +12,12 @@ size = Vector3(50, 0.2, 50)
 [sub_resource type="BoxMesh" id="BoxMesh_7oaoy"]
 size = Vector3(1, 3, 1)
 
+[sub_resource type="BoxMesh" id="BoxMesh_qjvm4"]
+size = Vector3(8, 0.05, 40)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jjgbg"]
+albedo_color = Color(0.072842635, 0.072842635, 0.072842635, 1)
+
 [node name="Main" type="Node3D" unique_id=1396415147]
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1181193970]
@@ -40,3 +46,8 @@ mesh = SubResource("BoxMesh_7oaoy")
 
 [node name="PlayerSpawn" type="Marker3D" parent="." unique_id=960010929]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 5)
+
+[node name="TestRoad" type="MeshInstance3D" parent="." unique_id=351130688]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
+mesh = SubResource("BoxMesh_qjvm4")
+surface_material_override/0 = SubResource("StandardMaterial3D_jjgbg")
