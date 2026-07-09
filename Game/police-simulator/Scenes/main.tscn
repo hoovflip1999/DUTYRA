@@ -4,19 +4,22 @@
 
 [sub_resource type="Environment" id="Environment_7u77a"]
 
-[sub_resource type="BoxMesh" id="BoxMesh_jjgbg"]
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_7oaoy"]
-size = Vector3(50, 0.2, 50)
-
-[sub_resource type="BoxMesh" id="BoxMesh_7oaoy"]
-size = Vector3(1, 3, 1)
-
 [sub_resource type="BoxMesh" id="BoxMesh_qjvm4"]
 size = Vector3(8, 0.05, 40)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jjgbg"]
 albedo_color = Color(0.072842635, 0.072842635, 0.072842635, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_jjgbg"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_7oaoy"]
+size = Vector3(50, 0.2, 50)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ql10d"]
+size = Vector3(40, 0.05, 8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ga80x"]
+albedo_color = Color(0.06053035, 0.06053035, 0.060530342, 1)
 
 [sub_resource type="BoxMesh" id="BoxMesh_uxk45"]
 size = Vector3(2, 0.08, 40)
@@ -47,12 +50,6 @@ size = Vector3(0.3, 0.15, 40)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4lhpd"]
 albedo_color = Color(0.38928655, 0.38928664, 0.38928658, 1)
-
-[sub_resource type="BoxMesh" id="BoxMesh_ql10d"]
-size = Vector3(40, 0.05, 8)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ga80x"]
-albedo_color = Color(0.06053035, 0.06053035, 0.060530342, 1)
 
 [sub_resource type="BoxMesh" id="BoxMesh_4lhpd"]
 size = Vector3(8, 4, 6)
@@ -113,6 +110,9 @@ size = Vector3(5, 3, 5)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_0v5gy"]
 size = Vector3(5, 3, 5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_7oaoy"]
+size = Vector3(1, 3, 1)
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_7oaoy"]
 top_radius = 0.1
@@ -180,167 +180,177 @@ environment = SubResource("Environment_7u77a")
 [node name="MainCamera" type="Camera3D" parent="." unique_id=680553881]
 transform = Transform3D(1, 0, 0, 0, 0.8660254, 0.5, 0, -0.5, 0.8660254, 0, 6, 10)
 
-[node name="TestGround" type="MeshInstance3D" parent="." unique_id=1198658247]
-transform = Transform3D(50, 0, 0, 0, 0.1, 0, 0, 0, 50, 0, 0, 0)
-mesh = SubResource("BoxMesh_jjgbg")
+[node name="WorldBlockout" type="Node3D" parent="." unique_id=455650227]
 
-[node name="Player" parent="." unique_id=1417239302 instance=ExtResource("1_jjgbg")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 5)
+[node name="StreetLayout" type="Node3D" parent="." unique_id=1090197025]
 
-[node name="TestGroundBody" type="StaticBody3D" parent="." unique_id=669706749]
-
-[node name="TestGroundCollision" type="CollisionShape3D" parent="TestGroundBody" unique_id=2132921613]
-shape = SubResource("BoxShape3D_7oaoy")
-
-[node name="TestMarker" type="MeshInstance3D" parent="." unique_id=796748634]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -8)
-mesh = SubResource("BoxMesh_7oaoy")
-
-[node name="PlayerSpawn" type="Marker3D" parent="." unique_id=960010929]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 5)
-
-[node name="TestRoad" type="MeshInstance3D" parent="." unique_id=351130688]
+[node name="TestRoad" type="MeshInstance3D" parent="StreetLayout" unique_id=351130688]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.21, 0)
 mesh = SubResource("BoxMesh_qjvm4")
 surface_material_override/0 = SubResource("StandardMaterial3D_jjgbg")
 
-[node name="TestSidewalkLeft" type="MeshInstance3D" parent="." unique_id=339579908]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.15, 0.28, 0)
-mesh = SubResource("BoxMesh_uxk45")
-surface_material_override/0 = SubResource("StandardMaterial3D_a0gfy")
+[node name="TestGround" type="MeshInstance3D" parent="StreetLayout" unique_id=1198658247]
+transform = Transform3D(50, 0, 0, 0, 0.1, 0, 0, 0, 50, 0, 0, 0)
+mesh = SubResource("BoxMesh_jjgbg")
 
-[node name="TestSidewalkRight" type="MeshInstance3D" parent="." unique_id=2132623928]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.15, 0.28, 0)
-mesh = SubResource("BoxMesh_47s81")
-surface_material_override/0 = SubResource("StandardMaterial3D_siv4m")
+[node name="TestGroundBody" type="StaticBody3D" parent="StreetLayout/TestGround" unique_id=669706749]
 
-[node name="TestCenterLine" type="MeshInstance3D" parent="." unique_id=1149498768]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.32, 0)
-mesh = SubResource("BoxMesh_siv4m")
-surface_material_override/0 = SubResource("StandardMaterial3D_0v5gy")
+[node name="TestGroundCollision" type="CollisionShape3D" parent="StreetLayout/TestGround/TestGroundBody" unique_id=2132921613]
+shape = SubResource("BoxShape3D_7oaoy")
 
-[node name="TestCurbLeft" type="MeshInstance3D" parent="." unique_id=1314422108]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.15, 0.33, 0)
-mesh = SubResource("BoxMesh_a0gfy")
-surface_material_override/0 = SubResource("StandardMaterial3D_ql10d")
-
-[node name="TestCurbRight" type="MeshInstance3D" parent="." unique_id=421279920]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.15, 0.33, 0)
-mesh = SubResource("BoxMesh_0v5gy")
-surface_material_override/0 = SubResource("StandardMaterial3D_4lhpd")
-
-[node name="TestCrossRoad" type="MeshInstance3D" parent="." unique_id=214454888]
+[node name="TestCrossRoad" type="MeshInstance3D" parent="StreetLayout" unique_id=214454888]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.22, 0)
 mesh = SubResource("BoxMesh_ql10d")
 surface_material_override/0 = SubResource("StandardMaterial3D_ga80x")
 
-[node name="PoliceStationBlock" type="MeshInstance3D" parent="." unique_id=352785115]
+[node name="TestSidewalkLeft" type="MeshInstance3D" parent="StreetLayout" unique_id=339579908]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.15, 0.28, 0)
+mesh = SubResource("BoxMesh_uxk45")
+surface_material_override/0 = SubResource("StandardMaterial3D_a0gfy")
+
+[node name="TestSidewalkRight" type="MeshInstance3D" parent="StreetLayout" unique_id=2132623928]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.15, 0.28, 0)
+mesh = SubResource("BoxMesh_47s81")
+surface_material_override/0 = SubResource("StandardMaterial3D_siv4m")
+
+[node name="TestCenterLine" type="MeshInstance3D" parent="StreetLayout" unique_id=1149498768]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.32, 0)
+mesh = SubResource("BoxMesh_siv4m")
+surface_material_override/0 = SubResource("StandardMaterial3D_0v5gy")
+
+[node name="TestCurbLeft" type="MeshInstance3D" parent="StreetLayout" unique_id=1314422108]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.15, 0.33, 0)
+mesh = SubResource("BoxMesh_a0gfy")
+surface_material_override/0 = SubResource("StandardMaterial3D_ql10d")
+
+[node name="TestCurbRight" type="MeshInstance3D" parent="StreetLayout" unique_id=421279920]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.15, 0.33, 0)
+mesh = SubResource("BoxMesh_0v5gy")
+surface_material_override/0 = SubResource("StandardMaterial3D_4lhpd")
+
+[node name="BuildingBlocks" type="Node3D" parent="." unique_id=755991366]
+
+[node name="PoliceStationBlock" type="MeshInstance3D" parent="BuildingBlocks" unique_id=352785115]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 2, 8)
 mesh = SubResource("BoxMesh_4lhpd")
 surface_material_override/0 = SubResource("StandardMaterial3D_sk0y0")
 
-[node name="GasStationBlock" type="MeshInstance3D" parent="." unique_id=809037014]
+[node name="GasStationBlock" type="MeshInstance3D" parent="BuildingBlocks" unique_id=809037014]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 1.5, 8)
 mesh = SubResource("BoxMesh_ga80x")
 surface_material_override/0 = SubResource("StandardMaterial3D_6xgi7")
 
-[node name="ApartmentBlock" type="MeshInstance3D" parent="." unique_id=385027870]
+[node name="ApartmentBlock" type="MeshInstance3D" parent="BuildingBlocks" unique_id=385027870]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 4, -12)
 mesh = SubResource("BoxMesh_6xgi7")
 surface_material_override/0 = SubResource("StandardMaterial3D_dexas")
 
-[node name="StoreBlock" type="MeshInstance3D" parent="." unique_id=186171359]
+[node name="StoreBlock" type="MeshInstance3D" parent="BuildingBlocks" unique_id=186171359]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 2, -12)
 mesh = SubResource("BoxMesh_sk0y0")
 surface_material_override/0 = SubResource("StandardMaterial3D_3uyfd")
 
-[node name="HouseBlockA" type="MeshInstance3D" parent="." unique_id=814353937]
+[node name="HouseBlockA" type="MeshInstance3D" parent="BuildingBlocks" unique_id=814353937]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -24, 1.5, -2)
 mesh = SubResource("BoxMesh_dexas")
 surface_material_override/0 = SubResource("StandardMaterial3D_xedhy")
 
-[node name="HouseBlockB" type="MeshInstance3D" parent="." unique_id=1221746340]
+[node name="HouseBlockB" type="MeshInstance3D" parent="BuildingBlocks" unique_id=1221746340]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 1.5, -2)
 mesh = SubResource("BoxMesh_3uyfd")
 surface_material_override/0 = SubResource("StandardMaterial3D_30hvs")
 
-[node name="ParkingLotBlock" type="MeshInstance3D" parent="." unique_id=1964593442]
+[node name="ParkingLotBlock" type="MeshInstance3D" parent="BuildingBlocks" unique_id=1964593442]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0.35, 2)
 mesh = SubResource("BoxMesh_xedhy")
 surface_material_override/0 = SubResource("StandardMaterial3D_gn688")
 
-[node name="PoliceStationCollisionBody" type="StaticBody3D" parent="." unique_id=539224707]
+[node name="PoliceStationCollisionBody" type="StaticBody3D" parent="BuildingBlocks" unique_id=539224707]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 2, 8)
 
-[node name="PoliceStationCollision" type="CollisionShape3D" parent="PoliceStationCollisionBody" unique_id=1917635837]
+[node name="PoliceStationCollision" type="CollisionShape3D" parent="BuildingBlocks/PoliceStationCollisionBody" unique_id=1917635837]
 shape = SubResource("BoxShape3D_qjvm4")
 
-[node name="GasStationCollisionBody" type="StaticBody3D" parent="." unique_id=2007407574]
+[node name="GasStationCollisionBody" type="StaticBody3D" parent="BuildingBlocks" unique_id=2007407574]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 1.5, 8)
 
-[node name="GasStationCollision" type="CollisionShape3D" parent="GasStationCollisionBody" unique_id=1046973055]
+[node name="GasStationCollision" type="CollisionShape3D" parent="BuildingBlocks/GasStationCollisionBody" unique_id=1046973055]
 shape = SubResource("BoxShape3D_uxk45")
 
-[node name="ApartmentCollisionBody" type="StaticBody3D" parent="." unique_id=268376588]
+[node name="ApartmentCollisionBody" type="StaticBody3D" parent="BuildingBlocks" unique_id=268376588]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 4, -12)
 
-[node name="ApartmentCollision" type="CollisionShape3D" parent="ApartmentCollisionBody" unique_id=133533345]
+[node name="ApartmentCollision" type="CollisionShape3D" parent="BuildingBlocks/ApartmentCollisionBody" unique_id=133533345]
 shape = SubResource("BoxShape3D_47s81")
 
-[node name="StoreCollisionBody" type="StaticBody3D" parent="." unique_id=29221798]
+[node name="StoreCollisionBody" type="StaticBody3D" parent="BuildingBlocks" unique_id=29221798]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 2, -12)
 
-[node name="StoreCollision" type="CollisionShape3D" parent="StoreCollisionBody" unique_id=770464595]
+[node name="StoreCollision" type="CollisionShape3D" parent="BuildingBlocks/StoreCollisionBody" unique_id=770464595]
 shape = SubResource("BoxShape3D_siv4m")
 
-[node name="HouseACollisionBody" type="StaticBody3D" parent="." unique_id=2125395162]
+[node name="HouseACollisionBody" type="StaticBody3D" parent="BuildingBlocks" unique_id=2125395162]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -24, 1.5, -2)
 
-[node name="HouseACollision" type="CollisionShape3D" parent="HouseACollisionBody" unique_id=1824940618]
+[node name="HouseACollision" type="CollisionShape3D" parent="BuildingBlocks/HouseACollisionBody" unique_id=1824940618]
 shape = SubResource("BoxShape3D_a0gfy")
 
-[node name="HouseBCollisionBody" type="StaticBody3D" parent="." unique_id=223512427]
+[node name="HouseBCollisionBody" type="StaticBody3D" parent="BuildingBlocks" unique_id=223512427]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 1.5, -2)
 
-[node name="HouseBCollision" type="CollisionShape3D" parent="HouseBCollisionBody" unique_id=2127895287]
+[node name="HouseBCollision" type="CollisionShape3D" parent="BuildingBlocks/HouseBCollisionBody" unique_id=2127895287]
 shape = SubResource("BoxShape3D_0v5gy")
 
-[node name="StreetLightA" type="MeshInstance3D" parent="." unique_id=273274836]
+[node name="StreetProps" type="Node3D" parent="." unique_id=985062525]
+
+[node name="TestMarker" type="MeshInstance3D" parent="StreetProps" unique_id=796748634]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -8)
+mesh = SubResource("BoxMesh_7oaoy")
+
+[node name="StreetLightA" type="MeshInstance3D" parent="StreetProps" unique_id=273274836]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5, 2, 12)
 mesh = SubResource("CylinderMesh_7oaoy")
 surface_material_override/0 = SubResource("StandardMaterial3D_qjvm4")
 
-[node name="StreetLightHeadA" type="MeshInstance3D" parent="StreetLightA" unique_id=989272287]
+[node name="StreetLightHeadA" type="MeshInstance3D" parent="StreetProps/StreetLightA" unique_id=989272287]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.45, 2.1, 0)
 mesh = SubResource("BoxMesh_30hvs")
 surface_material_override/0 = SubResource("StandardMaterial3D_2s8bt")
 
-[node name="StreetLightB" type="MeshInstance3D" parent="." unique_id=211880418]
+[node name="StreetLightB" type="MeshInstance3D" parent="StreetProps" unique_id=211880418]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 2, 12)
 mesh = SubResource("CylinderMesh_qjvm4")
 surface_material_override/0 = SubResource("StandardMaterial3D_uxk45")
 
-[node name="StreetLightHeadB" type="MeshInstance3D" parent="StreetLightB" unique_id=1086353518]
+[node name="StreetLightHeadB" type="MeshInstance3D" parent="StreetProps/StreetLightB" unique_id=1086353518]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.45, 2.1, 0)
 mesh = SubResource("BoxMesh_gn688")
 surface_material_override/0 = SubResource("StandardMaterial3D_8q0sn")
 
-[node name="StreetLightC" type="MeshInstance3D" parent="." unique_id=736926087]
+[node name="StreetLightC" type="MeshInstance3D" parent="StreetProps" unique_id=736926087]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5, 2, -12)
 mesh = SubResource("CylinderMesh_uxk45")
 surface_material_override/0 = SubResource("StandardMaterial3D_47s81")
 
-[node name="StreetLightHeadC" type="MeshInstance3D" parent="StreetLightC" unique_id=221822688]
+[node name="StreetLightHeadC" type="MeshInstance3D" parent="StreetProps/StreetLightC" unique_id=221822688]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.45, 2.1, 0)
 mesh = SubResource("BoxMesh_2s8bt")
 surface_material_override/0 = SubResource("StandardMaterial3D_ufbad")
 
-[node name="StreetLightD" type="MeshInstance3D" parent="." unique_id=1179541587]
+[node name="StreetLightD" type="MeshInstance3D" parent="StreetProps" unique_id=1179541587]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 2, -12)
 mesh = SubResource("CylinderMesh_47s81")
 surface_material_override/0 = SubResource("StandardMaterial3D_au263")
 
-[node name="StreetLightHeadD" type="MeshInstance3D" parent="StreetLightD" unique_id=760112396]
+[node name="StreetLightHeadD" type="MeshInstance3D" parent="StreetProps/StreetLightD" unique_id=760112396]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.45, 2.1, 0)
 mesh = SubResource("BoxMesh_8q0sn")
 surface_material_override/0 = SubResource("StandardMaterial3D_amead")
+
+[node name="PlayerSetup" type="Node3D" parent="." unique_id=268091430]
+
+[node name="PlayerSpawn" type="Marker3D" parent="PlayerSetup" unique_id=960010929]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 5)
+
+[node name="Player" parent="PlayerSetup" unique_id=1417239302 instance=ExtResource("1_jjgbg")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 5)
