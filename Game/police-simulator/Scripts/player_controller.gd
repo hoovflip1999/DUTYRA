@@ -8,7 +8,7 @@ extends CharacterBody3D
 @export var mouse_sensitivity: float = 0.003
 @export var standing_camera_height: float = 1.6
 @export var crouching_camera_height: float = 1.0
-@export var radio_message_seconds: float = 4.0
+@export var radio_message_seconds: float = 3.2
 
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var interaction_ray: RayCast3D = $CameraPivot/PlayerCamera/InteractionRay
@@ -35,6 +35,10 @@ func _ready() -> void:
 	interaction_prompt.visible = false
 	dispatch_call_label.visible = false
 	radio_message_label.visible = false
+	radio_message_label.size = Vector2(560, 70)
+	radio_message_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	radio_message_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	radio_message_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 
 	create_main_status_hud()
 	create_radio_wheel_ui()
@@ -683,17 +687,59 @@ func _on_active_call_changed(call_text: String, has_call: bool) -> void:
 func update_dispatch_call_label(call_text: String, _has_call: bool) -> void:
 	dispatch_call_label.text = call_text
 
-func _on_radio_message_sent(speaker_name: String, _message_text: String) -> void:
-	show_radio_message("🔊 " + speaker_name)
+func _on_radio_message_sent(speaker_name: String, message_text: String) -> void:
+	show_radio_message(speaker_name, message_text)
 
-func show_radio_message(message_text: String) -> void:
+func show_radio_message(speaker_name: String, message_text: String) -> void:
 	radio_message_id += 1
 	var current_message_id: int = radio_message_id
 
-	radio_message_label.text = message_text
+	var compact_message: String = get_compact_radio_message(speaker_name, message_text)
+
+	radio_message_label.text = speaker_name + "\n" + compact_message
 	radio_message_label.visible = true
 
-	await get_tree().create_timer(radio_message_seconds).timeout
+	await get_tree().create_timer(get_radio_message_display_seconds(compact_message)).timeout
 
 	if current_message_id == radio_message_id:
 		radio_message_label.visible = false
+
+func get_compact_radio_message(speaker_name: String, message_text: String) -> String:
+	var lower_message: String = message_text.to_lower()
+
+	if speaker_name == "DISPATCH":
+		if DispatchManager.has_active_call and DispatchManager.call_status == "pending":
+			if DispatchManager.active_call.has("title") and DispatchManager.active_call.has("location"):
+				return "New call: " + str(DispatchManager.active_call["title"]) + " - " + str(DispatchManager.active_call["location"])
+
+	if lower_message.find("10 41") != -1:
+		return "10-41 In service"
+
+	if lower_message.find("10 42") != -1:
+		return "10-42 Out of service"
+
+	if lower_message.find("10 76") != -1:
+		return "10-76 En route"
+
+	if lower_message.find("10 97") != -1:
+		return "10-97 On scene"
+
+	if lower_message.find("10 8") != -1:
+		return "10-8 Clear / available"
+
+	if lower_message.find("10 4") != -1:
+		return "10-4 Acknowledged"
+
+	return limit_radio_message_length(message_text, 58)
+
+func limit_radio_message_length(message_text: String, max_characters: int) -> String:
+	if message_text.length() <= max_characters:
+		return message_text
+
+	return message_text.substr(0, max_characters - 3) + "..."
+
+func get_radio_message_display_seconds(compact_message: String) -> float:
+	var words: PackedStringArray = compact_message.split(" ", false)
+	var calculated_time: float = float(words.size()) * 0.18 + 1.8
+
+	return maxf(radio_message_seconds, calculated_time)
