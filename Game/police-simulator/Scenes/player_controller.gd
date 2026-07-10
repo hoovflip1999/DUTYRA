@@ -89,6 +89,11 @@ func update_interaction_prompt() -> void:
 		var hit_object := interaction_ray.get_collider()
 
 		if hit_object and hit_object.has_method("interact"):
+			if "prompt_text" in hit_object:
+				interaction_prompt.text = hit_object.prompt_text
+			else:
+				interaction_prompt.text = "Press E to interact"
+
 			interaction_prompt.visible = true
 
 func try_interact() -> void:
