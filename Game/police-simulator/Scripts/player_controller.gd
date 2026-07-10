@@ -20,6 +20,7 @@ extends CharacterBody3D
 var camera_pitch: float = 0.0
 var is_mdt_visible: bool = false
 var radio_message_id: int = 0
+var active_call_area: Node = null
 
 func _ready() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
@@ -52,7 +53,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
 	if event.is_action_pressed("interact"):
-		try_interact()
+		handle_interact_input()
 
 	if event.is_action_pressed("accept_call"):
 		DispatchManager.accept_active_call()
@@ -61,7 +62,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		toggle_mdt()
 
 func _physics_process(delta: float) -> void:
-	update_interaction_prompt()
+	update_context_prompt()
 
 	var input_dir := Vector2.ZERO
 
@@ -105,6 +106,28 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
+func handle_interact_input() -> void:
+	if active_call_area != null:
+		if active_call_area.has_method("get_prompt_text") and active_call_area.has_method("interact"):
+			var area_prompt: String = active_call_area.get_prompt_text()
+
+			if area_prompt != "":
+				active_call_area.interact()
+				return
+
+	try_interact()
+
+func update_context_prompt() -> void:
+	if active_call_area != null and active_call_area.has_method("get_prompt_text"):
+		var area_prompt: String = active_call_area.get_prompt_text()
+
+		if area_prompt != "":
+			interaction_prompt.text = area_prompt
+			interaction_prompt.visible = true
+			return
+
+	update_interaction_prompt()
+
 func update_interaction_prompt() -> void:
 	interaction_prompt.visible = false
 
@@ -125,6 +148,14 @@ func try_interact() -> void:
 
 		if hit_object and hit_object.has_method("interact"):
 			hit_object.interact()
+
+func set_active_call_area(call_area: Node) -> void:
+	active_call_area = call_area
+
+func clear_active_call_area(call_area: Node) -> void:
+	if active_call_area == call_area:
+		active_call_area = null
+		interaction_prompt.visible = false
 
 func toggle_mdt() -> void:
 	is_mdt_visible = !is_mdt_visible
@@ -153,7 +184,7 @@ func _on_radio_message_sent(message_text: String) -> void:
 
 func show_radio_message(message_text: String) -> void:
 	radio_message_id += 1
-	var current_message_id := radio_message_id
+	var current_message_id: int = radio_message_id
 
 	radio_message_label.text = "RADIO: " + message_text
 	radio_message_label.visible = true

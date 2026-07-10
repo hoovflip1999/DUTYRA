@@ -51,10 +51,10 @@ func mark_active_call_on_scene() -> void:
 	call_status = "on_scene"
 
 	active_call_changed.emit(get_display_text(), has_active_call)
-	RadioManager.send_radio_message("Unit on scene. " + active_call_text)
+	RadioManager.send_radio_message("Dispatch, M24 is on scene.")
 	print("Unit marked on scene: " + active_call_text)
 
-func clear_active_call() -> void:
+func clear_active_call(send_radio_message: bool = true) -> void:
 	var had_call := has_active_call
 
 	has_active_call = false
@@ -63,7 +63,7 @@ func clear_active_call() -> void:
 
 	active_call_changed.emit(get_display_text(), has_active_call)
 
-	if had_call:
+	if had_call and send_radio_message:
 		RadioManager.send_radio_message("Unit clear. No active call.")
 
 	print("Dispatch cleared active call")
