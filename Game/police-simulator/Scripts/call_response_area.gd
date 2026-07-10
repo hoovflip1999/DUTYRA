@@ -40,7 +40,10 @@ func get_prompt_text() -> String:
 		return "Press E to report 10-97"
 
 	if DispatchManager.call_status == "on_scene":
-		return "Press E to clear call 10-8"
+		if DispatchManager.call_objective_complete:
+			return "Press E to clear 10-8"
+
+		return ""
 
 	return ""
 
@@ -62,6 +65,9 @@ func interact() -> void:
 		return
 
 	if DispatchManager.call_status == "on_scene":
+		if not DispatchManager.call_objective_complete:
+			return
+
 		print("Handled call: " + call_name)
 		RadioManager.send_player_message("Dispatch, show Unit 24 10 8.")
 		RadioManager.send_dispatch_ack("10 4, Unit 24 clear.")

@@ -5,6 +5,7 @@ signal active_call_changed(call_text: String, has_call: bool)
 var has_active_call: bool = false
 var active_call_text: String = ""
 var call_status: String = "none"
+var call_objective_complete: bool = false
 
 func _ready() -> void:
 	GameState.duty_status_changed.connect(_on_duty_status_changed)
@@ -19,6 +20,7 @@ func assign_test_call() -> void:
 	has_active_call = true
 	active_call_text = "P3 - Suspicious Person near Gas Station"
 	call_status = "pending"
+	call_objective_complete = false
 
 	active_call_changed.emit(get_display_text(), has_active_call)
 
@@ -62,12 +64,25 @@ func mark_active_call_on_scene() -> void:
 
 	print("Unit marked on scene: " + active_call_text)
 
+func complete_active_call_objective() -> void:
+	if not has_active_call:
+		return
+
+	if call_status != "on_scene":
+		return
+
+	call_objective_complete = true
+	active_call_changed.emit(get_display_text(), has_active_call)
+
+	print("Call objective complete")
+
 func clear_active_call(send_radio_message: bool = true) -> void:
 	var had_call: bool = has_active_call
 
 	has_active_call = false
 	active_call_text = ""
 	call_status = "none"
+	call_objective_complete = false
 
 	active_call_changed.emit(get_display_text(), has_active_call)
 
@@ -82,20 +97,29 @@ func get_display_text() -> String:
 		return "MDT CALL DETAILS\n\nNo active call."
 
 	var status_text: String = "Unknown"
+	var objective_text: String = "Respond to call location"
 
 	if call_status == "pending":
 		status_text = "Pending"
+		objective_text = "Accept the call"
 	elif call_status == "accepted":
 		status_text = "En Route"
+		objective_text = "Go to the gas station"
 	elif call_status == "on_scene":
 		status_text = "On Scene"
+
+		if call_objective_complete:
+			objective_text = "Ready to clear call"
+		else:
+			objective_text = "Talk to the suspicious person"
 
 	return "MDT CALL DETAILS\n\n" \
 		+ "Status: " + status_text + "\n" \
 		+ "Call: Suspicious Person\n" \
 		+ "Priority: P3\n" \
 		+ "Location: Gas Station\n" \
-		+ "Response: Code 2 - Routine response\n\n" \
+		+ "Response: Code 2 - Routine response\n" \
+		+ "Objective: " + objective_text + "\n\n" \
 		+ "Radio Codes:\n" \
 		+ "10-76 = En Route\n" \
 		+ "10-97 = On Scene\n" \

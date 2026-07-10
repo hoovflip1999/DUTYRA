@@ -107,6 +107,9 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 
 func handle_interact_input() -> void:
+	if try_interact_with_raycast():
+		return
+
 	if active_call_area != null:
 		if active_call_area.has_method("get_prompt_text") and active_call_area.has_method("interact"):
 			var area_prompt: String = active_call_area.get_prompt_text()
@@ -115,9 +118,10 @@ func handle_interact_input() -> void:
 				active_call_area.interact()
 				return
 
-	try_interact()
-
 func update_context_prompt() -> void:
+	if show_raycast_prompt():
+		return
+
 	if active_call_area != null and active_call_area.has_method("get_prompt_text"):
 		var area_prompt: String = active_call_area.get_prompt_text()
 
@@ -126,28 +130,53 @@ func update_context_prompt() -> void:
 			interaction_prompt.visible = true
 			return
 
-	update_interaction_prompt()
-
-func update_interaction_prompt() -> void:
 	interaction_prompt.visible = false
 
-	if interaction_ray.is_colliding():
-		var hit_object := interaction_ray.get_collider()
+func show_raycast_prompt() -> bool:
+	if not interaction_ray.is_colliding():
+		return false
 
-		if hit_object and hit_object.has_method("interact"):
-			if "prompt_text" in hit_object:
-				interaction_prompt.text = hit_object.prompt_text
-			else:
-				interaction_prompt.text = "Press E to interact"
+	var hit_object: Object = interaction_ray.get_collider()
 
-			interaction_prompt.visible = true
+	if hit_object == null:
+		return false
 
-func try_interact() -> void:
-	if interaction_ray.is_colliding():
-		var hit_object := interaction_ray.get_collider()
+	if not hit_object.has_method("interact"):
+		return false
 
-		if hit_object and hit_object.has_method("interact"):
-			hit_object.interact()
+	var prompt_text: String = "Press E to interact"
+	var object_prompt: Variant = hit_object.get("prompt_text")
+
+	if object_prompt != null:
+		prompt_text = str(object_prompt)
+
+	if prompt_text == "":
+		return false
+
+	interaction_prompt.text = prompt_text
+	interaction_prompt.visible = true
+	return true
+
+func try_interact_with_raycast() -> bool:
+	if not interaction_ray.is_colliding():
+		return false
+
+	var hit_object: Object = interaction_ray.get_collider()
+
+	if hit_object == null:
+		return false
+
+	if not hit_object.has_method("interact"):
+		return false
+
+	var object_prompt: Variant = hit_object.get("prompt_text")
+
+	if object_prompt != null:
+		if str(object_prompt) == "":
+			return false
+
+	hit_object.interact()
+	return true
 
 func set_active_call_area(call_area: Node) -> void:
 	active_call_area = call_area
@@ -183,7 +212,7 @@ func show_radio_message(message_text: String) -> void:
 	radio_message_id += 1
 	var current_message_id: int = radio_message_id
 
-	radio_message_label.text = "RADIO: " + message_text
+	radio_message_label.text = message_text
 	radio_message_label.visible = true
 
 	await get_tree().create_timer(radio_message_seconds).timeout
