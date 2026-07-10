@@ -10,6 +10,7 @@ extends CharacterBody3D
 @export var crouching_camera_height: float = 1.0
 
 @onready var camera_pivot: Node3D = $CameraPivot
+@onready var interaction_ray: RayCast3D = $CameraPivot/PlayerCamera/InteractionRay
 
 var camera_pitch: float = 0.0
 
@@ -26,10 +27,13 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	if event.is_action_pressed("ui_cancel"):
 		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
-		
+
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 			Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+
+	if event.is_action_pressed("interact"):
+		try_interact()
 
 func _physics_process(delta: float) -> void:
 	var input_dir := Vector2.ZERO
@@ -73,3 +77,10 @@ func _physics_process(delta: float) -> void:
 			velocity.y = 0
 
 	move_and_slide()
+
+func try_interact() -> void:
+	if interaction_ray.is_colliding():
+		var hit_object := interaction_ray.get_collider()
+
+		if hit_object and hit_object.has_method("interact"):
+			hit_object.interact()

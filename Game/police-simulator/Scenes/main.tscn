@@ -1,5 +1,6 @@
 [gd_scene format=3 uid="uid://cqb7iij8ph70s"]
 
+[ext_resource type="Script" uid="uid://vpakqknk02vk" path="res://Scenes/interactable_test.gd" id="1_bo1nx"]
 [ext_resource type="PackedScene" uid="uid://dw7sn20cefjue" path="res://Scenes/Player.tscn" id="1_jjgbg"]
 
 [sub_resource type="Environment" id="Environment_7u77a"]
@@ -355,6 +356,7 @@ surface_material_override/0 = SubResource("StandardMaterial3D_amead")
 
 [node name="TestInteractableBox" type="StaticBody3D" parent="StreetProps" unique_id=906646618]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 2)
+script = ExtResource("1_bo1nx")
 
 [node name="TestInteractableMesh" type="MeshInstance3D" parent="StreetProps/TestInteractableBox" unique_id=1204400119]
 mesh = SubResource("BoxMesh_au263")
