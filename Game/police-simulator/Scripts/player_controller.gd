@@ -22,12 +22,15 @@ var camera_pitch: float = 0.0
 var is_mdt_visible: bool = false
 var radio_message_id: int = 0
 var subject_dialogue_id: int = 0
+var call_clear_id: int = 0
 var active_call_area: Node = null
 
 var hud_status_dot: Panel
 var mdt_panel: Panel
 var subject_dialogue_panel: Panel
 var subject_dialogue_label: Label
+var call_clear_panel: Panel
+var call_clear_label: Label
 var radio_wheel_container: Control
 var is_radio_wheel_visible: bool = false
 var radio_wheel_options: Array[Dictionary] = []
@@ -47,6 +50,7 @@ func _ready() -> void:
 	create_main_status_hud()
 	create_mdt_ui()
 	create_subject_dialogue_ui()
+	create_call_clear_ui()
 	create_radio_wheel_ui()
 
 	GameState.duty_status_changed.connect(_on_duty_status_changed)
@@ -246,6 +250,37 @@ func create_subject_dialogue_ui() -> void:
 	subject_dialogue_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	subject_dialogue_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	subject_dialogue_panel.add_child(subject_dialogue_label)
+
+func create_call_clear_ui() -> void:
+	call_clear_panel = Panel.new()
+	call_clear_panel.name = "CallClearPanel"
+	call_clear_panel.size = Vector2(520, 150)
+	call_clear_panel.visible = false
+	call_clear_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	call_clear_panel.z_index = 25
+
+	var panel_style := StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.01, 0.04, 0.02, 0.92)
+	panel_style.border_color = Color(0.1, 1.0, 0.25, 0.85)
+	panel_style.border_width_top = 3
+	panel_style.border_width_bottom = 3
+	panel_style.border_width_left = 3
+	panel_style.border_width_right = 3
+	panel_style.corner_radius_top_left = 14
+	panel_style.corner_radius_top_right = 14
+	panel_style.corner_radius_bottom_left = 14
+	panel_style.corner_radius_bottom_right = 14
+	call_clear_panel.add_theme_stylebox_override("panel", panel_style)
+
+	player_ui.add_child(call_clear_panel)
+
+	call_clear_label = Label.new()
+	call_clear_label.position = Vector2(18, 14)
+	call_clear_label.size = Vector2(484, 122)
+	call_clear_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	call_clear_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	call_clear_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	call_clear_panel.add_child(call_clear_label)
 
 func update_main_status_hud() -> void:
 	duty_status_label.text = get_hud_status_text()
@@ -630,9 +665,28 @@ func select_radio_wheel_option(option_index: int) -> void:
 	elif action_name == "report_on_scene":
 		DispatchManager.mark_active_call_on_scene()
 	elif action_name == "clear_call":
+		var cleared_call_title: String = get_current_call_title_for_result()
+		var cleared_call_note: String = get_current_call_note_for_result()
+
 		RadioManager.send_player_message("Dispatch, show Unit 24 10 8. Contact made, no further action.")
 		RadioManager.send_dispatch_ack("10 4, Unit 24 clear.")
 		DispatchManager.clear_active_call(false)
+		show_call_cleared_result(cleared_call_title, cleared_call_note)
+
+func get_current_call_title_for_result() -> String:
+	if not DispatchManager.has_active_call:
+		return "Call"
+
+	if not DispatchManager.active_call.has("title"):
+		return "Call"
+
+	return str(DispatchManager.active_call["title"])
+
+func get_current_call_note_for_result() -> String:
+	if DispatchManager.call_resolution_note != "":
+		return DispatchManager.call_resolution_note
+
+	return "No further action required."
 
 func can_report_on_scene() -> bool:
 	if active_call_area == null:
@@ -754,6 +808,21 @@ func show_subject_dialogue(speaker_name: String, dialogue_text: String) -> void:
 
 	if current_dialogue_id == subject_dialogue_id:
 		subject_dialogue_panel.visible = false
+
+func show_call_cleared_result(call_title: String, call_note: String) -> void:
+	call_clear_id += 1
+	var current_clear_id: int = call_clear_id
+
+	var screen_size: Vector2 = get_viewport().get_visible_rect().size
+	call_clear_panel.position = Vector2((screen_size.x - call_clear_panel.size.x) * 0.5, 120)
+
+	call_clear_label.text = "CALL CLEARED\n\n" + call_title + "\n" + call_note + "\n\nStatus: Available"
+	call_clear_panel.visible = true
+
+	await get_tree().create_timer(4.0).timeout
+
+	if current_clear_id == call_clear_id:
+		call_clear_panel.visible = false
 
 func set_active_call_area(call_area: Node) -> void:
 	active_call_area = call_area
