@@ -39,6 +39,21 @@ func accept_active_call() -> void:
 	RadioManager.send_radio_message("Unit en route. " + active_call_text)
 	print("Call accepted: " + active_call_text)
 
+func mark_active_call_on_scene() -> void:
+	if not has_active_call:
+		print("No active call")
+		return
+
+	if call_status != "accepted":
+		print("Call must be accepted before marking on scene")
+		return
+
+	call_status = "on_scene"
+
+	active_call_changed.emit(get_display_text(), has_active_call)
+	RadioManager.send_radio_message("Unit on scene. " + active_call_text)
+	print("Unit marked on scene: " + active_call_text)
+
 func clear_active_call() -> void:
 	var had_call := has_active_call
 
@@ -62,5 +77,8 @@ func get_display_text() -> String:
 
 	if call_status == "accepted":
 		return "EN ROUTE: " + active_call_text
+
+	if call_status == "on_scene":
+		return "ON SCENE: " + active_call_text
 
 	return active_call_text

@@ -19,13 +19,17 @@ func interact() -> void:
 		print("Accept the call first")
 		return
 
-	if DispatchManager.call_status != "accepted":
-		print("Call is not ready to handle")
+	if DispatchManager.call_status == "accepted":
+		DispatchManager.mark_active_call_on_scene()
 		return
 
-	print("Handled call: " + call_name)
-	RadioManager.send_radio_message("Scene handled. Unit clear from gas station.")
-	DispatchManager.clear_active_call()
+	if DispatchManager.call_status == "on_scene":
+		print("Handled call: " + call_name)
+		RadioManager.send_radio_message("Scene handled. Unit clear from gas station.")
+		DispatchManager.clear_active_call()
+		return
+
+	print("Call is not ready to handle")
 
 func update_prompt() -> void:
 	if not GameState.is_on_duty:
@@ -35,6 +39,8 @@ func update_prompt() -> void:
 	elif DispatchManager.call_status == "pending":
 		prompt_text = "Accept call first"
 	elif DispatchManager.call_status == "accepted":
+		prompt_text = "Press E to mark on scene"
+	elif DispatchManager.call_status == "on_scene":
 		prompt_text = "Press E to handle " + call_name
 	else:
 		prompt_text = "No active call here"
