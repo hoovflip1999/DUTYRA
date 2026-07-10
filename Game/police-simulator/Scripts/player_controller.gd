@@ -179,8 +179,8 @@ func update_dispatch_call_label(call_text: String, has_call: bool) -> void:
 	else:
 		dispatch_call_label.text = "MDT: No active call"
 
-func _on_radio_message_sent(message_text: String) -> void:
-	show_radio_message(message_text)
+func _on_radio_message_sent(speaker_name: String, _message_text: String) -> void:
+	show_radio_message("🔊 " + speaker_name)
 
 func show_radio_message(message_text: String) -> void:
 	radio_message_id += 1

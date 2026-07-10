@@ -1,12 +1,15 @@
 extends Node
 
-signal radio_message_sent(message_text: String)
+signal radio_message_sent(speaker_name: String, message_text: String)
 
 const SAMPLE_RATE: int = 44100
 
 var radio_audio_player: AudioStreamPlayer
 var radio_stream: AudioStreamGenerator
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+
+var radio_queue: Array[Dictionary] = []
+var is_radio_processing: bool = false
 var transmission_id: int = 0
 
 func _ready() -> void:
@@ -21,35 +24,69 @@ func _ready() -> void:
 
 	radio_audio_player.stream = radio_stream
 
-func send_radio_message(message_text: String) -> void:
-	print("RADIO: " + message_text)
+func send_dispatch_message(message_text: String) -> void:
+	queue_radio_transmission("DISPATCH", message_text, 0.0)
 
-	transmission_id += 1
-	var current_transmission_id: int = transmission_id
+func send_player_message(message_text: String) -> void:
+	queue_radio_transmission("UNIT 24", message_text, 0.0)
 
-	radio_message_sent.emit(message_text)
-	play_radio_transmission(message_text, current_transmission_id)
+func send_dispatch_ack(message_text: String) -> void:
+	queue_radio_transmission("DISPATCH", message_text, 0.8)
 
-func play_radio_transmission(message_text: String, current_transmission_id: int) -> void:
-	play_start_static()
+func queue_radio_transmission(speaker_name: String, message_text: String, pre_delay: float) -> void:
+	var transmission_data: Dictionary = {
+		"speaker_name": speaker_name,
+		"message_text": message_text,
+		"pre_delay": pre_delay
+	}
 
-	await get_tree().create_timer(0.25).timeout
+	radio_queue.append(transmission_data)
 
-	if current_transmission_id != transmission_id:
-		return
+	if not is_radio_processing:
+		process_radio_queue()
 
-	speak_radio_message(message_text)
+func process_radio_queue() -> void:
+	is_radio_processing = true
 
-	var estimated_voice_time: float = maxf(1.4, float(message_text.length()) * 0.065)
+	while radio_queue.size() > 0:
+		var transmission_data: Dictionary = radio_queue.pop_front()
 
-	await get_tree().create_timer(estimated_voice_time).timeout
+		var speaker_name: String = str(transmission_data["speaker_name"])
+		var message_text: String = str(transmission_data["message_text"])
+		var pre_delay: float = float(transmission_data["pre_delay"])
 
-	if current_transmission_id != transmission_id:
-		return
+		if pre_delay > 0.0:
+			await get_tree().create_timer(pre_delay).timeout
 
-	play_end_beep()
+		transmission_id += 1
+		var current_transmission_id: int = transmission_id
 
-func speak_radio_message(message_text: String) -> void:
+		print("RADIO " + speaker_name + ": " + message_text)
+		radio_message_sent.emit(speaker_name, message_text)
+
+		play_start_static()
+
+		await get_tree().create_timer(0.35).timeout
+
+		speak_radio_message(message_text, current_transmission_id)
+
+		var voice_time: float = estimate_voice_time(message_text)
+
+		await get_tree().create_timer(voice_time).timeout
+
+		play_end_beep()
+
+		await get_tree().create_timer(0.45).timeout
+
+	is_radio_processing = false
+
+func estimate_voice_time(message_text: String) -> float:
+	var words: PackedStringArray = message_text.split(" ", false)
+	var word_count: int = words.size()
+
+	return maxf(2.0, float(word_count) * 0.45 + 0.9)
+
+func speak_radio_message(message_text: String, current_transmission_id: int) -> void:
 	var voice_id: String = get_default_voice_id()
 
 	if voice_id == "":
@@ -58,9 +95,9 @@ func speak_radio_message(message_text: String) -> void:
 
 	var voice_volume: int = 85
 	var voice_pitch: float = 1.0
-	var voice_rate: float = 0.95
+	var voice_rate: float = 0.92
 
-	DisplayServer.tts_speak(message_text, voice_id, voice_volume, voice_pitch, voice_rate, transmission_id, true)
+	DisplayServer.tts_speak(message_text, voice_id, voice_volume, voice_pitch, voice_rate, current_transmission_id, false)
 
 func get_default_voice_id() -> String:
 	var voices: Array = DisplayServer.tts_get_voices()

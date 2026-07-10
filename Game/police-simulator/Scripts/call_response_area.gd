@@ -37,10 +37,10 @@ func get_prompt_text() -> String:
 		return "Accept call first"
 
 	if DispatchManager.call_status == "accepted":
-		return "Press E to report on scene"
+		return "Press E to report 10-97"
 
 	if DispatchManager.call_status == "on_scene":
-		return "Press E to handle " + call_name
+		return "Press E to clear call 10-8"
 
 	return ""
 
@@ -63,6 +63,7 @@ func interact() -> void:
 
 	if DispatchManager.call_status == "on_scene":
 		print("Handled call: " + call_name)
-		RadioManager.send_radio_message("Dispatch, M24 clear from " + location_name + ".")
+		RadioManager.send_player_message("Dispatch, show Unit 24 10 8.")
+		RadioManager.send_dispatch_ack("10 4, Unit 24 clear.")
 		DispatchManager.clear_active_call(false)
 		return
