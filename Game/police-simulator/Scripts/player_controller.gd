@@ -16,11 +16,16 @@ extends CharacterBody3D
 @onready var duty_status_label: Label = $PlayerUI/DutyStatusLabel
 @onready var dispatch_call_label: Label = $PlayerUI/DispatchCallLabel
 @onready var radio_message_label: Label = $PlayerUI/RadioMessageLabel
+@onready var player_ui: CanvasLayer = $PlayerUI
 
 var camera_pitch: float = 0.0
 var is_mdt_visible: bool = false
 var radio_message_id: int = 0
 var active_call_area: Node = null
+
+var radio_wheel_container: Control
+var is_radio_wheel_visible: bool = false
+var radio_wheel_options: Array[Dictionary] = []
 
 func _ready() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
@@ -28,6 +33,8 @@ func _ready() -> void:
 	interaction_prompt.visible = false
 	dispatch_call_label.visible = false
 	radio_message_label.visible = false
+
+	create_radio_wheel_ui()
 
 	GameState.duty_status_changed.connect(_on_duty_status_changed)
 	update_duty_status_label(GameState.is_on_duty)
@@ -46,17 +53,25 @@ func _unhandled_input(event: InputEvent) -> void:
 		camera_pivot.rotation.x = camera_pitch
 
 	if event.is_action_pressed("ui_cancel"):
-		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+		if is_radio_wheel_visible:
+			hide_radio_wheel()
+		else:
+			Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 			Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
+	if event.is_action_pressed("toggle_radio_menu"):
+		toggle_radio_wheel()
+
+	if is_radio_wheel_visible and event is InputEventKey:
+		if event.pressed and not event.echo:
+			handle_radio_wheel_number_input(event.keycode)
+			return
+
 	if event.is_action_pressed("interact"):
 		handle_interact_input()
-
-	if event.is_action_pressed("accept_call"):
-		DispatchManager.accept_active_call()
 
 	if event.is_action_pressed("toggle_mdt"):
 		toggle_mdt()
@@ -106,29 +121,187 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
-func handle_interact_input() -> void:
-	if try_interact_with_raycast():
+func create_radio_wheel_ui() -> void:
+	radio_wheel_container = Control.new()
+	radio_wheel_container.name = "RadioWheel"
+	radio_wheel_container.visible = false
+	radio_wheel_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	player_ui.add_child(radio_wheel_container)
+	radio_wheel_container.set_anchors_preset(Control.PRESET_FULL_RECT)
+
+func toggle_radio_wheel() -> void:
+	if is_radio_wheel_visible:
+		hide_radio_wheel()
+	else:
+		show_radio_wheel()
+
+func show_radio_wheel() -> void:
+	is_radio_wheel_visible = true
+	radio_wheel_container.visible = true
+	refresh_radio_wheel()
+
+func hide_radio_wheel() -> void:
+	is_radio_wheel_visible = false
+	radio_wheel_container.visible = false
+
+func refresh_radio_wheel() -> void:
+	for child in radio_wheel_container.get_children():
+		child.queue_free()
+
+	radio_wheel_options = build_radio_wheel_options()
+
+	var screen_size: Vector2 = get_viewport().get_visible_rect().size
+	var center: Vector2 = screen_size * 0.5
+
+	var center_label := Label.new()
+	center_label.text = "USE RADIO\nQ to close"
+	center_label.size = Vector2(220, 70)
+	center_label.position = center - Vector2(110, 35)
+	center_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	center_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	radio_wheel_container.add_child(center_label)
+
+	if radio_wheel_options.is_empty():
+		var empty_label := Label.new()
+		empty_label.text = "No radio status available"
+		empty_label.size = Vector2(300, 50)
+		empty_label.position = center + Vector2(-150, 120)
+		empty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		empty_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		radio_wheel_container.add_child(empty_label)
 		return
 
-	if active_call_area != null:
-		if active_call_area.has_method("get_prompt_text") and active_call_area.has_method("interact"):
-			var area_prompt: String = active_call_area.get_prompt_text()
+	var radius: float = 190.0
+	var start_angle: float = -PI / 2.0
+	var angle_step: float = TAU / float(radio_wheel_options.size())
 
-			if area_prompt != "":
-				active_call_area.interact()
-				return
+	for i in range(radio_wheel_options.size()):
+		var option: Dictionary = radio_wheel_options[i]
+		var angle: float = start_angle + angle_step * float(i)
+		var option_position: Vector2 = center + Vector2(cos(angle), sin(angle)) * radius
+
+		var option_label := Label.new()
+		option_label.text = str(i + 1) + "  " + str(option["title"]) + "\n" + str(option["subtitle"])
+		option_label.size = Vector2(260, 70)
+		option_label.position = option_position - Vector2(130, 35)
+		option_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		option_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		radio_wheel_container.add_child(option_label)
+
+func build_radio_wheel_options() -> Array[Dictionary]:
+	var options: Array[Dictionary] = []
+
+	if not GameState.is_on_duty:
+		options.append({
+			"title": "10-41",
+			"subtitle": "In Service",
+			"action": "go_in_service"
+		})
+		return options
+
+	if DispatchManager.has_active_call:
+		if DispatchManager.call_status == "pending":
+			options.append({
+				"title": "10-76",
+				"subtitle": "En Route",
+				"action": "accept_call"
+			})
+		elif DispatchManager.call_status == "accepted":
+			if can_report_on_scene():
+				options.append({
+					"title": "10-97",
+					"subtitle": "On Scene",
+					"action": "report_on_scene"
+				})
+		elif DispatchManager.call_status == "on_scene":
+			if can_clear_call():
+				options.append({
+					"title": "10-8",
+					"subtitle": "Clear / Available",
+					"action": "clear_call"
+				})
+
+		return options
+
+	options.append({
+		"title": "10-42",
+		"subtitle": "Out of Service",
+		"action": "go_out_of_service"
+	})
+
+	return options
+
+func handle_radio_wheel_number_input(keycode: int) -> void:
+	var selected_index: int = -1
+
+	if keycode >= KEY_1 and keycode <= KEY_9:
+		selected_index = keycode - KEY_1
+
+	if selected_index >= 0:
+		select_radio_wheel_option(selected_index)
+
+func select_radio_wheel_option(option_index: int) -> void:
+	if option_index < 0:
+		return
+
+	if option_index >= radio_wheel_options.size():
+		return
+
+	var selected_option: Dictionary = radio_wheel_options[option_index]
+	var action_name: String = str(selected_option["action"])
+
+	hide_radio_wheel()
+
+	if action_name == "go_in_service":
+		GameState.set_duty_status(true)
+	elif action_name == "go_out_of_service":
+		GameState.set_duty_status(false)
+	elif action_name == "accept_call":
+		DispatchManager.accept_active_call()
+	elif action_name == "report_on_scene":
+		DispatchManager.mark_active_call_on_scene()
+	elif action_name == "clear_call":
+		RadioManager.send_player_message("Dispatch, show Unit 24 10 8. Contact made, no further action.")
+		RadioManager.send_dispatch_ack("10 4, Unit 24 clear.")
+		DispatchManager.clear_active_call(false)
+
+func can_report_on_scene() -> bool:
+	if active_call_area == null:
+		return false
+
+	var location_value: Variant = active_call_area.get("location_name")
+
+	if location_value == null:
+		return false
+
+	if not DispatchManager.does_active_call_match_location(str(location_value)):
+		return false
+
+	return DispatchManager.call_status == "accepted"
+
+func can_clear_call() -> bool:
+	if active_call_area == null:
+		return false
+
+	var location_value: Variant = active_call_area.get("location_name")
+
+	if location_value == null:
+		return false
+
+	if not DispatchManager.does_active_call_match_location(str(location_value)):
+		return false
+
+	if DispatchManager.call_status != "on_scene":
+		return false
+
+	return DispatchManager.call_objective_complete
+
+func handle_interact_input() -> void:
+	try_interact_with_raycast()
 
 func update_context_prompt() -> void:
 	if show_raycast_prompt():
 		return
-
-	if active_call_area != null and active_call_area.has_method("get_prompt_text"):
-		var area_prompt: String = active_call_area.get_prompt_text()
-
-		if area_prompt != "":
-			interaction_prompt.text = area_prompt
-			interaction_prompt.visible = true
-			return
 
 	interaction_prompt.visible = false
 
@@ -193,6 +366,9 @@ func toggle_mdt() -> void:
 func _on_duty_status_changed(is_on_duty: bool) -> void:
 	update_duty_status_label(is_on_duty)
 
+	if is_radio_wheel_visible:
+		refresh_radio_wheel()
+
 func update_duty_status_label(is_on_duty: bool) -> void:
 	if is_on_duty:
 		duty_status_label.text = "ON DUTY"
@@ -201,6 +377,9 @@ func update_duty_status_label(is_on_duty: bool) -> void:
 
 func _on_active_call_changed(call_text: String, has_call: bool) -> void:
 	update_dispatch_call_label(call_text, has_call)
+
+	if is_radio_wheel_visible:
+		refresh_radio_wheel()
 
 func update_dispatch_call_label(call_text: String, _has_call: bool) -> void:
 	dispatch_call_label.text = call_text
