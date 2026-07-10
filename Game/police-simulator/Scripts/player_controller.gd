@@ -13,15 +13,20 @@ extends CharacterBody3D
 @onready var interaction_ray: RayCast3D = $CameraPivot/PlayerCamera/InteractionRay
 @onready var interaction_prompt: Label = $PlayerUI/InteractionPrompt
 @onready var duty_status_label: Label = $PlayerUI/DutyStatusLabel
+@onready var dispatch_call_label: Label = $PlayerUI/DispatchCallLabel
 
 var camera_pitch: float = 0.0
 
 func _ready() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+
 	interaction_prompt.visible = false
 
 	GameState.duty_status_changed.connect(_on_duty_status_changed)
 	update_duty_status_label(GameState.is_on_duty)
+
+	DispatchManager.active_call_changed.connect(_on_active_call_changed)
+	update_dispatch_call_label(DispatchManager.active_call_text, DispatchManager.has_active_call)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
@@ -40,7 +45,6 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	if event.is_action_pressed("interact"):
 		try_interact()
-
 
 func _physics_process(delta: float) -> void:
 	update_interaction_prompt()
@@ -116,3 +120,12 @@ func update_duty_status_label(is_on_duty: bool) -> void:
 		duty_status_label.text = "ON DUTY"
 	else:
 		duty_status_label.text = "OFF DUTY"
+
+func _on_active_call_changed(call_text: String, has_call: bool) -> void:
+	update_dispatch_call_label(call_text, has_call)
+
+func update_dispatch_call_label(call_text: String, has_call: bool) -> void:
+	if has_call:
+		dispatch_call_label.text = call_text
+	else:
+		dispatch_call_label.text = "No active call"

@@ -43,3 +43,10 @@ offset_top = 20.0
 offset_right = 320.0
 offset_bottom = 43.0
 text = "OFF DUTY"
+
+[node name="DispatchCallLabel" type="Label" parent="PlayerUI" unique_id=656336601]
+offset_left = 20.0
+offset_top = 60.0
+offset_right = 620.0
+offset_bottom = 140.0
+text = "No active call"
