@@ -11,7 +11,8 @@ var active_call: Dictionary = {}
 var call_templates: Array[Dictionary] = []
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
-var next_call_delay_seconds: float = 8.0
+var first_call_delay_seconds: float = 10.0
+var next_call_delay_seconds: float = 15.0
 var next_call_request_id: int = 0
 
 var last_call_template_index: int = -1
@@ -51,7 +52,7 @@ func setup_call_templates() -> void:
 
 func _on_duty_status_changed(is_on_duty: bool) -> void:
 	if is_on_duty:
-		assign_random_call()
+		queue_next_call(first_call_delay_seconds)
 	else:
 		next_call_request_id += 1
 		clear_active_call(false)
@@ -160,17 +161,17 @@ func clear_active_call(send_radio_message: bool = true) -> void:
 		RadioManager.send_dispatch_ack("10 4, Unit 24 clear.")
 
 	if had_call and GameState.is_on_duty:
-		queue_next_call()
+		queue_next_call(next_call_delay_seconds)
 
 	print("Dispatch cleared active call")
 
-func queue_next_call() -> void:
+func queue_next_call(delay_seconds: float) -> void:
 	next_call_request_id += 1
 	var current_request_id: int = next_call_request_id
 
 	print("Next call queued")
 
-	await get_tree().create_timer(next_call_delay_seconds).timeout
+	await get_tree().create_timer(delay_seconds).timeout
 
 	if current_request_id != next_call_request_id:
 		return
