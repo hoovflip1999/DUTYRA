@@ -52,10 +52,19 @@ func setup_call_templates() -> void:
 
 func _on_duty_status_changed(is_on_duty: bool) -> void:
 	if is_on_duty:
+		RadioManager.send_player_message("Dispatch, show Unit 24 10 41, in service.")
+		RadioManager.send_dispatch_ack("10 4, Unit 24.")
 		queue_next_call(first_call_delay_seconds)
 	else:
 		next_call_request_id += 1
-		clear_active_call(false)
+
+		if has_active_call:
+			clear_active_call(false)
+		else:
+			active_call_changed.emit(get_display_text(), has_active_call)
+
+		RadioManager.send_player_message("Dispatch, show Unit 24 10 42.")
+		RadioManager.send_dispatch_ack("10 4, Unit 24 out of service.")
 
 func assign_random_call() -> void:
 	if call_templates.is_empty():
@@ -232,7 +241,7 @@ func get_status_text() -> String:
 func get_display_text() -> String:
 	if not has_active_call:
 		if GameState.is_on_duty:
-			return "MDT CALL DETAILS\n\nNo active call.\n\nStatus: Available for calls."
+			return "MDT CALL DETAILS\n\nNo active call.\n\nStatus: Available for calls.\n\nRadio Codes:\n10-41 = In Service\n10-42 = Out of Service\n10-76 = En Route\n10-97 = On Scene\n10-8 = Clear / Available"
 
 		return "MDT CALL DETAILS\n\nNo active call."
 
@@ -248,6 +257,8 @@ func get_display_text() -> String:
 		mdt_text += "Notes: " + call_resolution_note + "\n"
 
 	mdt_text += "\nRadio Codes:\n" \
+		+ "10-41 = In Service\n" \
+		+ "10-42 = Out of Service\n" \
 		+ "10-76 = En Route\n" \
 		+ "10-97 = On Scene\n" \
 		+ "10-8 = Clear / Available"
