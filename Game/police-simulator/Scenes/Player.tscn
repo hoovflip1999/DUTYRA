@@ -26,3 +26,13 @@ current = true
 
 [node name="InteractionRay" type="RayCast3D" parent="CameraPivot/PlayerCamera" unique_id=979379544]
 target_position = Vector3(0, 0, -3)
+
+[node name="PlayerUI" type="CanvasLayer" parent="." unique_id=996975244]
+
+[node name="InteractionPrompt" type="Label" parent="PlayerUI" unique_id=1636440078]
+visible = false
+offset_left = 760.0
+offset_top = 520.0
+offset_right = 1160.0
+offset_bottom = 580.0
+text = "Press E to interact"

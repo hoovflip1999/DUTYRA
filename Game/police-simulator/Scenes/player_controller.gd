@@ -11,11 +11,13 @@ extends CharacterBody3D
 
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var interaction_ray: RayCast3D = $CameraPivot/PlayerCamera/InteractionRay
+@onready var interaction_prompt: Label = $PlayerUI/InteractionPrompt
 
 var camera_pitch: float = 0.0
 
 func _ready() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	interaction_prompt.visible = false
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
@@ -36,6 +38,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		try_interact()
 
 func _physics_process(delta: float) -> void:
+	update_interaction_prompt()
+
 	var input_dir := Vector2.ZERO
 
 	if Input.is_action_pressed("move_forward"):
@@ -77,6 +81,15 @@ func _physics_process(delta: float) -> void:
 			velocity.y = 0
 
 	move_and_slide()
+
+func update_interaction_prompt() -> void:
+	interaction_prompt.visible = false
+
+	if interaction_ray.is_colliding():
+		var hit_object := interaction_ray.get_collider()
+
+		if hit_object and hit_object.has_method("interact"):
+			interaction_prompt.visible = true
 
 func try_interact() -> void:
 	if interaction_ray.is_colliding():
