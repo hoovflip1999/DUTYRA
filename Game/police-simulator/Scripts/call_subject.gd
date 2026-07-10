@@ -2,6 +2,7 @@ extends StaticBody3D
 
 @export var prompt_text: String = ""
 @export var subject_name: String = "Suspicious Person"
+@export var location_name: String = "Gas Station"
 
 func _physics_process(_delta: float) -> void:
 	update_prompt()
@@ -12,6 +13,10 @@ func update_prompt() -> void:
 		return
 
 	if not DispatchManager.has_active_call:
+		prompt_text = ""
+		return
+
+	if not DispatchManager.does_active_call_match_location(location_name):
 		prompt_text = ""
 		return
 
@@ -30,6 +35,9 @@ func interact() -> void:
 		return
 
 	if not DispatchManager.has_active_call:
+		return
+
+	if not DispatchManager.does_active_call_match_location(location_name):
 		return
 
 	if DispatchManager.call_status != "on_scene":

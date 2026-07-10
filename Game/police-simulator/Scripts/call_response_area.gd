@@ -1,7 +1,7 @@
 extends Area3D
 
 @export var call_name: String = "Suspicious Person"
-@export var location_name: String = "gas station"
+@export var location_name: String = "Gas Station"
 
 var player_inside: bool = false
 
@@ -33,6 +33,9 @@ func get_prompt_text() -> String:
 	if not DispatchManager.has_active_call:
 		return ""
 
+	if not DispatchManager.does_active_call_match_location(location_name):
+		return ""
+
 	if DispatchManager.call_status == "pending":
 		return "Accept call first"
 
@@ -54,6 +57,9 @@ func interact() -> void:
 
 	if not DispatchManager.has_active_call:
 		print("No active dispatch call")
+		return
+
+	if not DispatchManager.does_active_call_match_location(location_name):
 		return
 
 	if DispatchManager.call_status == "pending":

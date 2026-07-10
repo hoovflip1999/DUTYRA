@@ -110,6 +110,15 @@ func clear_active_call(send_radio_message: bool = true) -> void:
 
 	print("Dispatch cleared active call")
 
+func does_active_call_match_location(location_name: String) -> bool:
+	if not has_active_call:
+		return false
+
+	if not active_call.has("location"):
+		return false
+
+	return str(active_call["location"]).to_lower() == location_name.to_lower()
+
 func get_active_call_summary() -> String:
 	if not has_active_call:
 		return "No active call"
