@@ -8,29 +8,55 @@ var call_objective_complete: bool = false
 var call_resolution_note: String = ""
 
 var active_call: Dictionary = {}
+var call_templates: Array[Dictionary] = []
+var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
 func _ready() -> void:
+	rng.randomize()
+	setup_call_templates()
 	GameState.duty_status_changed.connect(_on_duty_status_changed)
+
+func setup_call_templates() -> void:
+	call_templates = [
+		{
+			"title": "Suspicious Person",
+			"priority": "P3",
+			"location": "Gas Station",
+			"response": "Code 2",
+			"response_description": "Routine response",
+			"dispatch_radio": "Unit 24, this is dispatch. Respond Code 2, suspicious person, gas station.",
+			"objective_pending": "Accept the call",
+			"objective_accepted": "Go to the gas station",
+			"objective_on_scene": "Contact the subject",
+			"objective_complete": "Clear call when ready"
+		},
+		{
+			"title": "Noise Complaint",
+			"priority": "P3",
+			"location": "Apartment",
+			"response": "Code 2",
+			"response_description": "Routine response",
+			"dispatch_radio": "Unit 24, this is dispatch. Respond Code 2, noise complaint, apartment building.",
+			"objective_pending": "Accept the call",
+			"objective_accepted": "Go to the apartment building",
+			"objective_on_scene": "Contact the involved person",
+			"objective_complete": "Clear call when ready"
+		}
+	]
 
 func _on_duty_status_changed(is_on_duty: bool) -> void:
 	if is_on_duty:
-		assign_test_call()
+		assign_random_call()
 	else:
 		clear_active_call()
 
-func assign_test_call() -> void:
-	active_call = {
-		"title": "Suspicious Person",
-		"priority": "P3",
-		"location": "Gas Station",
-		"response": "Code 2",
-		"response_description": "Routine response",
-		"dispatch_radio": "Unit 24, this is dispatch. Respond Code 2, suspicious person, gas station.",
-		"objective_pending": "Accept the call",
-		"objective_accepted": "Go to the gas station",
-		"objective_on_scene": "Contact the subject",
-		"objective_complete": "Clear call when ready"
-	}
+func assign_random_call() -> void:
+	if call_templates.is_empty():
+		print("No call templates available")
+		return
+
+	var call_index: int = rng.randi_range(0, call_templates.size() - 1)
+	active_call = call_templates[call_index].duplicate(true)
 
 	has_active_call = true
 	call_status = "pending"

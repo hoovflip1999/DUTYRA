@@ -224,6 +224,13 @@ size = Vector3(8, 3, 8)
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_6bp64"]
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_6xgi7"]
+size = Vector3(8, 3, 8)
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_7oaoy"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_qjvm4"]
+
 [node name="Main" type="Node3D" unique_id=1396415147]
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1181193970]
@@ -473,6 +480,28 @@ shape = SubResource("CapsuleShape3D_7oaoy")
 [node name="SuspiciousPersonMesh" type="MeshInstance3D" parent="StreetProps/SuspiciousPersonSubject" unique_id=483176977]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 mesh = SubResource("CapsuleMesh_6bp64")
+
+[node name="ApartmentCallArea" type="Area3D" parent="StreetProps" unique_id=1716096362]
+script = ExtResource("4_kry3j")
+call_name = "Noise Complaint"
+location_name = "Apartment"
+
+[node name="ApartmentCallAreaCollision" type="CollisionShape3D" parent="StreetProps/ApartmentCallArea" unique_id=2072132183]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+shape = SubResource("BoxShape3D_6xgi7")
+
+[node name="ApartmentNoiseSubject" type="StaticBody3D" parent="StreetProps" unique_id=1202377229]
+script = ExtResource("5_21xkr")
+subject_name = "Involved Person"
+location_name = "Apartment"
+
+[node name="ApartmentNoiseSubjectMesh" type="MeshInstance3D" parent="StreetProps/ApartmentNoiseSubject" unique_id=597952101]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+mesh = SubResource("CapsuleMesh_7oaoy")
+
+[node name="ApartmentNoiseSubjectCollision" type="CollisionShape3D" parent="StreetProps/ApartmentNoiseSubject" unique_id=519833920]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CapsuleShape3D_qjvm4")
 
 [node name="PlayerSetup" type="Node3D" parent="." unique_id=268091430]
 
