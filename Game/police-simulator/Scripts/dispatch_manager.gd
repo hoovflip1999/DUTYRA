@@ -19,7 +19,9 @@ func assign_test_call() -> void:
 	has_active_call = true
 	active_call_text = "P3 - Suspicious Person near Gas Station"
 	call_status = "pending"
+
 	active_call_changed.emit(get_display_text(), has_active_call)
+	RadioManager.send_radio_message("Unit assigned. " + active_call_text)
 	print("Dispatch assigned call: " + active_call_text)
 
 func accept_active_call() -> void:
@@ -32,14 +34,23 @@ func accept_active_call() -> void:
 		return
 
 	call_status = "accepted"
+
 	active_call_changed.emit(get_display_text(), has_active_call)
+	RadioManager.send_radio_message("Unit en route. " + active_call_text)
 	print("Call accepted: " + active_call_text)
 
 func clear_active_call() -> void:
+	var had_call := has_active_call
+
 	has_active_call = false
 	active_call_text = ""
 	call_status = "none"
+
 	active_call_changed.emit(get_display_text(), has_active_call)
+
+	if had_call:
+		RadioManager.send_radio_message("Unit clear. No active call.")
+
 	print("Dispatch cleared active call")
 
 func get_display_text() -> String:

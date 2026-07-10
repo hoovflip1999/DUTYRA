@@ -8,27 +8,33 @@ extends CharacterBody3D
 @export var mouse_sensitivity: float = 0.003
 @export var standing_camera_height: float = 1.6
 @export var crouching_camera_height: float = 1.0
+@export var radio_message_seconds: float = 4.0
 
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var interaction_ray: RayCast3D = $CameraPivot/PlayerCamera/InteractionRay
 @onready var interaction_prompt: Label = $PlayerUI/InteractionPrompt
 @onready var duty_status_label: Label = $PlayerUI/DutyStatusLabel
 @onready var dispatch_call_label: Label = $PlayerUI/DispatchCallLabel
+@onready var radio_message_label: Label = $PlayerUI/RadioMessageLabel
 
 var camera_pitch: float = 0.0
 var is_mdt_visible: bool = false
+var radio_message_id: int = 0
 
 func _ready() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
 	interaction_prompt.visible = false
 	dispatch_call_label.visible = false
+	radio_message_label.visible = false
 
 	GameState.duty_status_changed.connect(_on_duty_status_changed)
 	update_duty_status_label(GameState.is_on_duty)
 
 	DispatchManager.active_call_changed.connect(_on_active_call_changed)
 	update_dispatch_call_label(DispatchManager.get_display_text(), DispatchManager.has_active_call)
+
+	RadioManager.radio_message_sent.connect(_on_radio_message_sent)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
@@ -141,3 +147,18 @@ func update_dispatch_call_label(call_text: String, has_call: bool) -> void:
 		dispatch_call_label.text = "MDT: " + call_text
 	else:
 		dispatch_call_label.text = "MDT: No active call"
+
+func _on_radio_message_sent(message_text: String) -> void:
+	show_radio_message(message_text)
+
+func show_radio_message(message_text: String) -> void:
+	radio_message_id += 1
+	var current_message_id := radio_message_id
+
+	radio_message_label.text = "RADIO: " + message_text
+	radio_message_label.visible = true
+
+	await get_tree().create_timer(radio_message_seconds).timeout
+
+	if current_message_id == radio_message_id:
+		radio_message_label.visible = false
