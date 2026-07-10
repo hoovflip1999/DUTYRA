@@ -27,6 +27,7 @@ var hud_status_dot: Panel
 var radio_wheel_container: Control
 var is_radio_wheel_visible: bool = false
 var radio_wheel_options: Array[Dictionary] = []
+var highlighted_radio_option_index: int = -1
 
 func _ready() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
@@ -47,7 +48,7 @@ func _ready() -> void:
 	RadioManager.radio_message_sent.connect(_on_radio_message_sent)
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventMouseMotion:
+	if event is InputEventMouseMotion and not is_radio_wheel_visible:
 		rotate_y(-event.relative.x * mouse_sensitivity)
 
 		camera_pitch -= event.relative.y * mouse_sensitivity
@@ -62,20 +63,38 @@ func _unhandled_input(event: InputEvent) -> void:
 
 		return
 
-	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-			Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
-
 	if event.is_action_pressed("toggle_radio_menu"):
 		toggle_radio_wheel()
 		return
 
 	if is_radio_wheel_visible:
+		if event is InputEventMouseMotion:
+			update_radio_wheel_mouse_selection()
+			return
+
+		if event is InputEventMouseButton:
+			if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+				update_radio_wheel_mouse_selection()
+				select_highlighted_radio_option()
+
+			return
+
+		if event.is_action_pressed("interact"):
+			update_radio_wheel_mouse_selection()
+			select_highlighted_radio_option()
+			return
+
 		if event is InputEventKey:
 			if event.pressed and not event.echo:
 				handle_radio_wheel_number_input(event.keycode)
 
+			return
+
 		return
+
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
 	if event.is_action_pressed("interact"):
 		handle_interact_input()
@@ -203,18 +222,30 @@ func toggle_radio_wheel() -> void:
 
 func show_radio_wheel() -> void:
 	is_radio_wheel_visible = true
+	highlighted_radio_option_index = -1
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	radio_wheel_container.visible = true
+	center_mouse_on_radio_wheel()
 	refresh_radio_wheel()
 
 func hide_radio_wheel() -> void:
 	is_radio_wheel_visible = false
+	highlighted_radio_option_index = -1
 	radio_wheel_container.visible = false
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+
+func center_mouse_on_radio_wheel() -> void:
+	var screen_size: Vector2 = get_viewport().get_visible_rect().size
+	get_viewport().warp_mouse(screen_size * 0.5)
 
 func refresh_radio_wheel() -> void:
 	for child in radio_wheel_container.get_children():
 		child.queue_free()
 
 	radio_wheel_options = build_radio_wheel_options()
+
+	if highlighted_radio_option_index >= radio_wheel_options.size():
+		highlighted_radio_option_index = -1
 
 	var screen_size: Vector2 = get_viewport().get_visible_rect().size
 	var center: Vector2 = screen_size * 0.5
@@ -250,9 +281,9 @@ func refresh_radio_wheel() -> void:
 	radio_wheel_container.add_child(center_panel)
 
 	var center_label := Label.new()
-	center_label.text = "RADIO\n" + get_radio_status_text() + "\nQ to close"
-	center_label.size = Vector2(260, 100)
-	center_label.position = center - Vector2(130, 50)
+	center_label.text = "RADIO\n" + get_radio_status_text() + "\nMove mouse\nE / Click to select\nQ / Esc to close"
+	center_label.size = Vector2(260, 140)
+	center_label.position = center - Vector2(130, 70)
 	center_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	center_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	radio_wheel_container.add_child(center_label)
@@ -260,7 +291,7 @@ func refresh_radio_wheel() -> void:
 	var status_dot := Panel.new()
 	status_dot.name = "RadioStatusDot"
 	status_dot.size = Vector2(20, 20)
-	status_dot.position = center + Vector2(-105, -6)
+	status_dot.position = center + Vector2(-105, -38)
 	status_dot.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	var dot_style := StyleBoxFlat.new()
@@ -291,11 +322,48 @@ func refresh_radio_wheel() -> void:
 		var option: Dictionary = radio_wheel_options[i]
 		var angle: float = start_angle + angle_step * float(i)
 		var option_position: Vector2 = center + Vector2(cos(angle), sin(angle)) * radius
+		var is_highlighted: bool = i == highlighted_radio_option_index
+
+		var option_panel := Panel.new()
+		option_panel.size = Vector2(300, 90)
+		option_panel.position = option_position - Vector2(150, 45)
+		option_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+		var option_style := StyleBoxFlat.new()
+
+		if is_highlighted:
+			option_style.bg_color = Color(0.08, 0.08, 0.08, 0.92)
+			option_style.border_color = get_radio_status_color()
+			option_style.border_width_top = 4
+			option_style.border_width_bottom = 4
+			option_style.border_width_left = 4
+			option_style.border_width_right = 4
+		else:
+			option_style.bg_color = Color(0.02, 0.02, 0.02, 0.62)
+			option_style.border_color = Color(0.4, 0.4, 0.4, 0.45)
+			option_style.border_width_top = 2
+			option_style.border_width_bottom = 2
+			option_style.border_width_left = 2
+			option_style.border_width_right = 2
+
+		option_style.corner_radius_top_left = 18
+		option_style.corner_radius_top_right = 18
+		option_style.corner_radius_bottom_left = 18
+		option_style.corner_radius_bottom_right = 18
+
+		option_panel.add_theme_stylebox_override("panel", option_style)
+		radio_wheel_container.add_child(option_panel)
 
 		var option_label := Label.new()
-		option_label.text = str(i + 1) + "  " + str(option["title"]) + "\n" + str(option["subtitle"])
-		option_label.size = Vector2(280, 80)
-		option_label.position = option_position - Vector2(140, 40)
+
+		if is_highlighted:
+			option_label.text = "> " + str(option["title"]) + " <\n" + str(option["subtitle"])
+			option_label.add_theme_color_override("font_color", get_radio_status_color())
+		else:
+			option_label.text = str(i + 1) + "  " + str(option["title"]) + "\n" + str(option["subtitle"])
+
+		option_label.size = Vector2(300, 90)
+		option_label.position = option_position - Vector2(150, 45)
 		option_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		option_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		radio_wheel_container.add_child(option_label)
@@ -346,6 +414,51 @@ void fragment() {
 	material.shader = shader
 
 	return material
+
+func update_radio_wheel_mouse_selection() -> void:
+	var new_highlighted_index: int = get_radio_option_index_from_mouse()
+
+	if new_highlighted_index == highlighted_radio_option_index:
+		return
+
+	highlighted_radio_option_index = new_highlighted_index
+	refresh_radio_wheel()
+
+func get_radio_option_index_from_mouse() -> int:
+	if radio_wheel_options.is_empty():
+		return -1
+
+	var screen_size: Vector2 = get_viewport().get_visible_rect().size
+	var center: Vector2 = screen_size * 0.5
+	var mouse_position: Vector2 = get_viewport().get_mouse_position()
+	var mouse_offset: Vector2 = mouse_position - center
+
+	if mouse_offset.length() < 80.0:
+		return -1
+
+	var radius: float = 230.0
+	var start_angle: float = -PI / 2.0
+	var angle_step: float = TAU / float(radio_wheel_options.size())
+
+	var best_index: int = -1
+	var best_distance: float = 999999.0
+
+	for i in range(radio_wheel_options.size()):
+		var angle: float = start_angle + angle_step * float(i)
+		var option_position: Vector2 = center + Vector2(cos(angle), sin(angle)) * radius
+		var distance_to_option: float = mouse_position.distance_to(option_position)
+
+		if distance_to_option < best_distance:
+			best_distance = distance_to_option
+			best_index = i
+
+	return best_index
+
+func select_highlighted_radio_option() -> void:
+	if highlighted_radio_option_index < 0:
+		return
+
+	select_radio_wheel_option(highlighted_radio_option_index)
 
 func build_radio_wheel_options() -> Array[Dictionary]:
 	var options: Array[Dictionary] = []
