@@ -3,10 +3,11 @@ extends Node
 signal active_call_changed(call_text: String, has_call: bool)
 
 var has_active_call: bool = false
-var active_call_text: String = ""
 var call_status: String = "none"
 var call_objective_complete: bool = false
 var call_resolution_note: String = ""
+
+var active_call: Dictionary = {}
 
 func _ready() -> void:
 	GameState.duty_status_changed.connect(_on_duty_status_changed)
@@ -18,17 +19,29 @@ func _on_duty_status_changed(is_on_duty: bool) -> void:
 		clear_active_call()
 
 func assign_test_call() -> void:
+	active_call = {
+		"title": "Suspicious Person",
+		"priority": "P3",
+		"location": "Gas Station",
+		"response": "Code 2",
+		"response_description": "Routine response",
+		"dispatch_radio": "Unit 24, this is dispatch. Respond Code 2, suspicious person, gas station.",
+		"objective_pending": "Accept the call",
+		"objective_accepted": "Go to the gas station",
+		"objective_on_scene": "Contact the subject",
+		"objective_complete": "Clear call when ready"
+	}
+
 	has_active_call = true
-	active_call_text = "P3 - Suspicious Person near Gas Station"
 	call_status = "pending"
 	call_objective_complete = false
 	call_resolution_note = ""
 
 	active_call_changed.emit(get_display_text(), has_active_call)
 
-	RadioManager.send_dispatch_message("Unit 24, this is dispatch. Respond Code 2, suspicious person, gas station.")
+	RadioManager.send_dispatch_message(str(active_call["dispatch_radio"]))
 
-	print("Dispatch assigned call: " + active_call_text)
+	print("Dispatch assigned call: " + get_active_call_summary())
 
 func accept_active_call() -> void:
 	if not has_active_call:
@@ -46,7 +59,7 @@ func accept_active_call() -> void:
 	RadioManager.send_player_message("Dispatch, show Unit 24 10 76.")
 	RadioManager.send_dispatch_ack("10 4, Unit 24.")
 
-	print("Call accepted: " + active_call_text)
+	print("Call accepted: " + get_active_call_summary())
 
 func mark_active_call_on_scene() -> void:
 	if not has_active_call:
@@ -64,7 +77,7 @@ func mark_active_call_on_scene() -> void:
 	RadioManager.send_player_message("Dispatch, Unit 24 10 97.")
 	RadioManager.send_dispatch_ack("10 4, Unit 24.")
 
-	print("Unit marked on scene: " + active_call_text)
+	print("Unit marked on scene: " + get_active_call_summary())
 
 func complete_active_call_objective(resolution_note: String) -> void:
 	if not has_active_call:
@@ -84,10 +97,10 @@ func clear_active_call(send_radio_message: bool = true) -> void:
 	var had_call: bool = has_active_call
 
 	has_active_call = false
-	active_call_text = ""
 	call_status = "none"
 	call_objective_complete = false
 	call_resolution_note = ""
+	active_call = {}
 
 	active_call_changed.emit(get_display_text(), has_active_call)
 
@@ -97,34 +110,53 @@ func clear_active_call(send_radio_message: bool = true) -> void:
 
 	print("Dispatch cleared active call")
 
+func get_active_call_summary() -> String:
+	if not has_active_call:
+		return "No active call"
+
+	return str(active_call["priority"]) + " - " + str(active_call["title"]) + " near " + str(active_call["location"])
+
+func get_current_objective_text() -> String:
+	if not has_active_call:
+		return ""
+
+	if call_status == "pending":
+		return str(active_call["objective_pending"])
+
+	if call_status == "accepted":
+		return str(active_call["objective_accepted"])
+
+	if call_status == "on_scene":
+		if call_objective_complete:
+			return str(active_call["objective_complete"])
+
+		return str(active_call["objective_on_scene"])
+
+	return ""
+
+func get_status_text() -> String:
+	if call_status == "pending":
+		return "Pending"
+
+	if call_status == "accepted":
+		return "En Route"
+
+	if call_status == "on_scene":
+		return "On Scene"
+
+	return "Unknown"
+
 func get_display_text() -> String:
 	if not has_active_call:
 		return "MDT CALL DETAILS\n\nNo active call."
 
-	var status_text: String = "Unknown"
-	var objective_text: String = "Respond to call location"
-
-	if call_status == "pending":
-		status_text = "Pending"
-		objective_text = "Accept the call"
-	elif call_status == "accepted":
-		status_text = "En Route"
-		objective_text = "Go to the gas station"
-	elif call_status == "on_scene":
-		status_text = "On Scene"
-
-		if call_objective_complete:
-			objective_text = "Clear call when ready"
-		else:
-			objective_text = "Contact the subject"
-
 	var mdt_text: String = "MDT CALL DETAILS\n\n" \
-		+ "Status: " + status_text + "\n" \
-		+ "Call: Suspicious Person\n" \
-		+ "Priority: P3\n" \
-		+ "Location: Gas Station\n" \
-		+ "Response: Code 2 - Routine response\n" \
-		+ "Objective: " + objective_text + "\n"
+		+ "Status: " + get_status_text() + "\n" \
+		+ "Call: " + str(active_call["title"]) + "\n" \
+		+ "Priority: " + str(active_call["priority"]) + "\n" \
+		+ "Location: " + str(active_call["location"]) + "\n" \
+		+ "Response: " + str(active_call["response"]) + " - " + str(active_call["response_description"]) + "\n" \
+		+ "Objective: " + get_current_objective_text() + "\n"
 
 	if call_resolution_note != "":
 		mdt_text += "Notes: " + call_resolution_note + "\n"
