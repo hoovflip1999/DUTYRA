@@ -12,12 +12,16 @@ extends CharacterBody3D
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var interaction_ray: RayCast3D = $CameraPivot/PlayerCamera/InteractionRay
 @onready var interaction_prompt: Label = $PlayerUI/InteractionPrompt
+@onready var duty_status_label: Label = $PlayerUI/DutyStatusLabel
 
 var camera_pitch: float = 0.0
 
 func _ready() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	interaction_prompt.visible = false
+
+	GameState.duty_status_changed.connect(_on_duty_status_changed)
+	update_duty_status_label(GameState.is_on_duty)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
@@ -36,6 +40,9 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	if event.is_action_pressed("interact"):
 		try_interact()
+
+	if event.is_action_pressed("toggle_duty"):
+		GameState.toggle_duty()
 
 func _physics_process(delta: float) -> void:
 	update_interaction_prompt()
@@ -102,3 +109,12 @@ func try_interact() -> void:
 
 		if hit_object and hit_object.has_method("interact"):
 			hit_object.interact()
+
+func _on_duty_status_changed(is_on_duty: bool) -> void:
+	update_duty_status_label(is_on_duty)
+
+func update_duty_status_label(is_on_duty: bool) -> void:
+	if is_on_duty:
+		duty_status_label.text = "ON DUTY"
+	else:
+		duty_status_label.text = "OFF DUTY"

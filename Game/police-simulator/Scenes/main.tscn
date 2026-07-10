@@ -113,6 +113,42 @@ size = Vector3(5, 3, 5)
 [sub_resource type="BoxShape3D" id="BoxShape3D_0v5gy"]
 size = Vector3(5, 3, 5)
 
+[sub_resource type="BoxMesh" id="BoxMesh_7l38u"]
+size = Vector3(8, 0.1, 6)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3icyn"]
+albedo_color = Color(0.31431612, 0.31431612, 0.3143161, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_3icyn"]
+size = Vector3(8, 4, 0.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fufau"]
+albedo_color = Color(0.039215688, 0.05882353, 0.8980392, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_fufau"]
+size = Vector3(0.2, 4, 6)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vrajm"]
+albedo_color = Color(0.039215688, 0.05882353, 0.8980392, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_vrajm"]
+size = Vector3(0.2, 4, 2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_r1360"]
+albedo_color = Color(0.039215688, 0.05882353, 0.8980392, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_r1360"]
+size = Vector3(0.2, 4, 2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qdc3y"]
+albedo_color = Color(0.039215688, 0.05882353, 0.8980392, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_qdc3y"]
+size = Vector3(8, 4, 0.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_k4fsm"]
+albedo_color = Color(0.039215688, 0.05882353, 0.8980392, 1)
+
 [sub_resource type="BoxMesh" id="BoxMesh_7oaoy"]
 size = Vector3(1, 3, 1)
 
@@ -240,6 +276,7 @@ surface_material_override/0 = SubResource("StandardMaterial3D_4lhpd")
 
 [node name="PoliceStationBlock" type="MeshInstance3D" parent="BuildingBlocks" unique_id=352785115]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 2, 8)
+visible = false
 mesh = SubResource("BoxMesh_4lhpd")
 surface_material_override/0 = SubResource("StandardMaterial3D_sk0y0")
 
@@ -275,6 +312,7 @@ surface_material_override/0 = SubResource("StandardMaterial3D_gn688")
 
 [node name="PoliceStationCollisionBody" type="StaticBody3D" parent="BuildingBlocks" unique_id=539224707]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 2, 8)
+visible = false
 
 [node name="PoliceStationCollision" type="CollisionShape3D" parent="BuildingBlocks/PoliceStationCollisionBody" unique_id=1917635837]
 shape = SubResource("BoxShape3D_qjvm4")
@@ -308,6 +346,36 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 1.5, -2)
 
 [node name="HouseBCollision" type="CollisionShape3D" parent="BuildingBlocks/HouseBCollisionBody" unique_id=2127895287]
 shape = SubResource("BoxShape3D_0v5gy")
+
+[node name="PoliceStationFloor" type="MeshInstance3D" parent="BuildingBlocks" unique_id=1825665991]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 0.35, 8)
+mesh = SubResource("BoxMesh_7l38u")
+surface_material_override/0 = SubResource("StandardMaterial3D_3icyn")
+
+[node name="PoliceStationBackWall" type="MeshInstance3D" parent="BuildingBlocks" unique_id=761951936]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 2, 11)
+mesh = SubResource("BoxMesh_3icyn")
+surface_material_override/0 = SubResource("StandardMaterial3D_fufau")
+
+[node name="PoliceStationLeftWall" type="MeshInstance3D" parent="BuildingBlocks" unique_id=2139730382]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18, 2, 8)
+mesh = SubResource("BoxMesh_fufau")
+surface_material_override/0 = SubResource("StandardMaterial3D_vrajm")
+
+[node name="PoliceStationRightFrontWallA" type="MeshInstance3D" parent="BuildingBlocks" unique_id=963493824]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 2, 10)
+mesh = SubResource("BoxMesh_vrajm")
+surface_material_override/0 = SubResource("StandardMaterial3D_r1360")
+
+[node name="PoliceStationRightFrontWallB" type="MeshInstance3D" parent="BuildingBlocks" unique_id=2025889785]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 2, 6)
+mesh = SubResource("BoxMesh_r1360")
+surface_material_override/0 = SubResource("StandardMaterial3D_qdc3y")
+
+[node name="PoliceStationRearSideWall" type="MeshInstance3D" parent="BuildingBlocks" unique_id=314977517]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 2, 5)
+mesh = SubResource("BoxMesh_qdc3y")
+surface_material_override/0 = SubResource("StandardMaterial3D_k4fsm")
 
 [node name="StreetProps" type="Node3D" parent="." unique_id=985062525]
 
