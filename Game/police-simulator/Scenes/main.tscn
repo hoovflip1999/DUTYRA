@@ -311,8 +311,8 @@ shape = SubResource("BoxShape3D_0v5gy")
 
 [node name="StreetProps" type="Node3D" parent="." unique_id=985062525]
 
-[node name="Door" parent="StreetProps" unique_id=1600997989 instance=ExtResource("1_8gbba")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 2)
+[node name="PoliceStationDoor" parent="StreetProps" unique_id=1600997989 instance=ExtResource("1_8gbba")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -10, 0, 8)
 
 [node name="TestMarker" type="MeshInstance3D" parent="StreetProps" unique_id=796748634]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -8)
