@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://vpakqknk02vk" path="res://Scripts/interactable_test.gd" id="1_bo1nx"]
 [ext_resource type="PackedScene" uid="uid://dw7sn20cefjue" path="res://Scenes/player.tscn" id="1_jjgbg"]
 [ext_resource type="Script" uid="uid://dnkmaaqkn1me8" path="res://Scripts/duty_terminal_controller.gd" id="3_jjvhh"]
+[ext_resource type="Script" uid="uid://bk78vmdatus2e" path="res://Scripts/call_response_marker.gd" id="4_kry3j"]
 
 [sub_resource type="Environment" id="Environment_7u77a"]
 
@@ -214,6 +215,10 @@ size = Vector3(1, 2, 1)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_4lhpd"]
 size = Vector3(1, 2, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ufbad"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ql10d"]
 
 [node name="Main" type="Node3D" unique_id=1396415147]
 
@@ -446,6 +451,17 @@ mesh = SubResource("BoxMesh_au263")
 
 [node name="DutyTerminalCollision" type="CollisionShape3D" parent="StreetProps/DutyTerminal" unique_id=1297041034]
 shape = SubResource("BoxShape3D_4lhpd")
+
+[node name="GasStationCallMarker" type="StaticBody3D" parent="StreetProps" unique_id=633858311]
+script = ExtResource("4_kry3j")
+
+[node name="GasStationCallMarkerMesh" type="MeshInstance3D" parent="StreetProps/GasStationCallMarker" unique_id=1197958175]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+mesh = SubResource("BoxMesh_ufbad")
+
+[node name="GasStationCallMarkerCollision" type="CollisionShape3D" parent="StreetProps/GasStationCallMarker" unique_id=1152887038]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("BoxShape3D_ql10d")
 
 [node name="PlayerSetup" type="Node3D" parent="." unique_id=268091430]
 
