@@ -73,6 +73,7 @@ func _ready() -> void:
 
 	GameState.duty_status_changed.connect(_on_duty_status_changed)
 	GameState.performance_xp_changed.connect(_on_performance_xp_changed)
+	GameState.career_progress_changed.connect(_on_career_progress_changed)
 	update_duty_status_label(GameState.is_on_duty)
 
 	DispatchManager.active_call_changed.connect(_on_active_call_changed)
@@ -1077,6 +1078,9 @@ func clear_active_call_area(call_area: Node) -> void:
 func _on_duty_status_changed(is_on_duty: bool) -> void:
 	update_duty_status_label(is_on_duty)
 
+	if career_mdt_label != null:
+		career_mdt_label.text = GameState.get_career_mdt_text()
+
 	if is_radio_wheel_visible:
 		refresh_radio_wheel()
 
@@ -1088,6 +1092,13 @@ func _on_performance_xp_changed(_current_xp: int, amount_added: int) -> void:
 		career_mdt_label.text = GameState.get_career_mdt_text()
 
 	show_xp_progress_popup(amount_added)
+
+func _on_career_progress_changed() -> void:
+	if career_mdt_label != null:
+		career_mdt_label.text = GameState.get_career_mdt_text()
+
+	if is_mdt_visible:
+		update_mdt_tab_display()
 
 func _on_active_call_changed(call_text: String, has_call: bool) -> void:
 	update_dispatch_call_label(call_text, has_call)
