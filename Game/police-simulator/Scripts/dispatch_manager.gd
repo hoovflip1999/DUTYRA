@@ -11,6 +11,9 @@ var active_call: Dictionary = {}
 var call_templates: Array[Dictionary] = []
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
+var next_call_delay_seconds: float = 8.0
+var next_call_request_id: int = 0
+
 func _ready() -> void:
 	rng.randomize()
 	setup_call_templates()
@@ -48,11 +51,18 @@ func _on_duty_status_changed(is_on_duty: bool) -> void:
 	if is_on_duty:
 		assign_random_call()
 	else:
-		clear_active_call()
+		next_call_request_id += 1
+		clear_active_call(false)
 
 func assign_random_call() -> void:
 	if call_templates.is_empty():
 		print("No call templates available")
+		return
+
+	if not GameState.is_on_duty:
+		return
+
+	if has_active_call:
 		return
 
 	var call_index: int = rng.randi_range(0, call_templates.size() - 1)
@@ -134,7 +144,29 @@ func clear_active_call(send_radio_message: bool = true) -> void:
 		RadioManager.send_player_message("Dispatch, show Unit 24 10 8.")
 		RadioManager.send_dispatch_ack("10 4, Unit 24 clear.")
 
+	if had_call and GameState.is_on_duty:
+		queue_next_call()
+
 	print("Dispatch cleared active call")
+
+func queue_next_call() -> void:
+	next_call_request_id += 1
+	var current_request_id: int = next_call_request_id
+
+	print("Next call queued")
+
+	await get_tree().create_timer(next_call_delay_seconds).timeout
+
+	if current_request_id != next_call_request_id:
+		return
+
+	if not GameState.is_on_duty:
+		return
+
+	if has_active_call:
+		return
+
+	assign_random_call()
 
 func does_active_call_match_location(location_name: String) -> bool:
 	if not has_active_call:
@@ -183,6 +215,9 @@ func get_status_text() -> String:
 
 func get_display_text() -> String:
 	if not has_active_call:
+		if GameState.is_on_duty:
+			return "MDT CALL DETAILS\n\nNo active call.\n\nStatus: Available for calls."
+
 		return "MDT CALL DETAILS\n\nNo active call."
 
 	var mdt_text: String = "MDT CALL DETAILS\n\n" \
