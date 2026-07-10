@@ -154,9 +154,9 @@ func refresh_radio_wheel() -> void:
 	var center: Vector2 = screen_size * 0.5
 
 	var center_label := Label.new()
-	center_label.text = "USE RADIO\nQ to close"
-	center_label.size = Vector2(220, 70)
-	center_label.position = center - Vector2(110, 35)
+	center_label.text = "RADIO\n" + get_radio_status_text() + "\nQ to close"
+	center_label.size = Vector2(280, 90)
+	center_label.position = center - Vector2(140, 45)
 	center_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	center_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	radio_wheel_container.add_child(center_label)
@@ -230,6 +230,22 @@ func build_radio_wheel_options() -> Array[Dictionary]:
 	})
 
 	return options
+
+func get_radio_status_text() -> String:
+	if not GameState.is_on_duty:
+		return "Status: Off Duty"
+
+	if DispatchManager.has_active_call:
+		if DispatchManager.call_status == "pending":
+			return "Status: Pending Call"
+
+		if DispatchManager.call_status == "accepted":
+			return "Status: En Route"
+
+		if DispatchManager.call_status == "on_scene":
+			return "Status: On Scene"
+
+	return "Status: Available"
 
 func handle_radio_wheel_number_input(keycode: int) -> void:
 	var selected_index: int = -1
