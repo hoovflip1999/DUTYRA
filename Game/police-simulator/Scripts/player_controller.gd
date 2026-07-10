@@ -9,6 +9,7 @@ extends CharacterBody3D
 @export var standing_camera_height: float = 1.6
 @export var crouching_camera_height: float = 1.0
 @export var radio_message_seconds: float = 3.2
+@export var standard_call_performance_xp: int = 25
 
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var interaction_ray: RayCast3D = $CameraPivot/PlayerCamera/InteractionRay
@@ -20,17 +21,33 @@ extends CharacterBody3D
 
 var camera_pitch: float = 0.0
 var is_mdt_visible: bool = false
+var mdt_tab_index: int = 0
 var radio_message_id: int = 0
 var subject_dialogue_id: int = 0
 var call_clear_id: int = 0
+var xp_popup_id: int = 0
 var active_call_area: Node = null
 
 var hud_status_dot: Panel
+
 var mdt_panel: Panel
+var mdt_screen_panel: Panel
+var mdt_browser_bar: Panel
+var mdt_title_label: Label
+var mdt_calls_tab_button: Button
+var mdt_career_tab_button: Button
+var mdt_close_hint_label: Label
+var career_mdt_label: Label
+
 var subject_dialogue_panel: Panel
 var subject_dialogue_label: Label
 var call_clear_panel: Panel
 var call_clear_label: Label
+var xp_popup_panel: Panel
+var xp_popup_label: Label
+var xp_progress_background: ColorRect
+var xp_progress_fill: ColorRect
+
 var radio_wheel_container: Control
 var is_radio_wheel_visible: bool = false
 var radio_wheel_options: Array[Dictionary] = []
@@ -51,9 +68,11 @@ func _ready() -> void:
 	create_mdt_ui()
 	create_subject_dialogue_ui()
 	create_call_clear_ui()
+	create_xp_popup_ui()
 	create_radio_wheel_ui()
 
 	GameState.duty_status_changed.connect(_on_duty_status_changed)
+	GameState.performance_xp_changed.connect(_on_performance_xp_changed)
 	update_duty_status_label(GameState.is_on_duty)
 
 	DispatchManager.active_call_changed.connect(_on_active_call_changed)
@@ -62,7 +81,7 @@ func _ready() -> void:
 	RadioManager.radio_message_sent.connect(_on_radio_message_sent)
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventMouseMotion and not is_radio_wheel_visible:
+	if event is InputEventMouseMotion and not is_radio_wheel_visible and not is_mdt_visible:
 		rotate_y(-event.relative.x * mouse_sensitivity)
 
 		camera_pitch -= event.relative.y * mouse_sensitivity
@@ -72,9 +91,18 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		if is_radio_wheel_visible:
 			hide_radio_wheel()
+		elif is_mdt_visible:
+			close_mdt()
 		else:
 			Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
+		return
+
+	if event.is_action_pressed("toggle_mdt"):
+		toggle_mdt()
+		return
+
+	if is_mdt_visible:
 		return
 
 	if event.is_action_pressed("toggle_radio_menu"):
@@ -113,13 +141,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("interact"):
 		handle_interact_input()
 
-	if event.is_action_pressed("toggle_mdt"):
-		toggle_mdt()
-
 func _physics_process(delta: float) -> void:
 	update_context_prompt()
 
-	if is_radio_wheel_visible:
+	if is_radio_wheel_visible or is_mdt_visible:
 		lock_player_movement(delta)
 		return
 
@@ -191,34 +216,176 @@ func create_main_status_hud() -> void:
 
 func create_mdt_ui() -> void:
 	mdt_panel = Panel.new()
-	mdt_panel.name = "MDTPanel"
-	mdt_panel.position = Vector2(20, 70)
-	mdt_panel.size = Vector2(520, 390)
+	mdt_panel.name = "LaptopMDT"
+	mdt_panel.size = Vector2(980, 620)
 	mdt_panel.visible = false
-	mdt_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	mdt_panel.z_index = 5
+	mdt_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	mdt_panel.z_index = 40
 
-	var panel_style := StyleBoxFlat.new()
-	panel_style.bg_color = Color(0.01, 0.015, 0.02, 0.86)
-	panel_style.border_color = Color(0.1, 0.75, 1.0, 0.75)
-	panel_style.border_width_top = 3
-	panel_style.border_width_bottom = 3
-	panel_style.border_width_left = 3
-	panel_style.border_width_right = 3
-	panel_style.corner_radius_top_left = 10
-	panel_style.corner_radius_top_right = 10
-	panel_style.corner_radius_bottom_left = 10
-	panel_style.corner_radius_bottom_right = 10
-	mdt_panel.add_theme_stylebox_override("panel", panel_style)
+	var laptop_style := StyleBoxFlat.new()
+	laptop_style.bg_color = Color(0.025, 0.025, 0.03, 0.97)
+	laptop_style.border_color = Color(0.08, 0.08, 0.09, 1.0)
+	laptop_style.border_width_top = 16
+	laptop_style.border_width_bottom = 28
+	laptop_style.border_width_left = 16
+	laptop_style.border_width_right = 16
+	laptop_style.corner_radius_top_left = 22
+	laptop_style.corner_radius_top_right = 22
+	laptop_style.corner_radius_bottom_left = 22
+	laptop_style.corner_radius_bottom_right = 22
+	mdt_panel.add_theme_stylebox_override("panel", laptop_style)
 
 	player_ui.add_child(mdt_panel)
 
-	dispatch_call_label.position = Vector2(40, 90)
-	dispatch_call_label.size = Vector2(480, 350)
+	mdt_screen_panel = Panel.new()
+	mdt_screen_panel.name = "MDTScreen"
+	mdt_screen_panel.position = Vector2(32, 32)
+	mdt_screen_panel.size = Vector2(916, 530)
+	mdt_screen_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var screen_style := StyleBoxFlat.new()
+	screen_style.bg_color = Color(0.005, 0.012, 0.018, 0.98)
+	screen_style.border_color = Color(0.1, 0.75, 1.0, 0.7)
+	screen_style.border_width_top = 3
+	screen_style.border_width_bottom = 3
+	screen_style.border_width_left = 3
+	screen_style.border_width_right = 3
+	screen_style.corner_radius_top_left = 10
+	screen_style.corner_radius_top_right = 10
+	screen_style.corner_radius_bottom_left = 10
+	screen_style.corner_radius_bottom_right = 10
+	mdt_screen_panel.add_theme_stylebox_override("panel", screen_style)
+
+	mdt_panel.add_child(mdt_screen_panel)
+
+	mdt_browser_bar = Panel.new()
+	mdt_browser_bar.name = "MDTBrowserBar"
+	mdt_browser_bar.position = Vector2(44, 44)
+	mdt_browser_bar.size = Vector2(892, 54)
+	mdt_browser_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var browser_style := StyleBoxFlat.new()
+	browser_style.bg_color = Color(0.02, 0.035, 0.05, 0.95)
+	browser_style.border_color = Color(0.2, 0.45, 0.65, 0.6)
+	browser_style.border_width_bottom = 2
+	browser_style.corner_radius_top_left = 8
+	browser_style.corner_radius_top_right = 8
+	mdt_browser_bar.add_theme_stylebox_override("panel", browser_style)
+
+	mdt_panel.add_child(mdt_browser_bar)
+
+	mdt_title_label = Label.new()
+	mdt_title_label.name = "MDTTitle"
+	mdt_title_label.text = "CEDAR HEIGHTS PD  |  MDT PORTAL"
+	mdt_title_label.position = Vector2(60, 52)
+	mdt_title_label.size = Vector2(420, 38)
+	mdt_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	mdt_title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	mdt_panel.add_child(mdt_title_label)
+
+	mdt_calls_tab_button = Button.new()
+	mdt_calls_tab_button.name = "CallsTab"
+	mdt_calls_tab_button.text = "CALLS"
+	mdt_calls_tab_button.position = Vector2(505, 55)
+	mdt_calls_tab_button.size = Vector2(130, 34)
+	mdt_calls_tab_button.pressed.connect(_on_mdt_calls_tab_pressed)
+	mdt_panel.add_child(mdt_calls_tab_button)
+
+	mdt_career_tab_button = Button.new()
+	mdt_career_tab_button.name = "CareerTab"
+	mdt_career_tab_button.text = "CAREER"
+	mdt_career_tab_button.position = Vector2(645, 55)
+	mdt_career_tab_button.size = Vector2(130, 34)
+	mdt_career_tab_button.pressed.connect(_on_mdt_career_tab_pressed)
+	mdt_panel.add_child(mdt_career_tab_button)
+
+	mdt_close_hint_label = Label.new()
+	mdt_close_hint_label.text = "M / Esc Close"
+	mdt_close_hint_label.position = Vector2(805, 55)
+	mdt_close_hint_label.size = Vector2(120, 34)
+	mdt_close_hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	mdt_close_hint_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	mdt_panel.add_child(mdt_close_hint_label)
+
+	dispatch_call_label.position = Vector2(78, 122)
+	dispatch_call_label.size = Vector2(820, 380)
 	dispatch_call_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	dispatch_call_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	dispatch_call_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
-	dispatch_call_label.z_index = 6
+	dispatch_call_label.z_index = 45
+
+	career_mdt_label = Label.new()
+	career_mdt_label.name = "CareerMDTLabel"
+	career_mdt_label.position = Vector2(78, 122)
+	career_mdt_label.size = Vector2(820, 380)
+	career_mdt_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	career_mdt_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	career_mdt_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	career_mdt_label.z_index = 45
+	career_mdt_label.visible = false
+	player_ui.add_child(career_mdt_label)
+
+	update_mdt_layout_position()
+	update_mdt_tab_display()
+
+func update_mdt_layout_position() -> void:
+	var screen_size: Vector2 = get_viewport().get_visible_rect().size
+	mdt_panel.position = Vector2((screen_size.x - mdt_panel.size.x) * 0.5, (screen_size.y - mdt_panel.size.y) * 0.5)
+
+	var panel_origin: Vector2 = mdt_panel.position
+
+	dispatch_call_label.position = panel_origin + Vector2(78, 122)
+
+	if career_mdt_label != null:
+		career_mdt_label.position = panel_origin + Vector2(78, 122)
+
+func open_mdt() -> void:
+	is_mdt_visible = true
+	update_mdt_layout_position()
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	mdt_panel.visible = true
+	update_mdt_tab_display()
+
+func close_mdt() -> void:
+	is_mdt_visible = false
+	mdt_panel.visible = false
+	dispatch_call_label.visible = false
+
+	if career_mdt_label != null:
+		career_mdt_label.visible = false
+
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+
+func toggle_mdt() -> void:
+	if is_mdt_visible:
+		close_mdt()
+	else:
+		open_mdt()
+
+func _on_mdt_calls_tab_pressed() -> void:
+	mdt_tab_index = 0
+	update_mdt_tab_display()
+
+func _on_mdt_career_tab_pressed() -> void:
+	mdt_tab_index = 1
+	update_mdt_tab_display()
+
+func update_mdt_tab_display() -> void:
+	if mdt_calls_tab_button == null:
+		return
+
+	dispatch_call_label.visible = is_mdt_visible and mdt_tab_index == 0
+
+	if career_mdt_label != null:
+		career_mdt_label.text = GameState.get_career_mdt_text()
+		career_mdt_label.visible = is_mdt_visible and mdt_tab_index == 1
+
+	if mdt_tab_index == 0:
+		mdt_calls_tab_button.text = "[ CALLS ]"
+		mdt_career_tab_button.text = "CAREER"
+	else:
+		mdt_calls_tab_button.text = "CALLS"
+		mdt_career_tab_button.text = "[ CAREER ]"
 
 func create_subject_dialogue_ui() -> void:
 	subject_dialogue_panel = Panel.new()
@@ -254,7 +421,7 @@ func create_subject_dialogue_ui() -> void:
 func create_call_clear_ui() -> void:
 	call_clear_panel = Panel.new()
 	call_clear_panel.name = "CallClearPanel"
-	call_clear_panel.size = Vector2(520, 150)
+	call_clear_panel.size = Vector2(540, 170)
 	call_clear_panel.visible = false
 	call_clear_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	call_clear_panel.z_index = 25
@@ -276,11 +443,53 @@ func create_call_clear_ui() -> void:
 
 	call_clear_label = Label.new()
 	call_clear_label.position = Vector2(18, 14)
-	call_clear_label.size = Vector2(484, 122)
+	call_clear_label.size = Vector2(504, 142)
 	call_clear_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	call_clear_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	call_clear_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	call_clear_panel.add_child(call_clear_label)
+
+func create_xp_popup_ui() -> void:
+	xp_popup_panel = Panel.new()
+	xp_popup_panel.name = "PerformanceXPPopup"
+	xp_popup_panel.size = Vector2(430, 88)
+	xp_popup_panel.visible = false
+	xp_popup_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	xp_popup_panel.z_index = 30
+
+	var panel_style := StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.02, 0.03, 0.02, 0.92)
+	panel_style.border_color = Color(0.1, 1.0, 0.25, 0.8)
+	panel_style.border_width_top = 2
+	panel_style.border_width_bottom = 2
+	panel_style.border_width_left = 2
+	panel_style.border_width_right = 2
+	panel_style.corner_radius_top_left = 12
+	panel_style.corner_radius_top_right = 12
+	panel_style.corner_radius_bottom_left = 12
+	panel_style.corner_radius_bottom_right = 12
+	xp_popup_panel.add_theme_stylebox_override("panel", panel_style)
+
+	player_ui.add_child(xp_popup_panel)
+
+	xp_popup_label = Label.new()
+	xp_popup_label.position = Vector2(16, 10)
+	xp_popup_label.size = Vector2(398, 44)
+	xp_popup_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	xp_popup_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	xp_popup_panel.add_child(xp_popup_label)
+
+	xp_progress_background = ColorRect.new()
+	xp_progress_background.position = Vector2(16, 64)
+	xp_progress_background.size = Vector2(398, 10)
+	xp_progress_background.color = Color(0.15, 0.15, 0.15, 0.95)
+	xp_popup_panel.add_child(xp_progress_background)
+
+	xp_progress_fill = ColorRect.new()
+	xp_progress_fill.position = Vector2(16, 64)
+	xp_progress_fill.size = Vector2(0, 10)
+	xp_progress_fill.color = Color(0.1, 1.0, 0.25, 1.0)
+	xp_popup_panel.add_child(xp_progress_fill)
 
 func update_main_status_hud() -> void:
 	duty_status_label.text = get_hud_status_text()
@@ -667,11 +876,14 @@ func select_radio_wheel_option(option_index: int) -> void:
 	elif action_name == "clear_call":
 		var cleared_call_title: String = get_current_call_title_for_result()
 		var cleared_call_note: String = get_current_call_note_for_result()
+		var performance_reward: int = get_current_call_performance_reward()
 
 		RadioManager.send_player_message("Dispatch, show Unit 24 10 8. Contact made, no further action.")
 		RadioManager.send_dispatch_ack("10 4, Unit 24 clear.")
 		DispatchManager.clear_active_call(false)
-		show_call_cleared_result(cleared_call_title, cleared_call_note)
+
+		GameState.award_call_performance(performance_reward)
+		show_call_cleared_result(cleared_call_title, cleared_call_note, performance_reward)
 
 func get_current_call_title_for_result() -> String:
 	if not DispatchManager.has_active_call:
@@ -687,6 +899,9 @@ func get_current_call_note_for_result() -> String:
 		return DispatchManager.call_resolution_note
 
 	return "No further action required."
+
+func get_current_call_performance_reward() -> int:
+	return standard_call_performance_xp
 
 func can_report_on_scene() -> bool:
 	if active_call_area == null:
@@ -723,7 +938,7 @@ func handle_interact_input() -> void:
 	try_interact_with_raycast()
 
 func update_context_prompt() -> void:
-	if is_radio_wheel_visible:
+	if is_radio_wheel_visible or is_mdt_visible:
 		interaction_prompt.visible = false
 		return
 
@@ -809,20 +1024,47 @@ func show_subject_dialogue(speaker_name: String, dialogue_text: String) -> void:
 	if current_dialogue_id == subject_dialogue_id:
 		subject_dialogue_panel.visible = false
 
-func show_call_cleared_result(call_title: String, call_note: String) -> void:
+func show_call_cleared_result(call_title: String, call_note: String, performance_reward: int) -> void:
 	call_clear_id += 1
 	var current_clear_id: int = call_clear_id
 
 	var screen_size: Vector2 = get_viewport().get_visible_rect().size
 	call_clear_panel.position = Vector2((screen_size.x - call_clear_panel.size.x) * 0.5, 120)
 
-	call_clear_label.text = "CALL CLEARED\n\n" + call_title + "\n" + call_note + "\n\nStatus: Available"
+	call_clear_label.text = "CALL CLEARED\n\n" \
+		+ call_title + "\n" \
+		+ call_note + "\n\n" \
+		+ "+" + str(performance_reward) + " Performance XP\n" \
+		+ "Status: Available"
+
 	call_clear_panel.visible = true
 
 	await get_tree().create_timer(4.0).timeout
 
 	if current_clear_id == call_clear_id:
 		call_clear_panel.visible = false
+
+func show_xp_progress_popup(amount_added: int) -> void:
+	xp_popup_id += 1
+	var current_popup_id: int = xp_popup_id
+
+	var screen_size: Vector2 = get_viewport().get_visible_rect().size
+	xp_popup_panel.position = Vector2(screen_size.x - xp_popup_panel.size.x - 30, 90)
+
+	var progress_ratio: float = 0.0
+
+	if GameState.promotion_eligibility_xp > 0:
+		progress_ratio = clampf(float(GameState.performance_xp) / float(GameState.promotion_eligibility_xp), 0.0, 1.0)
+
+	xp_popup_label.text = "+" + str(amount_added) + " Performance XP\n" + GameState.get_promotion_progress_text()
+	xp_progress_fill.size = Vector2(398.0 * progress_ratio, 10)
+
+	xp_popup_panel.visible = true
+
+	await get_tree().create_timer(3.0).timeout
+
+	if current_popup_id == xp_popup_id:
+		xp_popup_panel.visible = false
 
 func set_active_call_area(call_area: Node) -> void:
 	active_call_area = call_area
@@ -831,13 +1073,6 @@ func clear_active_call_area(call_area: Node) -> void:
 	if active_call_area == call_area:
 		active_call_area = null
 		interaction_prompt.visible = false
-
-func toggle_mdt() -> void:
-	is_mdt_visible = !is_mdt_visible
-	dispatch_call_label.visible = is_mdt_visible
-
-	if mdt_panel != null:
-		mdt_panel.visible = is_mdt_visible
 
 func _on_duty_status_changed(is_on_duty: bool) -> void:
 	update_duty_status_label(is_on_duty)
@@ -848,12 +1083,21 @@ func _on_duty_status_changed(is_on_duty: bool) -> void:
 func update_duty_status_label(_is_on_duty: bool) -> void:
 	update_main_status_hud()
 
+func _on_performance_xp_changed(_current_xp: int, amount_added: int) -> void:
+	if career_mdt_label != null:
+		career_mdt_label.text = GameState.get_career_mdt_text()
+
+	show_xp_progress_popup(amount_added)
+
 func _on_active_call_changed(call_text: String, has_call: bool) -> void:
 	update_dispatch_call_label(call_text, has_call)
 	update_main_status_hud()
 
 	if is_radio_wheel_visible:
 		refresh_radio_wheel()
+
+	if is_mdt_visible:
+		update_mdt_tab_display()
 
 func update_dispatch_call_label(call_text: String, _has_call: bool) -> void:
 	dispatch_call_label.text = call_text
