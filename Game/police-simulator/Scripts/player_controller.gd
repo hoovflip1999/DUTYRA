@@ -41,8 +41,6 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("interact"):
 		try_interact()
 
-	if event.is_action_pressed("toggle_duty"):
-		GameState.toggle_duty()
 
 func _physics_process(delta: float) -> void:
 	update_interaction_prompt()
