@@ -21,10 +21,13 @@ extends CharacterBody3D
 var camera_pitch: float = 0.0
 var is_mdt_visible: bool = false
 var radio_message_id: int = 0
+var subject_dialogue_id: int = 0
 var active_call_area: Node = null
 
 var hud_status_dot: Panel
 var mdt_panel: Panel
+var subject_dialogue_panel: Panel
+var subject_dialogue_label: Label
 var radio_wheel_container: Control
 var is_radio_wheel_visible: bool = false
 var radio_wheel_options: Array[Dictionary] = []
@@ -43,6 +46,7 @@ func _ready() -> void:
 
 	create_main_status_hud()
 	create_mdt_ui()
+	create_subject_dialogue_ui()
 	create_radio_wheel_ui()
 
 	GameState.duty_status_changed.connect(_on_duty_status_changed)
@@ -211,6 +215,37 @@ func create_mdt_ui() -> void:
 	dispatch_call_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	dispatch_call_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 	dispatch_call_label.z_index = 6
+
+func create_subject_dialogue_ui() -> void:
+	subject_dialogue_panel = Panel.new()
+	subject_dialogue_panel.name = "SubjectDialoguePanel"
+	subject_dialogue_panel.size = Vector2(620, 110)
+	subject_dialogue_panel.visible = false
+	subject_dialogue_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	subject_dialogue_panel.z_index = 20
+
+	var panel_style := StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.02, 0.02, 0.02, 0.88)
+	panel_style.border_color = Color(1.0, 1.0, 1.0, 0.45)
+	panel_style.border_width_top = 2
+	panel_style.border_width_bottom = 2
+	panel_style.border_width_left = 2
+	panel_style.border_width_right = 2
+	panel_style.corner_radius_top_left = 12
+	panel_style.corner_radius_top_right = 12
+	panel_style.corner_radius_bottom_left = 12
+	panel_style.corner_radius_bottom_right = 12
+	subject_dialogue_panel.add_theme_stylebox_override("panel", panel_style)
+
+	player_ui.add_child(subject_dialogue_panel)
+
+	subject_dialogue_label = Label.new()
+	subject_dialogue_label.position = Vector2(18, 12)
+	subject_dialogue_label.size = Vector2(584, 86)
+	subject_dialogue_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	subject_dialogue_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	subject_dialogue_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	subject_dialogue_panel.add_child(subject_dialogue_label)
 
 func update_main_status_hud() -> void:
 	duty_status_label.text = get_hud_status_text()
@@ -686,8 +721,39 @@ func try_interact_with_raycast() -> bool:
 		if str(object_prompt) == "":
 			return false
 
+	var dialogue_speaker: String = ""
+	var dialogue_text: String = ""
+
+	if hit_object.has_method("get_dialogue_speaker"):
+		dialogue_speaker = str(hit_object.get_dialogue_speaker())
+
+	if hit_object.has_method("get_dialogue_text"):
+		dialogue_text = str(hit_object.get_dialogue_text())
+
 	hit_object.interact()
+
+	if dialogue_text != "":
+		show_subject_dialogue(dialogue_speaker, dialogue_text)
+
 	return true
+
+func show_subject_dialogue(speaker_name: String, dialogue_text: String) -> void:
+	subject_dialogue_id += 1
+	var current_dialogue_id: int = subject_dialogue_id
+
+	var screen_size: Vector2 = get_viewport().get_visible_rect().size
+	subject_dialogue_panel.position = Vector2((screen_size.x - subject_dialogue_panel.size.x) * 0.5, screen_size.y - 170)
+
+	if speaker_name == "":
+		speaker_name = "SUBJECT"
+
+	subject_dialogue_label.text = speaker_name + "\n" + dialogue_text
+	subject_dialogue_panel.visible = true
+
+	await get_tree().create_timer(4.0).timeout
+
+	if current_dialogue_id == subject_dialogue_id:
+		subject_dialogue_panel.visible = false
 
 func set_active_call_area(call_area: Node) -> void:
 	active_call_area = call_area
