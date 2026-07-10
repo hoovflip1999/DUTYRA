@@ -1,5 +1,6 @@
 [gd_scene format=3 uid="uid://cqb7iij8ph70s"]
 
+[ext_resource type="PackedScene" uid="uid://bj13041lb8diq" path="res://Scenes/Door.tscn" id="1_8gbba"]
 [ext_resource type="Script" uid="uid://vpakqknk02vk" path="res://Scripts/interactable_test.gd" id="1_bo1nx"]
 [ext_resource type="PackedScene" uid="uid://dw7sn20cefjue" path="res://Scenes/player.tscn" id="1_jjgbg"]
 
@@ -309,6 +310,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 1.5, -2)
 shape = SubResource("BoxShape3D_0v5gy")
 
 [node name="StreetProps" type="Node3D" parent="." unique_id=985062525]
+
+[node name="Door" parent="StreetProps" unique_id=1600997989 instance=ExtResource("1_8gbba")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 2)
 
 [node name="TestMarker" type="MeshInstance3D" parent="StreetProps" unique_id=796748634]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -8)
