@@ -69,7 +69,9 @@ func interact() -> void:
 			return
 
 		print("Handled call: " + call_name)
-		RadioManager.send_player_message("Dispatch, show Unit 24 10 8.")
+
+		RadioManager.send_player_message("Dispatch, show Unit 24 10 8. Contact made, no further action.")
 		RadioManager.send_dispatch_ack("10 4, Unit 24 clear.")
+
 		DispatchManager.clear_active_call(false)
 		return

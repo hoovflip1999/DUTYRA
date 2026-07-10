@@ -6,6 +6,7 @@ var has_active_call: bool = false
 var active_call_text: String = ""
 var call_status: String = "none"
 var call_objective_complete: bool = false
+var call_resolution_note: String = ""
 
 func _ready() -> void:
 	GameState.duty_status_changed.connect(_on_duty_status_changed)
@@ -21,6 +22,7 @@ func assign_test_call() -> void:
 	active_call_text = "P3 - Suspicious Person near Gas Station"
 	call_status = "pending"
 	call_objective_complete = false
+	call_resolution_note = ""
 
 	active_call_changed.emit(get_display_text(), has_active_call)
 
@@ -64,7 +66,7 @@ func mark_active_call_on_scene() -> void:
 
 	print("Unit marked on scene: " + active_call_text)
 
-func complete_active_call_objective() -> void:
+func complete_active_call_objective(resolution_note: String) -> void:
 	if not has_active_call:
 		return
 
@@ -72,6 +74,8 @@ func complete_active_call_objective() -> void:
 		return
 
 	call_objective_complete = true
+	call_resolution_note = resolution_note
+
 	active_call_changed.emit(get_display_text(), has_active_call)
 
 	print("Call objective complete")
@@ -83,6 +87,7 @@ func clear_active_call(send_radio_message: bool = true) -> void:
 	active_call_text = ""
 	call_status = "none"
 	call_objective_complete = false
+	call_resolution_note = ""
 
 	active_call_changed.emit(get_display_text(), has_active_call)
 
@@ -109,18 +114,24 @@ func get_display_text() -> String:
 		status_text = "On Scene"
 
 		if call_objective_complete:
-			objective_text = "Ready to clear call"
+			objective_text = "Clear call when ready"
 		else:
-			objective_text = "Talk to the suspicious person"
+			objective_text = "Contact the subject"
 
-	return "MDT CALL DETAILS\n\n" \
+	var mdt_text: String = "MDT CALL DETAILS\n\n" \
 		+ "Status: " + status_text + "\n" \
 		+ "Call: Suspicious Person\n" \
 		+ "Priority: P3\n" \
 		+ "Location: Gas Station\n" \
 		+ "Response: Code 2 - Routine response\n" \
-		+ "Objective: " + objective_text + "\n\n" \
-		+ "Radio Codes:\n" \
+		+ "Objective: " + objective_text + "\n"
+
+	if call_resolution_note != "":
+		mdt_text += "Notes: " + call_resolution_note + "\n"
+
+	mdt_text += "\nRadio Codes:\n" \
 		+ "10-76 = En Route\n" \
 		+ "10-97 = On Scene\n" \
 		+ "10-8 = Clear / Available"
+
+	return mdt_text

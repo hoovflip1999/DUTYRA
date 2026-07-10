@@ -39,5 +39,7 @@ func interact() -> void:
 		return
 
 	print("Contacted " + subject_name)
+
 	RadioManager.send_player_message("Dispatch, Unit 24 making contact.")
-	DispatchManager.complete_active_call_objective()
+
+	DispatchManager.complete_active_call_objective("Subject contacted. No immediate threat observed.")
