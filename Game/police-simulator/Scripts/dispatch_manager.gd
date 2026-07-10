@@ -14,6 +14,8 @@ var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var next_call_delay_seconds: float = 8.0
 var next_call_request_id: int = 0
 
+var last_call_template_index: int = -1
+
 func _ready() -> void:
 	rng.randomize()
 	setup_call_templates()
@@ -65,7 +67,9 @@ func assign_random_call() -> void:
 	if has_active_call:
 		return
 
-	var call_index: int = rng.randi_range(0, call_templates.size() - 1)
+	var call_index: int = get_next_call_template_index()
+	last_call_template_index = call_index
+
 	active_call = call_templates[call_index].duplicate(true)
 
 	has_active_call = true
@@ -78,6 +82,17 @@ func assign_random_call() -> void:
 	RadioManager.send_dispatch_message(str(active_call["dispatch_radio"]))
 
 	print("Dispatch assigned call: " + get_active_call_summary())
+
+func get_next_call_template_index() -> int:
+	if call_templates.size() == 1:
+		return 0
+
+	var call_index: int = rng.randi_range(0, call_templates.size() - 1)
+
+	while call_index == last_call_template_index:
+		call_index = rng.randi_range(0, call_templates.size() - 1)
+
+	return call_index
 
 func accept_active_call() -> void:
 	if not has_active_call:

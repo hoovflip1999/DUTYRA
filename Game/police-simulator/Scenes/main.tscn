@@ -68,11 +68,25 @@ size = Vector3(7, 3, 5)
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6xgi7"]
 albedo_color = Color(0.26293245, 0.26293245, 0.26293245, 1)
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_ga80x"]
+size = Vector3(8, 3, 8)
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_7oaoy"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_6bp64"]
+
 [sub_resource type="BoxMesh" id="BoxMesh_6xgi7"]
 size = Vector3(10, 8, 6)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dexas"]
 albedo_color = Color(0.79107594, 0.41049674, 0.16986388, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_6xgi7"]
+size = Vector3(8, 3, 8)
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_7oaoy"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_qjvm4"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_sk0y0"]
 size = Vector3(10, 4, 7)
@@ -217,20 +231,6 @@ size = Vector3(1, 2, 1)
 [sub_resource type="BoxShape3D" id="BoxShape3D_4lhpd"]
 size = Vector3(1, 2, 1)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_ga80x"]
-size = Vector3(8, 3, 8)
-
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_7oaoy"]
-
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_6bp64"]
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_6xgi7"]
-size = Vector3(8, 3, 8)
-
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_7oaoy"]
-
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_qjvm4"]
-
 [node name="Main" type="Node3D" unique_id=1396415147]
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1181193970]
@@ -302,10 +302,54 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 1.5, 8)
 mesh = SubResource("BoxMesh_ga80x")
 surface_material_override/0 = SubResource("StandardMaterial3D_6xgi7")
 
+[node name="GasStationCallArea" type="Area3D" parent="BuildingBlocks/GasStationBlock" unique_id=2123223847]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.5, 0)
+script = ExtResource("4_kry3j")
+
+[node name="GasStationCallAreaCollision" type="CollisionShape3D" parent="BuildingBlocks/GasStationBlock/GasStationCallArea" unique_id=74362840]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+shape = SubResource("BoxShape3D_ga80x")
+
+[node name="SuspiciousPersonSubject" type="StaticBody3D" parent="BuildingBlocks/GasStationBlock/GasStationCallArea" unique_id=332191515]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0, 2)
+script = ExtResource("5_21xkr")
+
+[node name="SuspiciousPersonCollision" type="CollisionShape3D" parent="BuildingBlocks/GasStationBlock/GasStationCallArea/SuspiciousPersonSubject" unique_id=1903639326]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+shape = SubResource("CapsuleShape3D_7oaoy")
+
+[node name="SuspiciousPersonMesh" type="MeshInstance3D" parent="BuildingBlocks/GasStationBlock/GasStationCallArea/SuspiciousPersonSubject" unique_id=483176977]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+mesh = SubResource("CapsuleMesh_6bp64")
+
 [node name="ApartmentBlock" type="MeshInstance3D" parent="BuildingBlocks" unique_id=385027870]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 4, -12)
 mesh = SubResource("BoxMesh_6xgi7")
 surface_material_override/0 = SubResource("StandardMaterial3D_dexas")
+
+[node name="ApartmentCallArea" type="Area3D" parent="BuildingBlocks/ApartmentBlock" unique_id=1716096362]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4, 0)
+script = ExtResource("4_kry3j")
+call_name = "Noise Complaint"
+location_name = "Apartment"
+
+[node name="ApartmentCallAreaCollision" type="CollisionShape3D" parent="BuildingBlocks/ApartmentBlock/ApartmentCallArea" unique_id=2072132183]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+shape = SubResource("BoxShape3D_6xgi7")
+
+[node name="ApartmentNoiseSubject" type="StaticBody3D" parent="BuildingBlocks/ApartmentBlock/ApartmentCallArea" unique_id=1202377229]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0, 2)
+script = ExtResource("5_21xkr")
+subject_name = "Involved Person"
+location_name = "Apartment"
+
+[node name="ApartmentNoiseSubjectMesh" type="MeshInstance3D" parent="BuildingBlocks/ApartmentBlock/ApartmentCallArea/ApartmentNoiseSubject" unique_id=597952101]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+mesh = SubResource("CapsuleMesh_7oaoy")
+
+[node name="ApartmentNoiseSubjectCollision" type="CollisionShape3D" parent="BuildingBlocks/ApartmentBlock/ApartmentCallArea/ApartmentNoiseSubject" unique_id=519833920]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CapsuleShape3D_qjvm4")
 
 [node name="StoreBlock" type="MeshInstance3D" parent="BuildingBlocks" unique_id=186171359]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 2, -12)
@@ -462,46 +506,6 @@ mesh = SubResource("BoxMesh_au263")
 
 [node name="DutyTerminalCollision" type="CollisionShape3D" parent="StreetProps/DutyTerminal" unique_id=1297041034]
 shape = SubResource("BoxShape3D_4lhpd")
-
-[node name="GasStationCallArea" type="Area3D" parent="StreetProps" unique_id=2123223847]
-script = ExtResource("4_kry3j")
-
-[node name="GasStationCallAreaCollision" type="CollisionShape3D" parent="StreetProps/GasStationCallArea" unique_id=74362840]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
-shape = SubResource("BoxShape3D_ga80x")
-
-[node name="SuspiciousPersonSubject" type="StaticBody3D" parent="StreetProps" unique_id=332191515]
-script = ExtResource("5_21xkr")
-
-[node name="SuspiciousPersonCollision" type="CollisionShape3D" parent="StreetProps/SuspiciousPersonSubject" unique_id=1903639326]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
-shape = SubResource("CapsuleShape3D_7oaoy")
-
-[node name="SuspiciousPersonMesh" type="MeshInstance3D" parent="StreetProps/SuspiciousPersonSubject" unique_id=483176977]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
-mesh = SubResource("CapsuleMesh_6bp64")
-
-[node name="ApartmentCallArea" type="Area3D" parent="StreetProps" unique_id=1716096362]
-script = ExtResource("4_kry3j")
-call_name = "Noise Complaint"
-location_name = "Apartment"
-
-[node name="ApartmentCallAreaCollision" type="CollisionShape3D" parent="StreetProps/ApartmentCallArea" unique_id=2072132183]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
-shape = SubResource("BoxShape3D_6xgi7")
-
-[node name="ApartmentNoiseSubject" type="StaticBody3D" parent="StreetProps" unique_id=1202377229]
-script = ExtResource("5_21xkr")
-subject_name = "Involved Person"
-location_name = "Apartment"
-
-[node name="ApartmentNoiseSubjectMesh" type="MeshInstance3D" parent="StreetProps/ApartmentNoiseSubject" unique_id=597952101]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
-mesh = SubResource("CapsuleMesh_7oaoy")
-
-[node name="ApartmentNoiseSubjectCollision" type="CollisionShape3D" parent="StreetProps/ApartmentNoiseSubject" unique_id=519833920]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
-shape = SubResource("CapsuleShape3D_qjvm4")
 
 [node name="PlayerSetup" type="Node3D" parent="." unique_id=268091430]
 
