@@ -58,17 +58,22 @@ func _unhandled_input(event: InputEvent) -> void:
 		else:
 			Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
+		return
+
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 			Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
 	if event.is_action_pressed("toggle_radio_menu"):
 		toggle_radio_wheel()
+		return
 
-	if is_radio_wheel_visible and event is InputEventKey:
-		if event.pressed and not event.echo:
-			handle_radio_wheel_number_input(event.keycode)
-			return
+	if is_radio_wheel_visible:
+		if event is InputEventKey:
+			if event.pressed and not event.echo:
+				handle_radio_wheel_number_input(event.keycode)
+
+		return
 
 	if event.is_action_pressed("interact"):
 		handle_interact_input()
@@ -78,6 +83,10 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _physics_process(delta: float) -> void:
 	update_context_prompt()
+
+	if is_radio_wheel_visible:
+		lock_player_movement(delta)
+		return
 
 	var input_dir := Vector2.ZERO
 
@@ -121,6 +130,17 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
+func lock_player_movement(delta: float) -> void:
+	velocity.x = 0
+	velocity.z = 0
+
+	if not is_on_floor():
+		velocity.y -= gravity * delta
+	else:
+		velocity.y = 0
+
+	move_and_slide()
+
 func create_radio_wheel_ui() -> void:
 	radio_wheel_container = Control.new()
 	radio_wheel_container.name = "RadioWheel"
@@ -153,25 +173,71 @@ func refresh_radio_wheel() -> void:
 	var screen_size: Vector2 = get_viewport().get_visible_rect().size
 	var center: Vector2 = screen_size * 0.5
 
+	var blur_overlay := ColorRect.new()
+	blur_overlay.name = "RadioBlurOverlay"
+	blur_overlay.position = Vector2.ZERO
+	blur_overlay.size = screen_size
+	blur_overlay.color = Color.WHITE
+	blur_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	blur_overlay.material = create_radio_blur_material()
+	radio_wheel_container.add_child(blur_overlay)
+
+	var center_panel := Panel.new()
+	center_panel.name = "RadioCenterCircle"
+	center_panel.size = Vector2(280, 280)
+	center_panel.position = center - Vector2(140, 140)
+	center_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var center_style := StyleBoxFlat.new()
+	center_style.bg_color = Color(0.02, 0.02, 0.02, 0.72)
+	center_style.border_color = get_radio_status_color()
+	center_style.border_width_top = 4
+	center_style.border_width_bottom = 4
+	center_style.border_width_left = 4
+	center_style.border_width_right = 4
+	center_style.corner_radius_top_left = 140
+	center_style.corner_radius_top_right = 140
+	center_style.corner_radius_bottom_left = 140
+	center_style.corner_radius_bottom_right = 140
+	center_panel.add_theme_stylebox_override("panel", center_style)
+
+	radio_wheel_container.add_child(center_panel)
+
 	var center_label := Label.new()
 	center_label.text = "RADIO\n" + get_radio_status_text() + "\nQ to close"
-	center_label.size = Vector2(280, 90)
-	center_label.position = center - Vector2(140, 45)
+	center_label.size = Vector2(260, 100)
+	center_label.position = center - Vector2(130, 50)
 	center_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	center_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	radio_wheel_container.add_child(center_label)
+
+	var status_dot := Panel.new()
+	status_dot.name = "RadioStatusDot"
+	status_dot.size = Vector2(20, 20)
+	status_dot.position = center + Vector2(-105, -6)
+	status_dot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var dot_style := StyleBoxFlat.new()
+	dot_style.bg_color = get_radio_status_color()
+	dot_style.corner_radius_top_left = 10
+	dot_style.corner_radius_top_right = 10
+	dot_style.corner_radius_bottom_left = 10
+	dot_style.corner_radius_bottom_right = 10
+	status_dot.add_theme_stylebox_override("panel", dot_style)
+
+	radio_wheel_container.add_child(status_dot)
 
 	if radio_wheel_options.is_empty():
 		var empty_label := Label.new()
 		empty_label.text = "No radio status available"
 		empty_label.size = Vector2(300, 50)
-		empty_label.position = center + Vector2(-150, 120)
+		empty_label.position = center + Vector2(-150, 150)
 		empty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		empty_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		radio_wheel_container.add_child(empty_label)
 		return
 
-	var radius: float = 190.0
+	var radius: float = 230.0
 	var start_angle: float = -PI / 2.0
 	var angle_step: float = TAU / float(radio_wheel_options.size())
 
@@ -182,11 +248,58 @@ func refresh_radio_wheel() -> void:
 
 		var option_label := Label.new()
 		option_label.text = str(i + 1) + "  " + str(option["title"]) + "\n" + str(option["subtitle"])
-		option_label.size = Vector2(260, 70)
-		option_label.position = option_position - Vector2(130, 35)
+		option_label.size = Vector2(280, 80)
+		option_label.position = option_position - Vector2(140, 40)
 		option_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		option_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		radio_wheel_container.add_child(option_label)
+
+func create_radio_blur_material() -> ShaderMaterial:
+	var shader := Shader.new()
+
+	shader.code = """
+shader_type canvas_item;
+render_mode unshaded;
+
+uniform sampler2D screen_texture : hint_screen_texture, repeat_disable, filter_linear_mipmap;
+
+void fragment() {
+	vec2 clear_center = vec2(0.5, 0.5);
+	float clear_radius = 0.17;
+	float edge_softness = 0.08;
+	float blur_size = 4.0;
+	float darken_amount = 0.42;
+
+	vec2 pixel = SCREEN_PIXEL_SIZE * blur_size;
+
+	vec4 original_color = texture(screen_texture, SCREEN_UV);
+
+	vec4 blurred_color = vec4(0.0);
+	blurred_color += texture(screen_texture, SCREEN_UV + vec2(-pixel.x, -pixel.y));
+	blurred_color += texture(screen_texture, SCREEN_UV + vec2(0.0, -pixel.y));
+	blurred_color += texture(screen_texture, SCREEN_UV + vec2(pixel.x, -pixel.y));
+	blurred_color += texture(screen_texture, SCREEN_UV + vec2(-pixel.x, 0.0));
+	blurred_color += texture(screen_texture, SCREEN_UV);
+	blurred_color += texture(screen_texture, SCREEN_UV + vec2(pixel.x, 0.0));
+	blurred_color += texture(screen_texture, SCREEN_UV + vec2(-pixel.x, pixel.y));
+	blurred_color += texture(screen_texture, SCREEN_UV + vec2(0.0, pixel.y));
+	blurred_color += texture(screen_texture, SCREEN_UV + vec2(pixel.x, pixel.y));
+	blurred_color /= 9.0;
+
+	float distance_from_center = distance(SCREEN_UV, clear_center);
+	float effect_strength = smoothstep(clear_radius, clear_radius + edge_softness, distance_from_center);
+
+	vec4 final_color = mix(original_color, blurred_color, effect_strength);
+	final_color.rgb = mix(final_color.rgb, vec3(0.0), darken_amount * effect_strength);
+
+	COLOR = final_color;
+}
+"""
+
+	var material := ShaderMaterial.new()
+	material.shader = shader
+
+	return material
 
 func build_radio_wheel_options() -> Array[Dictionary]:
 	var options: Array[Dictionary] = []
@@ -246,6 +359,15 @@ func get_radio_status_text() -> String:
 			return "Status: On Scene"
 
 	return "Status: Available"
+
+func get_radio_status_color() -> Color:
+	if not GameState.is_on_duty:
+		return Color(1.0, 0.1, 0.1, 1.0)
+
+	if DispatchManager.has_active_call:
+		return Color(1.0, 0.55, 0.05, 1.0)
+
+	return Color(0.1, 1.0, 0.25, 1.0)
 
 func handle_radio_wheel_number_input(keycode: int) -> void:
 	var selected_index: int = -1
@@ -316,6 +438,10 @@ func handle_interact_input() -> void:
 	try_interact_with_raycast()
 
 func update_context_prompt() -> void:
+	if is_radio_wheel_visible:
+		interaction_prompt.visible = false
+		return
+
 	if show_raycast_prompt():
 		return
 
