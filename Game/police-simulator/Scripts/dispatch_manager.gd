@@ -79,15 +79,24 @@ func clear_active_call(send_radio_message: bool = true) -> void:
 
 func get_display_text() -> String:
 	if not has_active_call:
-		return "No active call"
+		return "MDT CALL DETAILS\n\nNo active call."
+
+	var status_text: String = "Unknown"
 
 	if call_status == "pending":
-		return "PENDING: " + active_call_text + " | Press R to accept"
+		status_text = "Pending"
+	elif call_status == "accepted":
+		status_text = "En Route"
+	elif call_status == "on_scene":
+		status_text = "On Scene"
 
-	if call_status == "accepted":
-		return "EN ROUTE: " + active_call_text
-
-	if call_status == "on_scene":
-		return "ON SCENE: " + active_call_text
-
-	return active_call_text
+	return "MDT CALL DETAILS\n\n" \
+		+ "Status: " + status_text + "\n" \
+		+ "Call: Suspicious Person\n" \
+		+ "Priority: P3\n" \
+		+ "Location: Gas Station\n" \
+		+ "Response: Code 2 - Routine response\n\n" \
+		+ "Radio Codes:\n" \
+		+ "10-76 = En Route\n" \
+		+ "10-97 = On Scene\n" \
+		+ "10-8 = Clear / Available"

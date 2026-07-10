@@ -173,11 +173,8 @@ func update_duty_status_label(is_on_duty: bool) -> void:
 func _on_active_call_changed(call_text: String, has_call: bool) -> void:
 	update_dispatch_call_label(call_text, has_call)
 
-func update_dispatch_call_label(call_text: String, has_call: bool) -> void:
-	if has_call:
-		dispatch_call_label.text = "MDT: " + call_text
-	else:
-		dispatch_call_label.text = "MDT: No active call"
+func update_dispatch_call_label(call_text: String, _has_call: bool) -> void:
+	dispatch_call_label.text = call_text
 
 func _on_radio_message_sent(speaker_name: String, _message_text: String) -> void:
 	show_radio_message("🔊 " + speaker_name)
