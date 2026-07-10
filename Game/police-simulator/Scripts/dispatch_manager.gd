@@ -236,31 +236,55 @@ func get_status_text() -> String:
 	if call_status == "on_scene":
 		return "On Scene"
 
-	return "Unknown"
+	return "Available"
+
+func get_mdt_radio_hint_text() -> String:
+	if not GameState.is_on_duty:
+		return "Q Radio: 10-41 In Service"
+
+	if not has_active_call:
+		return "Q Radio: 10-42 Out of Service"
+
+	if call_status == "pending":
+		return "Q Radio: 10-76 En Route"
+
+	if call_status == "accepted":
+		return "Q Radio: 10-97 On Scene"
+
+	if call_status == "on_scene":
+		if call_objective_complete:
+			return "Q Radio: 10-8 Clear"
+
+		return "Contact subject first"
+
+	return "Q Radio"
 
 func get_display_text() -> String:
 	if not has_active_call:
 		if GameState.is_on_duty:
-			return "MDT CALL DETAILS\n\nNo active call.\n\nStatus: Available for calls.\n\nRadio Codes:\n10-41 = In Service\n10-42 = Out of Service\n10-76 = En Route\n10-97 = On Scene\n10-8 = Clear / Available"
+			return "MDT\n\n" \
+				+ "AVAILABLE\n\n" \
+				+ "No active call.\n" \
+				+ "Waiting for dispatch.\n\n" \
+				+ get_mdt_radio_hint_text()
 
-		return "MDT CALL DETAILS\n\nNo active call."
+		return "MDT\n\n" \
+			+ "OFF DUTY\n\n" \
+			+ "No active call.\n" \
+			+ "Not currently in service.\n\n" \
+			+ get_mdt_radio_hint_text()
 
-	var mdt_text: String = "MDT CALL DETAILS\n\n" \
-		+ "Status: " + get_status_text() + "\n" \
-		+ "Call: " + str(active_call["title"]) + "\n" \
-		+ "Priority: " + str(active_call["priority"]) + "\n" \
-		+ "Location: " + str(active_call["location"]) + "\n" \
-		+ "Response: " + str(active_call["response"]) + " - " + str(active_call["response_description"]) + "\n" \
-		+ "Objective: " + get_current_objective_text() + "\n"
+	var notes_text: String = "No notes yet"
 
 	if call_resolution_note != "":
-		mdt_text += "Notes: " + call_resolution_note + "\n"
+		notes_text = call_resolution_note
 
-	mdt_text += "\nRadio Codes:\n" \
-		+ "10-41 = In Service\n" \
-		+ "10-42 = Out of Service\n" \
-		+ "10-76 = En Route\n" \
-		+ "10-97 = On Scene\n" \
-		+ "10-8 = Clear / Available"
-
-	return mdt_text
+	return "MDT\n\n" \
+		+ str(active_call["title"]).to_upper() + "\n" \
+		+ str(active_call["location"]) + "\n" \
+		+ str(active_call["priority"]) + " • " + str(active_call["response"]) + " • " + get_status_text() + "\n\n" \
+		+ "NEXT:\n" \
+		+ get_current_objective_text() + "\n\n" \
+		+ "NOTES:\n" \
+		+ notes_text + "\n\n" \
+		+ get_mdt_radio_hint_text()

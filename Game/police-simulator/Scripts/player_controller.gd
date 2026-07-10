@@ -24,6 +24,7 @@ var radio_message_id: int = 0
 var active_call_area: Node = null
 
 var hud_status_dot: Panel
+var mdt_panel: Panel
 var radio_wheel_container: Control
 var is_radio_wheel_visible: bool = false
 var radio_wheel_options: Array[Dictionary] = []
@@ -41,6 +42,7 @@ func _ready() -> void:
 	radio_message_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 
 	create_main_status_hud()
+	create_mdt_ui()
 	create_radio_wheel_ui()
 
 	GameState.duty_status_changed.connect(_on_duty_status_changed)
@@ -178,6 +180,37 @@ func create_main_status_hud() -> void:
 	duty_status_label.size = Vector2(300, 50)
 
 	update_main_status_hud()
+
+func create_mdt_ui() -> void:
+	mdt_panel = Panel.new()
+	mdt_panel.name = "MDTPanel"
+	mdt_panel.position = Vector2(20, 70)
+	mdt_panel.size = Vector2(520, 390)
+	mdt_panel.visible = false
+	mdt_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	mdt_panel.z_index = 5
+
+	var panel_style := StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.01, 0.015, 0.02, 0.86)
+	panel_style.border_color = Color(0.1, 0.75, 1.0, 0.75)
+	panel_style.border_width_top = 3
+	panel_style.border_width_bottom = 3
+	panel_style.border_width_left = 3
+	panel_style.border_width_right = 3
+	panel_style.corner_radius_top_left = 10
+	panel_style.corner_radius_top_right = 10
+	panel_style.corner_radius_bottom_left = 10
+	panel_style.corner_radius_bottom_right = 10
+	mdt_panel.add_theme_stylebox_override("panel", panel_style)
+
+	player_ui.add_child(mdt_panel)
+
+	dispatch_call_label.position = Vector2(40, 90)
+	dispatch_call_label.size = Vector2(480, 350)
+	dispatch_call_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	dispatch_call_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	dispatch_call_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	dispatch_call_label.z_index = 6
 
 func update_main_status_hud() -> void:
 	duty_status_label.text = get_hud_status_text()
@@ -667,6 +700,9 @@ func clear_active_call_area(call_area: Node) -> void:
 func toggle_mdt() -> void:
 	is_mdt_visible = !is_mdt_visible
 	dispatch_call_label.visible = is_mdt_visible
+
+	if mdt_panel != null:
+		mdt_panel.visible = is_mdt_visible
 
 func _on_duty_status_changed(is_on_duty: bool) -> void:
 	update_duty_status_label(is_on_duty)
