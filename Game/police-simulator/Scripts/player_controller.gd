@@ -26,7 +26,7 @@ func _ready() -> void:
 	update_duty_status_label(GameState.is_on_duty)
 
 	DispatchManager.active_call_changed.connect(_on_active_call_changed)
-	update_dispatch_call_label(DispatchManager.active_call_text, DispatchManager.has_active_call)
+	update_dispatch_call_label(DispatchManager.get_display_text(), DispatchManager.has_active_call)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
@@ -45,6 +45,9 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	if event.is_action_pressed("interact"):
 		try_interact()
+
+	if event.is_action_pressed("accept_call"):
+		DispatchManager.accept_active_call()
 
 func _physics_process(delta: float) -> void:
 	update_interaction_prompt()
