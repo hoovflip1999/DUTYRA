@@ -16,11 +16,13 @@ extends CharacterBody3D
 @onready var dispatch_call_label: Label = $PlayerUI/DispatchCallLabel
 
 var camera_pitch: float = 0.0
+var is_mdt_visible: bool = false
 
 func _ready() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
 	interaction_prompt.visible = false
+	dispatch_call_label.visible = false
 
 	GameState.duty_status_changed.connect(_on_duty_status_changed)
 	update_duty_status_label(GameState.is_on_duty)
@@ -48,6 +50,9 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	if event.is_action_pressed("accept_call"):
 		DispatchManager.accept_active_call()
+
+	if event.is_action_pressed("toggle_mdt"):
+		toggle_mdt()
 
 func _physics_process(delta: float) -> void:
 	update_interaction_prompt()
@@ -115,6 +120,10 @@ func try_interact() -> void:
 		if hit_object and hit_object.has_method("interact"):
 			hit_object.interact()
 
+func toggle_mdt() -> void:
+	is_mdt_visible = !is_mdt_visible
+	dispatch_call_label.visible = is_mdt_visible
+
 func _on_duty_status_changed(is_on_duty: bool) -> void:
 	update_duty_status_label(is_on_duty)
 
@@ -129,6 +138,6 @@ func _on_active_call_changed(call_text: String, has_call: bool) -> void:
 
 func update_dispatch_call_label(call_text: String, has_call: bool) -> void:
 	if has_call:
-		dispatch_call_label.text = call_text
+		dispatch_call_label.text = "MDT: " + call_text
 	else:
-		dispatch_call_label.text = "No active call"
+		dispatch_call_label.text = "MDT: No active call"
