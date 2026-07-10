@@ -23,6 +23,7 @@ var is_mdt_visible: bool = false
 var radio_message_id: int = 0
 var active_call_area: Node = null
 
+var hud_status_dot: Panel
 var radio_wheel_container: Control
 var is_radio_wheel_visible: bool = false
 var radio_wheel_options: Array[Dictionary] = []
@@ -34,6 +35,7 @@ func _ready() -> void:
 	dispatch_call_label.visible = false
 	radio_message_label.visible = false
 
+	create_main_status_hud()
 	create_radio_wheel_ui()
 
 	GameState.duty_status_changed.connect(_on_duty_status_changed)
@@ -140,6 +142,50 @@ func lock_player_movement(delta: float) -> void:
 		velocity.y = 0
 
 	move_and_slide()
+
+func create_main_status_hud() -> void:
+	hud_status_dot = Panel.new()
+	hud_status_dot.name = "HUDStatusDot"
+	hud_status_dot.size = Vector2(16, 16)
+	hud_status_dot.position = Vector2(20, 24)
+	hud_status_dot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	player_ui.add_child(hud_status_dot)
+
+	duty_status_label.position = Vector2(45, 20)
+	duty_status_label.size = Vector2(300, 50)
+
+	update_main_status_hud()
+
+func update_main_status_hud() -> void:
+	duty_status_label.text = get_hud_status_text()
+
+	if hud_status_dot == null:
+		return
+
+	var dot_style := StyleBoxFlat.new()
+	dot_style.bg_color = get_radio_status_color()
+	dot_style.corner_radius_top_left = 8
+	dot_style.corner_radius_top_right = 8
+	dot_style.corner_radius_bottom_left = 8
+	dot_style.corner_radius_bottom_right = 8
+
+	hud_status_dot.add_theme_stylebox_override("panel", dot_style)
+
+func get_hud_status_text() -> String:
+	if not GameState.is_on_duty:
+		return "OFF DUTY"
+
+	if DispatchManager.has_active_call:
+		if DispatchManager.call_status == "pending":
+			return "PENDING CALL"
+
+		if DispatchManager.call_status == "accepted":
+			return "EN ROUTE"
+
+		if DispatchManager.call_status == "on_scene":
+			return "ON SCENE"
+
+	return "AVAILABLE"
 
 func create_radio_wheel_ui() -> void:
 	radio_wheel_container = Control.new()
@@ -511,14 +557,12 @@ func _on_duty_status_changed(is_on_duty: bool) -> void:
 	if is_radio_wheel_visible:
 		refresh_radio_wheel()
 
-func update_duty_status_label(is_on_duty: bool) -> void:
-	if is_on_duty:
-		duty_status_label.text = "ON DUTY"
-	else:
-		duty_status_label.text = "OFF DUTY"
+func update_duty_status_label(_is_on_duty: bool) -> void:
+	update_main_status_hud()
 
 func _on_active_call_changed(call_text: String, has_call: bool) -> void:
 	update_dispatch_call_label(call_text, has_call)
+	update_main_status_hud()
 
 	if is_radio_wheel_visible:
 		refresh_radio_wheel()
