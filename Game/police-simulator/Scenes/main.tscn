@@ -3,6 +3,7 @@
 [ext_resource type="PackedScene" uid="uid://bj13041lb8diq" path="res://Scenes/Door.tscn" id="1_8gbba"]
 [ext_resource type="Script" uid="uid://vpakqknk02vk" path="res://Scripts/interactable_test.gd" id="1_bo1nx"]
 [ext_resource type="PackedScene" uid="uid://dw7sn20cefjue" path="res://Scenes/player.tscn" id="1_jjgbg"]
+[ext_resource type="Script" uid="uid://dnkmaaqkn1me8" path="res://Scripts/duty_terminal_controller.gd" id="3_jjvhh"]
 
 [sub_resource type="Environment" id="Environment_7u77a"]
 
@@ -434,6 +435,16 @@ script = ExtResource("1_bo1nx")
 mesh = SubResource("BoxMesh_au263")
 
 [node name="TestInteractableCollision" type="CollisionShape3D" parent="StreetProps/TestInteractableBox" unique_id=58992192]
+shape = SubResource("BoxShape3D_4lhpd")
+
+[node name="DutyTerminal" type="StaticBody3D" parent="StreetProps" unique_id=509670425]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 1, 2)
+script = ExtResource("3_jjvhh")
+
+[node name="DutyTerminalMesh" type="MeshInstance3D" parent="StreetProps/DutyTerminal" unique_id=1287255046]
+mesh = SubResource("BoxMesh_au263")
+
+[node name="DutyTerminalCollision" type="CollisionShape3D" parent="StreetProps/DutyTerminal" unique_id=1297041034]
 shape = SubResource("BoxShape3D_4lhpd")
 
 [node name="PlayerSetup" type="Node3D" parent="." unique_id=268091430]
