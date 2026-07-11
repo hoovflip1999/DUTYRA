@@ -20,6 +20,7 @@ config/icon="res://icon.svg"
 GameState="*uid://durapoj4gbqo2"
 DispatchManager="*uid://b4hp7dt7q8guq"
 RadioManager="*uid://ckwrywxn5fgfp"
+SettingsManager="*uid://yimc1yj3h25x"
 
 [display]
 
