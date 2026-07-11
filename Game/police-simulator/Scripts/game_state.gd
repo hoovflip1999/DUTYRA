@@ -7,7 +7,17 @@ signal shift_ended(shift_counted: bool, calls_cleared_this_shift: int, shifts_co
 
 var is_on_duty: bool = false
 
-var current_rank: String = "Officer"
+var career_track: String = "Patrol Division"
+var current_rank_index: int = 1
+var patrol_ranks: Array[String] = [
+	"Recruit",
+	"Rookie Officer",
+	"Patrol Officer",
+	"Corporal",
+	"Sergeant",
+	"Patrol Supervisor"
+]
+
 var performance_xp: int = 0
 var promotion_eligibility_xp: int = 500
 
@@ -88,6 +98,22 @@ func get_duty_status_text() -> String:
 
 func get_promotion_progress_text() -> String:
 	return "Promotion Eligibility: " + str(performance_xp) + " / " + str(promotion_eligibility_xp)
+func get_current_rank_name() -> String:
+	if current_rank_index < 0:
+		return "Unknown"
+
+	if current_rank_index >= patrol_ranks.size():
+		return "Unknown"
+
+	return patrol_ranks[current_rank_index]
+
+func get_next_rank_name() -> String:
+	var next_rank_index: int = current_rank_index + 1
+
+	if next_rank_index >= patrol_ranks.size():
+		return "No further patrol rank"
+
+	return patrol_ranks[next_rank_index]
 
 func get_shift_status_text() -> String:
 	if current_shift_active:
@@ -114,10 +140,11 @@ func get_promotion_status_text() -> String:
 	return "Not eligible yet"
 
 func get_career_mdt_text() -> String:
-	return "CAREER / PERSONNEL FILE\n\n" \
-		+ "RANK: " + current_rank + "\n" \
+		return "CAREER / PERSONNEL FILE\n\n" \
+		+ "TRACK: " + career_track + "\n" \
+		+ "RANK: " + get_current_rank_name() + "\n" \
 		+ "SHIFT: " + get_shift_status_text() + "\n\n" \
-		+ "NEXT REVIEW: Corporal\n" \
+		+ "NEXT REVIEW: " + get_next_rank_name() + "\n" \
 		+ "STATUS: " + get_promotion_status_text() + "\n\n" \
 		+ "REQUIREMENTS\n" \
 		+ get_requirement_line("Performance XP", performance_xp, promotion_eligibility_xp) + "\n" \
