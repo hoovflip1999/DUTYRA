@@ -4,6 +4,7 @@ signal duty_status_changed(is_on_duty: bool)
 signal performance_xp_changed(current_xp: int, amount_added: int)
 signal career_progress_changed()
 signal shift_ended(shift_counted: bool, calls_cleared_this_shift: int, shifts_completed_total: int)
+signal game_time_changed()
 
 var is_on_duty: bool = false
 
@@ -30,6 +31,14 @@ var required_shifts_for_promotion: int = 5
 var current_shift_active: bool = false
 var current_shift_calls_cleared: int = 0
 var required_calls_to_complete_shift: int = 1
+var game_year: int = 2026
+var game_month: int = 7
+var game_day: int = 11
+var game_hour: int = 8
+var game_minute: int = 0
+
+var game_minutes_per_real_second: float = 1.0
+var game_clock_accumulator: float = 0.0
 
 func toggle_duty() -> void:
 	set_duty_status(!is_on_duty)
@@ -178,3 +187,55 @@ func get_missing_promotion_requirements_text() -> String:
 		return "None. Officer is ready for supervisor review."
 
 	return missing_text.strip_edges()
+	
+func _process(delta: float) -> void:
+	game_clock_accumulator += delta * game_minutes_per_real_second
+
+	while game_clock_accumulator >= 1.0:
+		game_clock_accumulator -= 1.0
+		advance_game_minute()
+
+func advance_game_minute() -> void:
+	game_minute += 1
+
+	if game_minute >= 60:
+		game_minute = 0
+		game_hour += 1
+
+	if game_hour >= 24:
+		game_hour = 0
+		game_day += 1
+
+	if game_day > 30:
+		game_day = 1
+		game_month += 1
+
+	if game_month > 12:
+		game_month = 1
+		game_year += 1
+
+	game_time_changed.emit()
+
+func get_game_time_text() -> String:
+	var hour_text: String = str(game_hour)
+	var minute_text: String = str(game_minute)
+
+	if game_hour < 10:
+		hour_text = "0" + hour_text
+
+	if game_minute < 10:
+		minute_text = "0" + minute_text
+
+	return hour_text + ":" + minute_text
+
+func get_game_date_text() -> String:
+	var month_text: String = str(game_month)
+	var day_text: String = str(game_day)
+
+	if game_month < 10:
+		month_text = "0" + month_text
+
+	if game_day < 10:
+		day_text = "0" + day_text
+
+	return month_text + "/" + day_text + "/" + str(game_year)

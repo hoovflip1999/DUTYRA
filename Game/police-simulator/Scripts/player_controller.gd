@@ -36,10 +36,23 @@ var mdt_screen_panel: Panel
 var mdt_browser_bar: Panel
 var mdt_title_label: Label
 var mdt_watermark_label: Label
+
+var mdt_home_tab_button: Button
 var mdt_calls_tab_button: Button
 var mdt_career_tab_button: Button
+var mdt_reports_tab_button: Button
+var mdt_settings_tab_button: Button
+
 var mdt_close_hint_label: Label
+var mdt_clock_label: Label
+var mdt_date_label: Label
+var mdt_status_label: Label
 var career_mdt_label: Label
+var mdt_background_texture: TextureRect
+var mdt_page_title_label: Label
+var mdt_home_label: Label
+var mdt_reports_label: Label
+var mdt_settings_label: Label
 
 var career_dashboard_panel: Control
 var career_header_label: Label
@@ -93,6 +106,7 @@ func _ready() -> void:
 	GameState.performance_xp_changed.connect(_on_performance_xp_changed)
 	GameState.career_progress_changed.connect(_on_career_progress_changed)
 	GameState.shift_ended.connect(_on_shift_ended)
+	GameState.game_time_changed.connect(_on_game_time_changed)
 	update_duty_status_label(GameState.is_on_duty)
 
 	DispatchManager.active_call_changed.connect(_on_active_call_changed)
@@ -278,6 +292,7 @@ func create_mdt_ui() -> void:
 
 	mdt_panel.add_child(mdt_screen_panel)
 
+	create_mdt_background_image()
 	create_mdt_screen_background()
 
 	mdt_browser_bar = Panel.new()
@@ -287,7 +302,7 @@ func create_mdt_ui() -> void:
 	mdt_browser_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	var browser_style := StyleBoxFlat.new()
-	browser_style.bg_color = Color(0.02, 0.035, 0.05, 0.95)
+	browser_style.bg_color = Color(0.02, 0.035, 0.05, 0.92)
 	browser_style.border_color = Color(0.2, 0.45, 0.65, 0.6)
 	browser_style.border_width_bottom = 2
 	browser_style.corner_radius_top_left = 8
@@ -298,7 +313,7 @@ func create_mdt_ui() -> void:
 
 	mdt_title_label = Label.new()
 	mdt_title_label.name = "MDTTitle"
-	mdt_title_label.text = "DUTYRA™ PD  |  MDT PORTAL"
+	mdt_title_label.text = "DUTYRA™ PD  |  SECURE MDT"
 	mdt_title_label.position = Vector2(60, 52)
 	mdt_title_label.size = Vector2(500, 38)
 	mdt_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -306,21 +321,11 @@ func create_mdt_ui() -> void:
 	mdt_title_label.add_theme_color_override("font_color", Color(0.86, 0.96, 1.0, 1.0))
 	mdt_panel.add_child(mdt_title_label)
 
-	mdt_calls_tab_button = Button.new()
-	mdt_calls_tab_button.name = "CallsTab"
-	mdt_calls_tab_button.text = "CALLS"
-	mdt_calls_tab_button.position = Vector2(630, 55)
-	mdt_calls_tab_button.size = Vector2(130, 34)
-	mdt_calls_tab_button.pressed.connect(_on_mdt_calls_tab_pressed)
-	mdt_panel.add_child(mdt_calls_tab_button)
-
-	mdt_career_tab_button = Button.new()
-	mdt_career_tab_button.name = "CareerTab"
-	mdt_career_tab_button.text = "CAREER"
-	mdt_career_tab_button.position = Vector2(770, 55)
-	mdt_career_tab_button.size = Vector2(130, 34)
-	mdt_career_tab_button.pressed.connect(_on_mdt_career_tab_pressed)
-	mdt_panel.add_child(mdt_career_tab_button)
+	mdt_home_tab_button = create_mdt_side_tab("HOME", Vector2(50, 130), _on_mdt_home_tab_pressed)
+	mdt_calls_tab_button = create_mdt_side_tab("CALLS", Vector2(50, 215), _on_mdt_calls_tab_pressed)
+	mdt_career_tab_button = create_mdt_side_tab("PERSONNEL", Vector2(50, 300), _on_mdt_career_tab_pressed)
+	mdt_reports_tab_button = create_mdt_side_tab("REPORTS", Vector2(50, 385), _on_mdt_reports_tab_pressed)
+	mdt_settings_tab_button = create_mdt_side_tab("SETTINGS", Vector2(50, 470), _on_mdt_settings_tab_pressed)
 
 	mdt_close_hint_label = Label.new()
 	mdt_close_hint_label.text = "M / Esc Close"
@@ -331,8 +336,8 @@ func create_mdt_ui() -> void:
 	mdt_close_hint_label.add_theme_color_override("font_color", Color(0.86, 0.96, 1.0, 1.0))
 	mdt_panel.add_child(mdt_close_hint_label)
 
-	dispatch_call_label.position = Vector2(78, 118)
-	dispatch_call_label.size = Vector2(960, 450)
+	dispatch_call_label.position = Vector2(205, 138)
+	dispatch_call_label.size = Vector2(820, 395)
 	dispatch_call_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	dispatch_call_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	dispatch_call_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
@@ -342,8 +347,8 @@ func create_mdt_ui() -> void:
 
 	career_mdt_label = Label.new()
 	career_mdt_label.name = "CareerMDTLabel"
-	career_mdt_label.position = Vector2(78, 118)
-	career_mdt_label.size = Vector2(960, 450)
+	career_mdt_label.position = Vector2(205, 138)
+	career_mdt_label.size = Vector2(820, 395)
 	career_mdt_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	career_mdt_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	career_mdt_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
@@ -354,44 +359,78 @@ func create_mdt_ui() -> void:
 	player_ui.add_child(career_mdt_label)
 
 	create_career_dashboard_ui()
+	create_mdt_extra_pages()
+	create_mdt_bottom_status_bar()
 
 	update_mdt_layout_position()
 	update_mdt_tab_display()
 
+func create_mdt_side_tab(tab_text: String, tab_position: Vector2, pressed_callable: Callable) -> Button:
+	var tab_button := Button.new()
+	tab_button.text = tab_text
+	tab_button.position = tab_position
+	tab_button.size = Vector2(120, 64)
+	tab_button.pressed.connect(pressed_callable)
+	mdt_panel.add_child(tab_button)
+
+	return tab_button
+
+func create_mdt_background_image() -> void:
+	mdt_background_texture = TextureRect.new()
+	mdt_background_texture.name = "MDTBackgroundImage"
+	mdt_background_texture.position = Vector2(32, 32)
+	mdt_background_texture.size = Vector2(1056, 590)
+	mdt_background_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	mdt_background_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	mdt_background_texture.modulate = Color(1.0, 1.0, 1.0, 0.70)
+	mdt_background_texture.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var background_path: String = "res://Art/UI/dutyra_mdt_background.png"
+
+	if ResourceLoader.exists(background_path):
+		mdt_background_texture.texture = load(background_path)
+		print("MDT background loaded: " + background_path)
+	else:
+		print("MDT BACKGROUND NOT FOUND: " + background_path)
+
+	mdt_panel.add_child(mdt_background_texture)
+
+	var dark_overlay := ColorRect.new()
+	dark_overlay.name = "MDTReadableDarkOverlay"
+	dark_overlay.position = Vector2(32, 32)
+	dark_overlay.size = Vector2(1056, 590)
+	dark_overlay.color = Color(0.0, 0.015, 0.035, 0.35)
+	dark_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	mdt_panel.add_child(dark_overlay)
+
 func create_mdt_screen_background() -> void:
-	for x in range(0, 1056, 48):
-		var vertical_line := ColorRect.new()
-		vertical_line.position = Vector2(32 + x, 32)
-		vertical_line.size = Vector2(1, 590)
-		vertical_line.color = Color(0.25, 0.75, 1.0, 0.10)
-		vertical_line.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		mdt_panel.add_child(vertical_line)
+	return
 
 	for y in range(0, 590, 48):
 		var horizontal_line := ColorRect.new()
 		horizontal_line.position = Vector2(32, 32 + y)
 		horizontal_line.size = Vector2(1056, 1)
-		horizontal_line.color = Color(0.25, 0.75, 1.0, 0.10)
+		horizontal_line.color = Color(0.25, 0.75, 1.0, 0.08)
 		horizontal_line.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		mdt_panel.add_child(horizontal_line)
 
 	mdt_watermark_label = Label.new()
 	mdt_watermark_label.name = "MDTWatermark"
 	mdt_watermark_label.text = "DUTYRA MDT"
-	mdt_watermark_label.position = Vector2(235, 300)
-	mdt_watermark_label.size = Vector2(650, 90)
+	mdt_watermark_label.position = Vector2(360, 305)
+	mdt_watermark_label.size = Vector2(520, 80)
 	mdt_watermark_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	mdt_watermark_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	mdt_watermark_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	mdt_watermark_label.add_theme_font_size_override("font_size", 58)
-	mdt_watermark_label.add_theme_color_override("font_color", Color(0.55, 0.85, 1.0, 0.13))
+	mdt_watermark_label.add_theme_font_size_override("font_size", 46)
+	mdt_watermark_label.add_theme_color_override("font_color", Color(0.55, 0.85, 1.0, 0.10))
 	mdt_panel.add_child(mdt_watermark_label)
 
 func create_career_dashboard_ui() -> void:
 	career_dashboard_panel = Control.new()
 	career_dashboard_panel.name = "CareerDashboardPanel"
-	career_dashboard_panel.position = Vector2(60, 116)
-	career_dashboard_panel.size = Vector2(1000, 470)
+	career_dashboard_panel.position = Vector2(205, 138)
+	career_dashboard_panel.size = Vector2(820, 395)
 	career_dashboard_panel.visible = false
 	career_dashboard_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	mdt_panel.add_child(career_dashboard_panel)
@@ -399,71 +438,71 @@ func create_career_dashboard_ui() -> void:
 	career_header_label = Label.new()
 	career_header_label.text = "DUTYRA™ MDT PERSONNEL PORTAL"
 	career_header_label.position = Vector2(0, 0)
-	career_header_label.size = Vector2(1000, 34)
+	career_header_label.size = Vector2(820, 30)
 	career_header_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	career_header_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	career_header_label.add_theme_font_size_override("font_size", 20)
 	career_header_label.add_theme_color_override("font_color", Color(0.86, 0.96, 1.0, 1.0))
 	career_dashboard_panel.add_child(career_header_label)
 
-	var officer_card: Panel = create_dashboard_card(Vector2(0, 50), Vector2(310, 170), "OFFICER FILE")
+	var officer_card: Panel = create_dashboard_card(Vector2(0, 45), Vector2(255, 145), "OFFICER FILE")
 	career_officer_file_label = create_card_body_label(officer_card)
 
-	var review_card: Panel = create_dashboard_card(Vector2(330, 50), Vector2(310, 170), "PROMOTION REVIEW")
+	var review_card: Panel = create_dashboard_card(Vector2(275, 45), Vector2(255, 145), "PROMOTION REVIEW")
 	career_promotion_review_label = create_card_body_label(review_card)
 
-	var shift_card: Panel = create_dashboard_card(Vector2(660, 50), Vector2(330, 170), "CURRENT SHIFT")
+	var shift_card: Panel = create_dashboard_card(Vector2(550, 45), Vector2(270, 145), "CURRENT SHIFT")
 	career_shift_label = create_card_body_label(shift_card)
 
-	var requirements_card: Panel = create_dashboard_card(Vector2(0, 245), Vector2(990, 185), "PROMOTION REQUIREMENTS")
+	var requirements_card: Panel = create_dashboard_card(Vector2(0, 215), Vector2(820, 165), "PROMOTION REQUIREMENTS")
 
 	var xp_label := Label.new()
 	xp_label.text = "Performance XP"
-	xp_label.position = Vector2(20, 55)
-	xp_label.size = Vector2(180, 28)
+	xp_label.position = Vector2(20, 52)
+	xp_label.size = Vector2(165, 24)
 	xp_label.add_theme_color_override("font_color", Color(0.86, 0.96, 1.0, 1.0))
 	requirements_card.add_child(xp_label)
 
 	career_xp_value_label = Label.new()
-	career_xp_value_label.position = Vector2(760, 55)
-	career_xp_value_label.size = Vector2(190, 28)
+	career_xp_value_label.position = Vector2(650, 52)
+	career_xp_value_label.size = Vector2(140, 24)
 	career_xp_value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	career_xp_value_label.add_theme_color_override("font_color", Color(0.86, 0.96, 1.0, 1.0))
 	requirements_card.add_child(career_xp_value_label)
 
-	career_xp_fill = create_requirement_progress_bar(requirements_card, Vector2(220, 62))
+	career_xp_fill = create_requirement_progress_bar(requirements_card, Vector2(195, 58), 440.0)
 
 	var calls_label := Label.new()
 	calls_label.text = "Calls Cleared"
-	calls_label.position = Vector2(20, 95)
-	calls_label.size = Vector2(180, 28)
+	calls_label.position = Vector2(20, 88)
+	calls_label.size = Vector2(165, 24)
 	calls_label.add_theme_color_override("font_color", Color(0.86, 0.96, 1.0, 1.0))
 	requirements_card.add_child(calls_label)
 
 	career_calls_value_label = Label.new()
-	career_calls_value_label.position = Vector2(760, 95)
-	career_calls_value_label.size = Vector2(190, 28)
+	career_calls_value_label.position = Vector2(650, 88)
+	career_calls_value_label.size = Vector2(140, 24)
 	career_calls_value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	career_calls_value_label.add_theme_color_override("font_color", Color(0.86, 0.96, 1.0, 1.0))
 	requirements_card.add_child(career_calls_value_label)
 
-	career_calls_fill = create_requirement_progress_bar(requirements_card, Vector2(220, 102))
+	career_calls_fill = create_requirement_progress_bar(requirements_card, Vector2(195, 94), 440.0)
 
 	var shifts_label := Label.new()
 	shifts_label.text = "Shifts Completed"
-	shifts_label.position = Vector2(20, 135)
-	shifts_label.size = Vector2(180, 28)
+	shifts_label.position = Vector2(20, 124)
+	shifts_label.size = Vector2(165, 24)
 	shifts_label.add_theme_color_override("font_color", Color(0.86, 0.96, 1.0, 1.0))
 	requirements_card.add_child(shifts_label)
 
 	career_shifts_value_label = Label.new()
-	career_shifts_value_label.position = Vector2(760, 135)
-	career_shifts_value_label.size = Vector2(190, 28)
+	career_shifts_value_label.position = Vector2(650, 124)
+	career_shifts_value_label.size = Vector2(140, 24)
 	career_shifts_value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	career_shifts_value_label.add_theme_color_override("font_color", Color(0.86, 0.96, 1.0, 1.0))
 	requirements_card.add_child(career_shifts_value_label)
 
-	career_shifts_fill = create_requirement_progress_bar(requirements_card, Vector2(220, 142))
+	career_shifts_fill = create_requirement_progress_bar(requirements_card, Vector2(195, 130), 440.0)
 
 	update_career_dashboard()
 
@@ -491,15 +530,15 @@ func create_dashboard_card(card_position: Vector2, card_size: Vector2, card_titl
 	var title_label := Label.new()
 	title_label.text = card_title
 	title_label.position = Vector2(14, 10)
-	title_label.size = Vector2(card_size.x - 28, 28)
+	title_label.size = Vector2(card_size.x - 28, 24)
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	title_label.add_theme_font_size_override("font_size", 15)
+	title_label.add_theme_font_size_override("font_size", 14)
 	title_label.add_theme_color_override("font_color", Color(0.55, 0.85, 1.0, 1.0))
 	card.add_child(title_label)
 
 	var divider := ColorRect.new()
-	divider.position = Vector2(14, 42)
+	divider.position = Vector2(14, 39)
 	divider.size = Vector2(card_size.x - 28, 1)
 	divider.color = Color(0.45, 0.85, 1.0, 0.45)
 	card.add_child(divider)
@@ -508,21 +547,21 @@ func create_dashboard_card(card_position: Vector2, card_size: Vector2, card_titl
 
 func create_card_body_label(parent_card: Panel) -> Label:
 	var body_label := Label.new()
-	body_label.position = Vector2(14, 54)
-	body_label.size = Vector2(parent_card.size.x - 28, parent_card.size.y - 66)
+	body_label.position = Vector2(14, 50)
+	body_label.size = Vector2(parent_card.size.x - 28, parent_card.size.y - 58)
 	body_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	body_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	body_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
-	body_label.add_theme_font_size_override("font_size", 14)
+	body_label.add_theme_font_size_override("font_size", 13)
 	body_label.add_theme_color_override("font_color", Color(0.86, 0.96, 1.0, 1.0))
 	parent_card.add_child(body_label)
 
 	return body_label
 
-func create_requirement_progress_bar(parent_card: Panel, bar_position: Vector2) -> ColorRect:
+func create_requirement_progress_bar(parent_card: Panel, bar_position: Vector2, bar_width: float) -> ColorRect:
 	var bar_background := ColorRect.new()
 	bar_background.position = bar_position
-	bar_background.size = Vector2(520, 14)
+	bar_background.size = Vector2(bar_width, 14)
 	bar_background.color = Color(0.03, 0.08, 0.12, 0.95)
 	parent_card.add_child(bar_background)
 
@@ -544,27 +583,28 @@ func update_career_dashboard() -> void:
 		review_status = "ELIGIBLE FOR SUPERVISOR REVIEW"
 
 	career_officer_file_label.text = "UNIT: Unit 24\n" \
-		+ "AGENCY: DUTYRA™ Police Department\n" \
+		+ "AGENCY: DUTYRA™ PD\n" \
 		+ "TRACK: " + GameState.career_track + "\n" \
-		+ "CURRENT RANK: " + GameState.get_current_rank_name()
+		+ "RANK: " + GameState.get_current_rank_name()
 
-	career_promotion_review_label.text = "NEXT RANK: " + GameState.get_next_rank_name() + "\n" \
-		+ "REVIEW STATUS:\n" \
-		+ review_status + "\n\n" \
-		+ "Promotion is not automatic."
+	career_promotion_review_label.text = "NEXT RANK:\n" \
+		+ GameState.get_next_rank_name() + "\n\n" \
+		+ "STATUS:\n" \
+		+ review_status
 
 	career_shift_label.text = GameState.get_shift_status_text() + "\n\n" \
-		+ "TOTAL SHIFTS: " + str(GameState.shifts_completed) + " / " + str(GameState.required_shifts_for_promotion)
+		+ "TOTAL SHIFTS:\n" \
+		+ str(GameState.shifts_completed) + " / " + str(GameState.required_shifts_for_promotion)
 
 	career_xp_value_label.text = str(GameState.performance_xp) + " / " + str(GameState.promotion_eligibility_xp)
 	career_calls_value_label.text = str(GameState.calls_cleared) + " / " + str(GameState.required_calls_for_promotion)
 	career_shifts_value_label.text = str(GameState.shifts_completed) + " / " + str(GameState.required_shifts_for_promotion)
 
-	set_requirement_bar(career_xp_fill, GameState.performance_xp, GameState.promotion_eligibility_xp)
-	set_requirement_bar(career_calls_fill, GameState.calls_cleared, GameState.required_calls_for_promotion)
-	set_requirement_bar(career_shifts_fill, GameState.shifts_completed, GameState.required_shifts_for_promotion)
+	set_requirement_bar(career_xp_fill, GameState.performance_xp, GameState.promotion_eligibility_xp, 440.0)
+	set_requirement_bar(career_calls_fill, GameState.calls_cleared, GameState.required_calls_for_promotion, 440.0)
+	set_requirement_bar(career_shifts_fill, GameState.shifts_completed, GameState.required_shifts_for_promotion, 440.0)
 
-func set_requirement_bar(bar_fill: ColorRect, current_value: int, required_value: int) -> void:
+func set_requirement_bar(bar_fill: ColorRect, current_value: int, required_value: int, bar_width: float) -> void:
 	if bar_fill == null:
 		return
 
@@ -573,7 +613,64 @@ func set_requirement_bar(bar_fill: ColorRect, current_value: int, required_value
 	if required_value > 0:
 		ratio = clampf(float(current_value) / float(required_value), 0.0, 1.0)
 
-	bar_fill.size = Vector2(520.0 * ratio, 14)
+	bar_fill.size = Vector2(bar_width * ratio, 14)
+
+func create_mdt_extra_pages() -> void:
+	mdt_page_title_label = Label.new()
+	mdt_page_title_label.position = Vector2(205, 112)
+	mdt_page_title_label.size = Vector2(820, 34)
+	mdt_page_title_label.add_theme_font_size_override("font_size", 20)
+	mdt_page_title_label.add_theme_color_override("font_color", Color(0.86, 0.96, 1.0, 1.0))
+	mdt_page_title_label.visible = false
+	mdt_panel.add_child(mdt_page_title_label)
+
+	mdt_home_label = create_mdt_page_label()
+	mdt_reports_label = create_mdt_page_label()
+	mdt_settings_label = create_mdt_page_label()
+
+func create_mdt_page_label() -> Label:
+	var page_label := Label.new()
+	page_label.position = Vector2(205, 155)
+	page_label.size = Vector2(820, 360)
+	page_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	page_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	page_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	page_label.add_theme_font_size_override("font_size", 16)
+	page_label.add_theme_color_override("font_color", Color(0.86, 0.96, 1.0, 1.0))
+	page_label.visible = false
+	mdt_panel.add_child(page_label)
+
+	return page_label
+
+func create_mdt_bottom_status_bar() -> void:
+	mdt_date_label = Label.new()
+	mdt_date_label.position = Vector2(205, 575)
+	mdt_date_label.size = Vector2(180, 28)
+	mdt_date_label.add_theme_color_override("font_color", Color(0.65, 0.85, 1.0, 1.0))
+	mdt_panel.add_child(mdt_date_label)
+
+	mdt_clock_label = Label.new()
+	mdt_clock_label.position = Vector2(390, 575)
+	mdt_clock_label.size = Vector2(140, 28)
+	mdt_clock_label.add_theme_color_override("font_color", Color(0.65, 0.85, 1.0, 1.0))
+	mdt_panel.add_child(mdt_clock_label)
+
+	mdt_status_label = Label.new()
+	mdt_status_label.position = Vector2(690, 575)
+	mdt_status_label.size = Vector2(350, 28)
+	mdt_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	mdt_status_label.add_theme_color_override("font_color", Color(0.65, 0.85, 1.0, 1.0))
+	mdt_panel.add_child(mdt_status_label)
+
+	update_mdt_clock_display()
+
+func update_mdt_clock_display() -> void:
+	if mdt_clock_label == null:
+		return
+
+	mdt_date_label.text = "DATE " + GameState.get_game_date_text()
+	mdt_clock_label.text = "TIME " + GameState.get_game_time_text()
+	mdt_status_label.text = "SECURE CONNECTION  |  UNIT 24"
 
 func update_mdt_layout_position() -> void:
 	var screen_size: Vector2 = get_viewport().get_visible_rect().size
@@ -581,10 +678,10 @@ func update_mdt_layout_position() -> void:
 
 	var panel_origin: Vector2 = mdt_panel.position
 
-	dispatch_call_label.position = panel_origin + Vector2(78, 118)
+	dispatch_call_label.position = panel_origin + Vector2(205, 138)
 
 	if career_mdt_label != null:
-		career_mdt_label.position = panel_origin + Vector2(78, 118)
+		career_mdt_label.position = panel_origin + Vector2(205, 138)
 
 func open_mdt() -> void:
 	is_mdt_visible = true
@@ -604,6 +701,18 @@ func close_mdt() -> void:
 	if career_dashboard_panel != null:
 		career_dashboard_panel.visible = false
 
+	if mdt_page_title_label != null:
+		mdt_page_title_label.visible = false
+
+	if mdt_home_label != null:
+		mdt_home_label.visible = false
+
+	if mdt_reports_label != null:
+		mdt_reports_label.visible = false
+
+	if mdt_settings_label != null:
+		mdt_settings_label.visible = false
+
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
 func toggle_mdt() -> void:
@@ -612,33 +721,91 @@ func toggle_mdt() -> void:
 	else:
 		open_mdt()
 
-func _on_mdt_calls_tab_pressed() -> void:
+func _on_mdt_home_tab_pressed() -> void:
 	mdt_tab_index = 0
 	update_mdt_tab_display()
 
-func _on_mdt_career_tab_pressed() -> void:
+func _on_mdt_calls_tab_pressed() -> void:
 	mdt_tab_index = 1
 	update_mdt_tab_display()
 
+func _on_mdt_career_tab_pressed() -> void:
+	mdt_tab_index = 2
+	update_mdt_tab_display()
+
+func _on_mdt_reports_tab_pressed() -> void:
+	mdt_tab_index = 3
+	update_mdt_tab_display()
+
+func _on_mdt_settings_tab_pressed() -> void:
+	mdt_tab_index = 4
+	update_mdt_tab_display()
+
 func update_mdt_tab_display() -> void:
-	if mdt_calls_tab_button == null:
+	if mdt_home_tab_button == null:
 		return
 
-	dispatch_call_label.visible = is_mdt_visible and mdt_tab_index == 0
+	dispatch_call_label.visible = is_mdt_visible and mdt_tab_index == 1
 
 	if career_mdt_label != null:
 		career_mdt_label.visible = false
 
 	if career_dashboard_panel != null:
 		update_career_dashboard()
-		career_dashboard_panel.visible = is_mdt_visible and mdt_tab_index == 1
+		career_dashboard_panel.visible = is_mdt_visible and mdt_tab_index == 2
+
+	mdt_page_title_label.visible = is_mdt_visible and mdt_tab_index != 1 and mdt_tab_index != 2
+	mdt_home_label.visible = is_mdt_visible and mdt_tab_index == 0
+	mdt_reports_label.visible = is_mdt_visible and mdt_tab_index == 3
+	mdt_settings_label.visible = is_mdt_visible and mdt_tab_index == 4
+
+	mdt_home_label.text = "SYSTEM HOME\n\n" \
+		+ "Welcome, Unit 24.\n\n" \
+		+ "Status: " + get_hud_status_text() + "\n" \
+		+ "Connection: Secure\n" \
+		+ "Active Module: Patrol Operations\n\n" \
+		+ "Use the left-side MDT tabs to access calls, personnel records, reports, and system settings."
+
+	mdt_reports_label.text = "REPORTS MODULE\n\n" \
+		+ "Report writing system is not active yet.\n\n" \
+		+ "Future reports will include:\n" \
+		+ "- Incident reports\n" \
+		+ "- Field interview cards\n" \
+		+ "- Arrest reports\n" \
+		+ "- Warning / citation records\n" \
+		+ "- Shift summaries"
+
+	mdt_settings_label.text = "SYSTEM SETTINGS\n\n" \
+		+ "Device: DUTYRA™ Patrol MDT\n" \
+		+ "Assigned Unit: Unit 24\n" \
+		+ "Network: Secure Department Connection\n" \
+		+ "Camera / CAD / Report modules pending."
 
 	if mdt_tab_index == 0:
-		mdt_calls_tab_button.text = "[ CALLS ]"
-		mdt_career_tab_button.text = "CAREER"
+		mdt_page_title_label.text = "DUTYRA™ MDT HOME"
+	elif mdt_tab_index == 3:
+		mdt_page_title_label.text = "REPORT MANAGEMENT"
+	elif mdt_tab_index == 4:
+		mdt_page_title_label.text = "SYSTEM SETTINGS"
+
+	update_mdt_tab_button_visuals()
+	update_mdt_clock_display()
+
+func update_mdt_tab_button_visuals() -> void:
+	set_mdt_tab_button_text(mdt_home_tab_button, "HOME", mdt_tab_index == 0)
+	set_mdt_tab_button_text(mdt_calls_tab_button, "CALLS", mdt_tab_index == 1)
+	set_mdt_tab_button_text(mdt_career_tab_button, "PERSONNEL", mdt_tab_index == 2)
+	set_mdt_tab_button_text(mdt_reports_tab_button, "REPORTS", mdt_tab_index == 3)
+	set_mdt_tab_button_text(mdt_settings_tab_button, "SETTINGS", mdt_tab_index == 4)
+
+func set_mdt_tab_button_text(button: Button, base_text: String, is_selected: bool) -> void:
+	if button == null:
+		return
+
+	if is_selected:
+		button.text = "> " + base_text
 	else:
-		mdt_calls_tab_button.text = "CALLS"
-		mdt_career_tab_button.text = "[ CAREER ]"
+		button.text = base_text
 
 func create_subject_dialogue_ui() -> void:
 	subject_dialogue_panel = Panel.new()
@@ -1390,6 +1557,7 @@ func _on_duty_status_changed(is_on_duty: bool) -> void:
 		career_mdt_label.text = GameState.get_career_mdt_text()
 
 	update_career_dashboard()
+	update_mdt_clock_display()
 
 	if is_radio_wheel_visible:
 		refresh_radio_wheel()
@@ -1415,6 +1583,9 @@ func _on_career_progress_changed() -> void:
 
 func _on_shift_ended(shift_counted: bool, calls_cleared_this_shift: int, shifts_completed_total: int) -> void:
 	show_shift_summary_popup(shift_counted, calls_cleared_this_shift, shifts_completed_total)
+
+func _on_game_time_changed() -> void:
+	update_mdt_clock_display()
 
 func _on_active_call_changed(call_text: String, has_call: bool) -> void:
 	update_dispatch_call_label(call_text, has_call)
