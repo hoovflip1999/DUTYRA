@@ -277,7 +277,7 @@ func create_mdt_ui() -> void:
 
 	mdt_title_label = Label.new()
 	mdt_title_label.name = "MDTTitle"
-	mdt_title_label.text = "CEDAR HEIGHTS PD  |  MDT PORTAL"
+	mdt_title_label.text = "DUTYRA™ PD  |  MDT PORTAL"
 	mdt_title_label.position = Vector2(60, 52)
 	mdt_title_label.size = Vector2(420, 38)
 	mdt_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT

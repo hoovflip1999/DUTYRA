@@ -1,109 +1,186 @@
-# Technical Notes
+DEVELOPMENT RULES
 
-## Development Rule
+1. Work one step at a time.
+Do not make a bunch of random changes at once. Each step should add one clear feature, fix, or system.
 
-The game will be built in small testable pieces.
+2. Keep the game playable after every step.
+Every step should be tested before moving on. Do not commit broken code.
 
-No full script rewrites unless approved first.
+3. Test before committing.
+After code changes, run the game with F5 and test the feature in-game.
 
-Every code change must explain:
+4. Commit only working chunks.
+When a feature works, commit it in GitHub Desktop with a clear summary and description.
 
-* What file is being changed
-* What section is being changed
-* Why it is being changed
-* How to test it afterward
+5. Do not publish yet.
+Commits are local only until the project is ready. Do not press Publish Repository unless specifically decided later.
 
----
+6. Use clear step numbers.
+Continue using numbered steps so progress is easy to resume later.
 
-## Backup Rule
+7. Use exact file paths.
+When changing code, write the exact file path, such as:
+res://Scripts/player_controller.gd
 
-Before major changes, create a checkpoint.
+8. Use targeted code instructions when possible.
+The user now knows how to search code. Use “find this / replace with this” for small changes. Use full script replacements only for large or risky changes.
 
-A checkpoint can be:
+9. Do not add useless cosmetic work.
+Visual changes should support gameplay, clarity, feedback, or immersion. Avoid wasting time on decoration that does not help the game.
 
-* A copied backup folder
-* A Git commit
-* A saved working version
+10. Keep important ideas in the documents.
+When a major decision, future idea, or system direction is decided, update:
+- Decision Log
+- Future Ideas
+- Game Design
+- Technical Notes
 
-The project should always have a version that works.
+11. Preserve working systems.
+Do not rewrite major working systems unless there is a clear reason. Build on what already works.
 
----
+12. When the user says “resume,” continue from the saved resume point.
+Current resume point should always be written in Technical Notes.
 
-## Version 1 Scope
 
-The first playable version will be small.
+BACKUP RULES
 
-Version 1 should include:
+1. GitHub Desktop is the main backup system.
+Every working step should be committed locally.
 
-* One small district
-* One police station
-* One patrol car
-* Basic academy tutorial
-* Basic patrol gameplay
-* Basic dispatch
-* Basic traffic stops
-* Basic guided reports
-* Basic citizen memory
-* Basic save/load system
+2. Do not publish yet.
+The repository should remain unpublished until the game is ready or the user specifically says to publish.
 
-Version 1 should not include:
+3. Commit before risky changes.
+Before making big changes to player controls, MDT, radio, dispatch, career systems, or scene structure, make sure the current working version is committed.
 
-* SWAT
-* K-9
-* Detective career
-* Huge open world
-* Full house system
-* Advanced criminal organizations
-* Fully accessible large city
+4. If something breaks, stop and fix it before continuing.
+Do not stack more changes on top of a broken version.
 
----
+5. If a new change breaks the game badly, use GitHub Desktop to compare changes.
+Check exactly what files changed before trying to fix it.
 
-## Coding Philosophy
+6. If needed, discard only the broken uncommitted changes.
+Use GitHub Desktop carefully to discard changes only when the last committed version was working.
 
-Build expandable systems instead of throwaway features.
+7. Never delete working scenes/scripts without a backup.
+If replacing a system, keep the old working logic committed first.
 
-Example:
+8. Keep commits small and named clearly.
+Good examples:
+- Added subject dialogue popups
+- Added call cleared popup
+- Added laptop MDT career tab
+- Added real shift completion progress
 
-Do not build a traffic stop system that only works for one mission.
+9. Do not commit experimental broken code.
+Only commit after the user confirms the feature works.
 
-Build an interaction system that can later support:
+10. End-of-day rule.
+Before stopping for the day, commit working progress and update the documents with:
+- What was added
+- What is in game
+- What is in progress
+- What is planned next
+------------------------------------------------------------------------------------------------------
 
-* Traffic stops
-* Witness interviews
-* Suspect questioning
-* Citizen conversations
-* Officer interactions
+PROJECT STATUS
+Last committed step: Step 205
+Commit completed: Added real shift completion progress
+Do not publish repository yet.
 
----
+IMPORTANT INPUTS
+Q = Radio wheel
+M = MDT laptop/computer
+E = Interact / select radio option
+Esc = Close radio wheel or MDT
+Mouse = Select radio options and click MDT tabs
 
-## Testing Rule
+AUTOLOADS
+GameState
+DispatchManager
+RadioManager
 
-Every feature must have a simple test.
+CURRENT IMPORTANT SCRIPTS
+res://Scripts/game_state.gd
+- Tracks duty status
+- Tracks current rank
+- Tracks Performance XP
+- Tracks calls cleared
+- Tracks shifts completed
+- Tracks current shift progress
+- Emits duty_status_changed
+- Emits performance_xp_changed
+- Emits career_progress_changed
 
-Example:
+res://Scripts/dispatch_manager.gd
+- Stores active call
+- Assigns random calls
+- Tracks call status
+- Tracks call objective completion
+- Tracks call resolution notes
+- Sends radio messages through RadioManager
 
-Feature:
-Traffic stop begins when player activates lights behind a vehicle.
+res://Scripts/player_controller.gd
+- Handles movement
+- Handles interactions
+- Handles radio wheel UI
+- Handles laptop MDT UI
+- Handles Calls and Career MDT tabs
+- Handles subject dialogue popup
+- Handles call cleared popup
+- Handles temporary XP progress popup
 
-Test:
-Drive behind a civilian vehicle, activate emergency lights, confirm the vehicle pulls over and the traffic stop state begins.
+res://Scripts/call_subject.gd
+- Controls subject prompts
+- Validates active call/location/status
+- Provides subject dialogue
+- Provides call-specific resolution notes
 
----
+res://Scripts/call_response_area.gd
+- Tracks whether player is inside the correct call area
+- Allows on-scene and clear-call checks
 
-## AI Coding Rule
+CURRENT GAMESTATE CAREER VARIABLES
+current_rank = Officer
+performance_xp = 0
+promotion_eligibility_xp = 500
+calls_cleared = 0
+required_calls_for_promotion = 5
+shifts_completed = 0
+required_shifts_for_promotion = 5
+current_shift_active = false
+current_shift_calls_cleared = 0
+required_calls_to_complete_shift = 1
 
-AI may help write code, but AI does not make final design decisions.
+CURRENT FLOW FOR SHIFT COUNTING
+GameState.set_duty_status(true)
+- Starts shift
+- Sets current_shift_active true
+- Resets current_shift_calls_cleared to 0
 
-The design decisions come from the project documents.
+GameState.award_call_performance(amount)
+- Adds to total calls cleared
+- Adds to current shift calls cleared if shift is active
+- Adds Performance XP
+- Updates Career tab
 
-AI should only build what has already been approved.
+GameState.set_duty_status(false)
+- Ends shift
+- If current_shift_calls_cleared >= required_calls_to_complete_shift, shifts_completed increases
+- If no calls were cleared, shift does not count
 
----
+CURRENT RESUME POINT
+Next planned step: Step 206 — Shift End Summary Popup
+Goal:
+When player goes 10-42, show a popup explaining whether the shift counted.
 
-## Controller Rule
+Example counted:
+SHIFT COMPLETE
+Calls Cleared This Shift: 1
+Shift Progress: 1 / 5
+Status: Off Duty
 
-The game is designed for PC but must support controller.
-
-Menus, interaction wheels, driving, walking, radio, and reports should all be usable with a controller.
-
--------------------------------------------------------------------------------------------------------------------
+Example not counted:
+SHIFT ENDED
+No calls cleared.
+Shift did not count toward promotion eligibility.

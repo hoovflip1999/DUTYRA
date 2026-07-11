@@ -1,101 +1,36 @@
 # Future Ideas
 
-## SWAT Career Path
+[FUTURE] Most Wanted wall and tracker
+Create a police station wall or MDT page showing Most Wanted suspects. Each suspect should have a name, photo/icon, wanted reason, last known area, and reward. If the player finds or arrests them during normal patrol, they receive a bonus.
 
-Idea:
-Allow the player to apply for SWAT after gaining experience, passing qualifications, and meeting department requirements.
+[FUTURE] Promotion board / supervisor review
+When the player becomes eligible for promotion, do not auto-promote. Instead, require a supervisor review, promotion board, or approval event.
 
-Why Later:
-SWAT requires advanced AI, tactics, equipment, team commands, and high-risk scenarios. Patrol must work first.
+[FUTURE] Discipline system
+Track bad actions, failed calls, unnecessary force, missed calls, or improper behavior. Discipline should affect promotion eligibility.
 
----
+[FUTURE] Shift summary screen
+At the end of each shift, show calls cleared, XP earned, whether the shift counted, and current promotion progress.
 
-## K-9 Unit
+[FUTURE] More MDT tabs
+Possible future tabs:
+- Calls
+- Career
+- Reports
+- Wanted
+- Map
+- Warrants
+- Vehicles
+- Personnel
 
-Idea:
-Allow the player to become a K-9 officer. The dog stays at the station and is checked out during duty.
+[FUTURE] Report writing
+After certain calls, require a short report or checklist. Better reports can improve performance score.
 
-Why Later:
-K-9 gameplay requires tracking, scent systems, dog AI, suspect reactions, and special call types.
+[FUTURE] Call grading
+Calls can be graded based on response, correct location, contact made, proper resolution, and whether the player cleared correctly.
 
----
+[FUTURE] Rank-gated features
+Higher ranks can unlock new responsibilities, call types, equipment access, supervisor tasks, or specialized units.
 
-## Detective Career
-
-Idea:
-Allow the player to become a detective and handle longer investigations.
-
-Why Later:
-Detective gameplay requires case management, evidence linking, interviews, warrants, and prosecutor review.
-
----
-
-## Multiple Departments
-
-Idea:
-Allow transfers between city police, sheriff’s office, state police, and other agencies within the same open world.
-
-Why Later:
-The first playable version should focus on one department and patrol first.
-
----
-
-## Large Open World Expansion
-
-Idea:
-Expand the map into city, suburbs, highway, rural county, parks, and industrial areas.
-
-Why Later:
-The first version should use one small district to keep performance and workload manageable.
-
----
-
-## Major City Events
-
-Idea:
-Add events such as storms, parades, concerts, elections, sports games, and emergencies.
-
-Why Later:
-These should come after the basic patrol and dispatch systems work.
-
----
-
-## Advanced Criminal Organizations
-
-Idea:
-Add gangs, organized crime, repeat offenders, and criminals who adapt to police behavior.
-
-Why Later:
-This requires the living city and memory systems to be working first.
-
----
-
-## Prosecutor Review System
-
-Idea:
-Cases can be reviewed by a prosecutor. Evidence may be accepted, rejected, or dismissed based on officer actions.
-
-Why Later:
-This is important, but it should come after reports, evidence, and arrest systems are functional.
-
----
-
-## Officer Relationships
-
-Idea:
-Important NPC officers have personalities, strengths, weaknesses, and relationships with the player.
-
-Why Later:
-This adds depth, but patrol gameplay must work first.
-
----
-
-## Home Buying
-
-Idea:
-Allow the player to buy different homes as their career progresses.
-
-Why Later:
-This supports career immersion but is not required for the first playable patrol version.
-
---------------------------------------------------------------------------------------------------
+[FUTURE] Time-in-rank requirement
+Promotion should require time served at the current rank, not just XP.

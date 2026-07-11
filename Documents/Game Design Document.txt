@@ -1,141 +1,50 @@
-# Police Simulator
+CORE GAME LOOP — CURRENTLY IN GAME
+1. Player goes 10-41 / in service.
+2. Dispatch assigns a call.
+3. Player accepts the call with 10-76.
+4. Player travels to the correct location.
+5. Player marks 10-97 / on scene.
+6. Player contacts the involved person.
+7. MDT updates with call-specific notes.
+8. Player clears the call with 10-8.
+9. Player receives Performance XP.
+10. Another call can be assigned.
+11. Player can go 10-42 / out of service.
+12. Shift only counts if the player cleared at least one call.
 
-## Vision
+PROGRESSION DESIGN — CURRENT DIRECTION
+Performance XP is not a normal video game level system. It represents experience, performance, and career progress. It helps the player become eligible for promotion, but promotion is not automatic.
 
-Create the most immersive police career simulator possible.
+Current promotion eligibility requirements shown in the Career tab:
+- Performance XP
+- Calls cleared
+- Shifts completed
 
-The game should feel like living the life of a police officer, not just completing missions.
+Future promotion requirements should include:
+- Supervisor review
+- Discipline history
+- Time-in-rank
+- Special assignments
+- Promotion board
+- Performance record
 
-Every shift should create new stories based on a living world where citizens, criminals, and officers all have their own lives and make their own decisions.
+CURRENT RANK SYSTEM
+Current rank starts as Officer. Higher ranks are not implemented yet.
 
-The player's choices should matter. There should rarely be one "correct" solution to a situation.
+MDT DESIGN — CURRENTLY IN GAME
+The MDT is now designed as a laptop/patrol computer interface. It opens with M, locks player movement, shows the mouse cursor, and has clickable tabs.
 
-## Core Principles
+Current MDT tabs:
+- Calls
+- Career
 
-* The world continues even if the player does nothing.
-* Citizens have daily routines.
-* Criminals adapt to police actions.
-* Every traffic stop should feel unique.
-* Every call for service can have multiple outcomes.
-* Simple controls with deep gameplay.
-* Player decisions affect reputation, career, and the city.
-* Realistic police procedures without overwhelming the player.
+CALL TYPES CURRENTLY IN GAME
+Suspicious Person:
+- Location: Gas Station
+- Subject says they are waiting for a ride
+- Result note: Subject identified. Waiting for a ride. No crime observed.
 
-## Long-Term Goal
-
-Build a police simulation that players can enjoy for hundreds of hours because the city constantly creates new situations instead of repeating scripted missions.
-
----------------------------------------------------------------------------------------------------------------------------------------------------------------
-## Development Philosophy
-
-This game is not mission-based.
-
-It is a living city simulation where the player experiences life as a police officer.
-
-Crimes are created by the simulation, not by scripted missions.
-
-The city exists whether the player is watching or not.
-
-The player responds to the city's events instead of triggering them.
-
-Every system should ask one question:
-
-"What would naturally happen next?"
-
-## What Makes This Game Different?
-
-This is not a mission-based police game.
-
-This is a living police career simulator.
-
-The player is not the center of the world.
-
-The city continues to function whether the player is present or not.
-
-Citizens have lives, jobs, families, routines, and relationships.
-
-Crimes happen because of events inside the simulation, not because the game randomly creates missions.
-
-The player's actions influence the city, their career, public trust, and future events.
-
-The goal is to create unique stories that no two players will experience in exactly the same way.
-
---------------------------------------------------------------------------------------------------------------
-## Citizen System
-
-Every citizen is a persistent character.
-
-Citizens are never just random NPCs.
-
-Each citizen should have:
-
-* First name
-* Last name
-* Age
-* Gender
-* Home
-* Job
-* Daily schedule
-* Vehicle
-* Driver's license status
-* Criminal history
-* Family members
-* Friends
-* Personality
-* Mood
-* Stress level
-* Health
-* Financial status
-
-Citizens remember previous interactions with the player.
-
-The same citizen can appear again weeks or months later in the game.
-
-Their life continues even when the player is not interacting with them.
-
----------------------------------------------------------------------------------
-## Career Progression
-
-The player begins as a police recruit.
-
-The player builds a career through performance instead of experience points.
-
-Promotions should be earned through:
-
-* Good decision making
-* Successful investigations
-* Professional conduct
-* Positive evaluations
-* Department training
-* Time in service
-
-The player can specialize in different career paths instead of following one fixed path.
-
-The player's career should feel personal, with different players reaching different positions based on how they choose to play.
-
---------------------------------------------------------------------------------------------------------------------------------------
-
-## Development Safety Rules
-
-The game will be built in small testable pieces.
-
-No full script rewrites unless approved first.
-
-Every code change must explain:
-
-- What file is being changed
-- What section is being changed
-- Why it is being changed
-- How to test it afterward
-
-Before major changes, a backup or checkpoint must be created.
-
-The project should always have a working version to return to.
-
-New systems should be expandable instead of temporary throwaway code.
-
-The first playable version will be small, but built as the foundation for the larger game.
-
------------------------------------------------------------------------------------------------
-
-
+Noise Complaint:
+- Location: Apartment
+- Resident says they will turn the music down
+- Result note: Resident advised. Music turned down. Noise reduced.

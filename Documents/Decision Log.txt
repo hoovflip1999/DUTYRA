@@ -1,151 +1,57 @@
 # Decision Log
 
-## Project Direction
+STATUS LEGEND
+[IN GAME] = Working and committed
+[IN PROGRESS] = Built/tested but may need more polish later
+[FUTURE] = Planned idea, not built yet
 
-Decision:
-The game will be a living police career simulator, not a mission-based police game.
+[IN GAME] Radio wheel system
+The player uses Q to open a mouse-controlled radio wheel. The wheel handles 10-41, 10-42, 10-76, 10-97, and 10-8 actions. Old direct R call acceptance was removed.
 
-Reason:
-The player should feel like one officer working inside a living city, not the center of the world.
+[IN GAME] Duty status system
+The player can go on duty with 10-41 and off duty with 10-42. Duty status changes control dispatch calls, HUD status, and availability.
 
----
+[IN GAME] Dispatch call flow
+Dispatch assigns calls while the player is on duty. Calls currently include Suspicious Person at the gas station and Noise Complaint at the apartment.
 
-## Core Player Role
+[IN GAME] Call status progression
+Calls move through Pending, En Route, On Scene, Objective Complete, and Cleared states.
 
-Decision:
-The player starts as nobody and builds their career through performance.
+[IN GAME] Call response areas
+The player must be at the correct call location before marking on scene or clearing the call.
 
-Reason:
-Career progression should feel earned, not unlocked through XP alone.
+[IN GAME] Subject contact system
+The player must contact the involved person before clearing the call. Contacting the subject adds call-specific results.
 
----
+[IN GAME] Subject dialogue popup
+Subjects/residents show short dialogue when contacted.
 
-## Game World
+[IN GAME] Call cleared popup
+Clearing a call shows a result popup with the call title, result note, performance XP, and available status.
 
-Decision:
-The game will take place in one open world with multiple regions and departments.
+[IN GAME] Laptop-style MDT
+The MDT now opens as a large laptop/computer-style interface instead of a small text box. It uses clickable mouse tabs.
 
-Reason:
-This allows the player to experience city, suburban, highway, and rural policing without needing separate maps.
+[IN GAME] MDT Calls tab
+The Calls tab shows current call information, location, priority, status, notes, and next action.
 
----
+[IN GAME] MDT Career tab
+The Career tab shows current rank, current shift progress, performance XP, calls cleared, shifts completed, promotion eligibility, and promotion status.
 
-## Departments
+[IN GAME] Performance XP foundation
+Calls award Performance XP. XP does not automatically promote the player. It only contributes to future promotion eligibility.
 
-Decision:
-Players can transfer between departments, but not instantly.
+[IN GAME] Temporary XP progress popup
+When XP is earned, a small progress popup appears briefly on the right side and then disappears. XP is not always shown on the normal HUD.
 
-Reason:
-Transfers should work like real job applications. Reputation, qualifications, openings, and history matter.
+[IN GAME] Real shift completion progress
+Going 10-41 starts a shift. Clearing at least one call during the shift makes the shift eligible to count. Going 10-42 completes the shift only if the required call count was met.
 
----
+[DECISION] Promotions are not automatic
+Promotion will require more than XP. Future promotion should depend on XP, calls cleared, shifts completed, evaluations, discipline history, rank requirements, and possibly promotion boards.
 
-## Academy
+[FUTURE] Shift end summary
+Add a popup when going 10-42 showing whether the shift counted or did not count.
 
-Decision:
-The game begins at the police academy, which serves as the tutorial.
-
-Reason:
-Players learn controls and procedures naturally through training instead of pop-up tutorials.
-
----
-
-## Cutscenes
-
-Decision:
-The game should avoid traditional cutscenes whenever possible.
-
-Reason:
-The player should stay in control and experience events interactively.
-
----
-
-## Time System
-
-Decision:
-The game will use accelerated in-game time, not real-time.
-
-Reason:
-Players should experience realistic day/night changes without waiting hours in real life.
-
----
-
-## Work System
-
-Decision:
-The player does not start fixed missions. They clock in, work their assigned role, take breaks, clock out, and continue their career.
-
-Reason:
-This makes the game feel like a real police life/career simulator.
-
----
-
-## Reports
-
-Decision:
-The game will use guided reports instead of full manual paperwork.
-
-Reason:
-Reports should affect outcomes without becoming boring or overly time-consuming.
-
----
-
-## Body Cameras
-
-Decision:
-Body cameras are always recording while on duty and automatically submitted with reports.
-
-Reason:
-This keeps accountability realistic without adding unnecessary controls.
-
----
-
-## Legal System
-
-Decision:
-The game will use laws based on general U.S. policing principles, not exact state-by-state laws.
-
-Reason:
-This keeps the legal system believable, consistent, and easier to understand.
-
----
-
-## Failure
-
-Decision:
-There should almost never be a game over screen.
-
-Reason:
-Mistakes should create consequences, retraining, discipline, demotion, or career setbacks instead of forcing the player to reload.
-
----
-
-## Qualifications
-
-Decision:
-Weapons, vehicles, and special roles are earned through training and qualifications, not money or XP unlocks.
-
-Reason:
-This makes progression feel like a real police career.
-
----
-
-## Controls
-
-Decision:
-The game is primarily a PC game but must fully support controller.
-
-Reason:
-Deep gameplay should still be easy to control.
-
----
-
-## Development Safety
-
-Decision:
-No full script rewrites unless approved.
-
-Reason:
-Small changes are easier to test, understand, and roll back.
-
------------------------------------------------------------------------------------------
+[FUTURE] Most Wanted system
+Add a Most Wanted wall/tracker. Wanted people can exist in the city, and finding/arresting them gives extra rewards or bonuses.
