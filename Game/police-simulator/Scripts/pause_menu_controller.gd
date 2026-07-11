@@ -186,7 +186,7 @@ func create_left_menu() -> void:
 	var start_y: float = 238.0
 	var button_width: float = 447.0
 	var button_height: float = 72.0
-	var button_gap: float = 3.0
+	var button_gap: float = 15.5
 
 	resume_button = create_pause_button(
 		"RESUME GAME",
@@ -234,17 +234,6 @@ func create_left_menu() -> void:
 		_on_field_manual_pressed
 	)
 
-	create_pause_button(
-		"PHOTO MODE",
-		"Capture in-game moments",
-		"●",
-		Vector2(
-			button_x,
-			start_y + (button_height + button_gap) * 4.0
-		),
-		Vector2(button_width, button_height),
-		_on_photo_mode_pressed
-	)
 
 	create_pause_button(
 		"SAVE GAME",
@@ -252,7 +241,7 @@ func create_left_menu() -> void:
 		"▣",
 		Vector2(
 			button_x,
-			start_y + (button_height + button_gap) * 5.0
+			start_y + (button_height + button_gap) * 4.0
 		),
 		Vector2(button_width, button_height),
 		_on_save_game_pressed
@@ -264,7 +253,7 @@ func create_left_menu() -> void:
 		"↩",
 		Vector2(
 			button_x,
-			start_y + (button_height + button_gap) * 6.0
+			start_y + (button_height + button_gap) * 5.0
 		),
 		Vector2(button_width, button_height),
 		_on_exit_to_main_menu_pressed
@@ -276,7 +265,7 @@ func create_left_menu() -> void:
 		"⏻",
 		Vector2(
 			button_x,
-			start_y + (button_height + button_gap) * 7.0
+			start_y + (button_height + button_gap) * 6.0
 		),
 		Vector2(button_width, button_height),
 		_on_quit_game_pressed
@@ -1469,12 +1458,6 @@ func _on_field_manual_pressed() -> void:
 		"Police procedures, radio codes, call-response guidance, and academy tutorials will be available here."
 	)
 
-
-func _on_photo_mode_pressed() -> void:
-	show_information_modal(
-		"PHOTO MODE",
-		"Photo Mode is not active in this development build."
-	)
 
 
 func _on_save_game_pressed() -> void:
