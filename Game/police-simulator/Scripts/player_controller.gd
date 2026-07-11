@@ -26,6 +26,7 @@ var radio_message_id: int = 0
 var subject_dialogue_id: int = 0
 var call_clear_id: int = 0
 var xp_popup_id: int = 0
+var shift_summary_id: int = 0
 var active_call_area: Node = null
 
 var hud_status_dot: Panel
@@ -43,6 +44,8 @@ var subject_dialogue_panel: Panel
 var subject_dialogue_label: Label
 var call_clear_panel: Panel
 var call_clear_label: Label
+var shift_summary_panel: Panel
+var shift_summary_label: Label
 var xp_popup_panel: Panel
 var xp_popup_label: Label
 var xp_progress_background: ColorRect
@@ -68,12 +71,14 @@ func _ready() -> void:
 	create_mdt_ui()
 	create_subject_dialogue_ui()
 	create_call_clear_ui()
+	create_shift_summary_ui()
 	create_xp_popup_ui()
 	create_radio_wheel_ui()
 
 	GameState.duty_status_changed.connect(_on_duty_status_changed)
 	GameState.performance_xp_changed.connect(_on_performance_xp_changed)
 	GameState.career_progress_changed.connect(_on_career_progress_changed)
+	GameState.shift_ended.connect(_on_shift_ended)
 	update_duty_status_label(GameState.is_on_duty)
 
 	DispatchManager.active_call_changed.connect(_on_active_call_changed)
@@ -449,6 +454,37 @@ func create_call_clear_ui() -> void:
 	call_clear_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	call_clear_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	call_clear_panel.add_child(call_clear_label)
+
+func create_shift_summary_ui() -> void:
+	shift_summary_panel = Panel.new()
+	shift_summary_panel.name = "ShiftSummaryPanel"
+	shift_summary_panel.size = Vector2(560, 170)
+	shift_summary_panel.visible = false
+	shift_summary_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	shift_summary_panel.z_index = 28
+
+	var panel_style := StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.015, 0.025, 0.04, 0.93)
+	panel_style.border_color = Color(0.1, 0.65, 1.0, 0.85)
+	panel_style.border_width_top = 3
+	panel_style.border_width_bottom = 3
+	panel_style.border_width_left = 3
+	panel_style.border_width_right = 3
+	panel_style.corner_radius_top_left = 14
+	panel_style.corner_radius_top_right = 14
+	panel_style.corner_radius_bottom_left = 14
+	panel_style.corner_radius_bottom_right = 14
+	shift_summary_panel.add_theme_stylebox_override("panel", panel_style)
+
+	player_ui.add_child(shift_summary_panel)
+
+	shift_summary_label = Label.new()
+	shift_summary_label.position = Vector2(18, 14)
+	shift_summary_label.size = Vector2(524, 142)
+	shift_summary_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	shift_summary_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	shift_summary_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	shift_summary_panel.add_child(shift_summary_label)
 
 func create_xp_popup_ui() -> void:
 	xp_popup_panel = Panel.new()
@@ -1045,6 +1081,31 @@ func show_call_cleared_result(call_title: String, call_note: String, performance
 	if current_clear_id == call_clear_id:
 		call_clear_panel.visible = false
 
+func show_shift_summary_popup(shift_counted: bool, calls_cleared_this_shift: int, shifts_completed_total: int) -> void:
+	shift_summary_id += 1
+	var current_shift_summary_id: int = shift_summary_id
+
+	var screen_size: Vector2 = get_viewport().get_visible_rect().size
+	shift_summary_panel.position = Vector2((screen_size.x - shift_summary_panel.size.x) * 0.5, 120)
+
+	if shift_counted:
+		shift_summary_label.text = "SHIFT COMPLETE\n\n" \
+			+ "Calls Cleared This Shift: " + str(calls_cleared_this_shift) + "\n" \
+			+ "Shift Progress: " + str(shifts_completed_total) + " / " + str(GameState.required_shifts_for_promotion) + "\n\n" \
+			+ "Status: Off Duty"
+	else:
+		shift_summary_label.text = "SHIFT ENDED\n\n" \
+			+ "No calls cleared.\n" \
+			+ "Shift did not count toward promotion eligibility.\n\n" \
+			+ "Status: Off Duty"
+
+	shift_summary_panel.visible = true
+
+	await get_tree().create_timer(4.0).timeout
+
+	if current_shift_summary_id == shift_summary_id:
+		shift_summary_panel.visible = false
+
 func show_xp_progress_popup(amount_added: int) -> void:
 	xp_popup_id += 1
 	var current_popup_id: int = xp_popup_id
@@ -1099,6 +1160,9 @@ func _on_career_progress_changed() -> void:
 
 	if is_mdt_visible:
 		update_mdt_tab_display()
+
+func _on_shift_ended(shift_counted: bool, calls_cleared_this_shift: int, shifts_completed_total: int) -> void:
+	show_shift_summary_popup(shift_counted, calls_cleared_this_shift, shifts_completed_total)
 
 func _on_active_call_changed(call_text: String, has_call: bool) -> void:
 	update_dispatch_call_label(call_text, has_call)

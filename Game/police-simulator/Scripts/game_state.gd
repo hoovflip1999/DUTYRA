@@ -3,6 +3,7 @@ extends Node
 signal duty_status_changed(is_on_duty: bool)
 signal performance_xp_changed(current_xp: int, amount_added: int)
 signal career_progress_changed()
+signal shift_ended(shift_counted: bool, calls_cleared_this_shift: int, shifts_completed_total: int)
 
 var is_on_duty: bool = false
 
@@ -50,14 +51,20 @@ func end_shift() -> void:
 	if not current_shift_active:
 		return
 
+	var calls_cleared_this_shift: int = current_shift_calls_cleared
+	var shift_counted: bool = false
+
 	if current_shift_calls_cleared >= required_calls_to_complete_shift:
 		shifts_completed += 1
+		shift_counted = true
 		print("Shift completed. Total shifts completed: " + str(shifts_completed))
 	else:
 		print("Shift ended but did not count. No calls cleared.")
 
 	current_shift_active = false
 	current_shift_calls_cleared = 0
+
+	shift_ended.emit(shift_counted, calls_cleared_this_shift, shifts_completed)
 
 func award_call_performance(amount: int) -> void:
 	calls_cleared += 1
