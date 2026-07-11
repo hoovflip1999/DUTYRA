@@ -114,16 +114,40 @@ func get_promotion_status_text() -> String:
 	return "Not eligible yet"
 
 func get_career_mdt_text() -> String:
-	return "MDT / CAREER\n\n" \
-		+ "CURRENT RANK\n" \
-		+ current_rank + "\n\n" \
-		+ "CURRENT SHIFT\n" \
-		+ get_shift_status_text() + "\n\n" \
-		+ "PROMOTION ELIGIBILITY\n" \
-		+ "Performance XP: " + str(performance_xp) + " / " + str(promotion_eligibility_xp) + "\n" \
-		+ "Calls Cleared: " + str(calls_cleared) + " / " + str(required_calls_for_promotion) + "\n" \
-		+ "Shifts Completed: " + str(shifts_completed) + " / " + str(required_shifts_for_promotion) + "\n\n" \
-		+ "STATUS\n" \
-		+ get_promotion_status_text() + "\n\n" \
-		+ "NOTE\n" \
-		+ "Promotion is not automatic. Eligibility means the officer can be considered later."
+	return "CAREER / PERSONNEL FILE\n\n" \
+		+ "RANK: " + current_rank + "\n" \
+		+ "SHIFT: " + get_shift_status_text() + "\n\n" \
+		+ "NEXT REVIEW: Corporal\n" \
+		+ "STATUS: " + get_promotion_status_text() + "\n\n" \
+		+ "REQUIREMENTS\n" \
+		+ get_requirement_line("Performance XP", performance_xp, promotion_eligibility_xp) + "\n" \
+		+ get_requirement_line("Calls Cleared", calls_cleared, required_calls_for_promotion) + "\n" \
+		+ get_requirement_line("Shifts Completed", shifts_completed, required_shifts_for_promotion) + "\n\n" \
+		+ "MISSING\n" \
+		+ get_missing_promotion_requirements_text() + "\n\n" \
+		+ "NOTE: Requirements create eligibility only. Promotion requires supervisor review."
+		
+func get_requirement_line(requirement_name: String, current_value: int, required_value: int) -> String:
+	var marker: String = "[ ]"
+
+	if current_value >= required_value:
+		marker = "[X]"
+
+	return marker + " " + requirement_name + ": " + str(current_value) + " / " + str(required_value)
+
+func get_missing_promotion_requirements_text() -> String:
+	var missing_text: String = ""
+
+	if performance_xp < promotion_eligibility_xp:
+		missing_text += "- Performance XP: " + str(performance_xp) + " / " + str(promotion_eligibility_xp) + "\n"
+
+	if calls_cleared < required_calls_for_promotion:
+		missing_text += "- Calls Cleared: " + str(calls_cleared) + " / " + str(required_calls_for_promotion) + "\n"
+
+	if shifts_completed < required_shifts_for_promotion:
+		missing_text += "- Shifts Completed: " + str(shifts_completed) + " / " + str(required_shifts_for_promotion) + "\n"
+
+	if missing_text == "":
+		return "None. Officer is ready for supervisor review."
+
+	return missing_text.strip_edges()

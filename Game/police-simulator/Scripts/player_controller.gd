@@ -35,6 +35,7 @@ var mdt_panel: Panel
 var mdt_screen_panel: Panel
 var mdt_browser_bar: Panel
 var mdt_title_label: Label
+var mdt_watermark_label: Label
 var mdt_calls_tab_button: Button
 var mdt_career_tab_button: Button
 var mdt_close_hint_label: Label
@@ -223,7 +224,7 @@ func create_main_status_hud() -> void:
 func create_mdt_ui() -> void:
 	mdt_panel = Panel.new()
 	mdt_panel.name = "LaptopMDT"
-	mdt_panel.size = Vector2(980, 620)
+	mdt_panel.size = Vector2(1120, 680)
 	mdt_panel.visible = false
 	mdt_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	mdt_panel.z_index = 40
@@ -246,11 +247,11 @@ func create_mdt_ui() -> void:
 	mdt_screen_panel = Panel.new()
 	mdt_screen_panel.name = "MDTScreen"
 	mdt_screen_panel.position = Vector2(32, 32)
-	mdt_screen_panel.size = Vector2(916, 530)
+	mdt_screen_panel.size = Vector2(1056, 590)
 	mdt_screen_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	var screen_style := StyleBoxFlat.new()
-	screen_style.bg_color = Color(0.005, 0.012, 0.018, 0.98)
+	screen_style.bg_color = Color(0.015, 0.07, 0.13, 0.98)
 	screen_style.border_color = Color(0.1, 0.75, 1.0, 0.7)
 	screen_style.border_width_top = 3
 	screen_style.border_width_bottom = 3
@@ -263,6 +264,8 @@ func create_mdt_ui() -> void:
 	mdt_screen_panel.add_theme_stylebox_override("panel", screen_style)
 
 	mdt_panel.add_child(mdt_screen_panel)
+
+	create_mdt_screen_background()
 
 	mdt_browser_bar = Panel.new()
 	mdt_browser_bar.name = "MDTBrowserBar"
@@ -284,7 +287,7 @@ func create_mdt_ui() -> void:
 	mdt_title_label.name = "MDTTitle"
 	mdt_title_label.text = "DUTYRA™ PD  |  MDT PORTAL"
 	mdt_title_label.position = Vector2(60, 52)
-	mdt_title_label.size = Vector2(420, 38)
+	mdt_title_label.size = Vector2(500, 38)
 	mdt_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	mdt_title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	mdt_panel.add_child(mdt_title_label)
@@ -292,7 +295,7 @@ func create_mdt_ui() -> void:
 	mdt_calls_tab_button = Button.new()
 	mdt_calls_tab_button.name = "CallsTab"
 	mdt_calls_tab_button.text = "CALLS"
-	mdt_calls_tab_button.position = Vector2(505, 55)
+	mdt_calls_tab_button.position = Vector2(630, 55)
 	mdt_calls_tab_button.size = Vector2(130, 34)
 	mdt_calls_tab_button.pressed.connect(_on_mdt_calls_tab_pressed)
 	mdt_panel.add_child(mdt_calls_tab_button)
@@ -300,21 +303,23 @@ func create_mdt_ui() -> void:
 	mdt_career_tab_button = Button.new()
 	mdt_career_tab_button.name = "CareerTab"
 	mdt_career_tab_button.text = "CAREER"
-	mdt_career_tab_button.position = Vector2(645, 55)
+	mdt_career_tab_button.position = Vector2(770, 55)
 	mdt_career_tab_button.size = Vector2(130, 34)
 	mdt_career_tab_button.pressed.connect(_on_mdt_career_tab_pressed)
 	mdt_panel.add_child(mdt_career_tab_button)
 
 	mdt_close_hint_label = Label.new()
 	mdt_close_hint_label.text = "M / Esc Close"
-	mdt_close_hint_label.position = Vector2(805, 55)
+	mdt_close_hint_label.position = Vector2(940, 55)
 	mdt_close_hint_label.size = Vector2(120, 34)
 	mdt_close_hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	mdt_close_hint_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	mdt_panel.add_child(mdt_close_hint_label)
 
 	dispatch_call_label.position = Vector2(78, 122)
-	dispatch_call_label.size = Vector2(820, 380)
+	dispatch_call_label.size = Vector2(960, 450)
+	dispatch_call_label.add_theme_font_size_override("font_size", 15)
+	dispatch_call_label.add_theme_color_override("font_color", Color(0.86, 0.96, 1.0, 1.0))
 	dispatch_call_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	dispatch_call_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	dispatch_call_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
@@ -323,7 +328,9 @@ func create_mdt_ui() -> void:
 	career_mdt_label = Label.new()
 	career_mdt_label.name = "CareerMDTLabel"
 	career_mdt_label.position = Vector2(78, 122)
-	career_mdt_label.size = Vector2(820, 380)
+	career_mdt_label.size = Vector2(960, 450)
+	career_mdt_label.add_theme_font_size_override("font_size", 15)
+	career_mdt_label.add_theme_color_override("font_color", Color(0.86, 0.96, 1.0, 1.0))
 	career_mdt_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	career_mdt_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	career_mdt_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
@@ -333,17 +340,44 @@ func create_mdt_ui() -> void:
 
 	update_mdt_layout_position()
 	update_mdt_tab_display()
+func create_mdt_screen_background() -> void:
+	for x in range(0, 1056, 48):
+		var vertical_line := ColorRect.new()
+		vertical_line.position = Vector2(32 + x, 32)
+		vertical_line.size = Vector2(1, 590)
+		vertical_line.color = Color(0.25, 0.75, 1.0, 0.10)
+		vertical_line.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		mdt_panel.add_child(vertical_line)
 
+	for y in range(0, 590, 48):
+		var horizontal_line := ColorRect.new()
+		horizontal_line.position = Vector2(32, 32 + y)
+		horizontal_line.size = Vector2(1056, 1)
+		horizontal_line.color = Color(0.25, 0.75, 1.0, 0.10)
+		horizontal_line.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		mdt_panel.add_child(horizontal_line)
+
+	mdt_watermark_label = Label.new()
+	mdt_watermark_label.name = "MDTWatermark"
+	mdt_watermark_label.text = "DUTYRA MDT"
+	mdt_watermark_label.position = Vector2(235, 300)
+	mdt_watermark_label.size = Vector2(650, 90)
+	mdt_watermark_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	mdt_watermark_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	mdt_watermark_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	mdt_watermark_label.add_theme_font_size_override("font_size", 58)
+	mdt_watermark_label.add_theme_color_override("font_color", Color(0.55, 0.85, 1.0, 0.13))
+	mdt_panel.add_child(mdt_watermark_label)
 func update_mdt_layout_position() -> void:
 	var screen_size: Vector2 = get_viewport().get_visible_rect().size
 	mdt_panel.position = Vector2((screen_size.x - mdt_panel.size.x) * 0.5, (screen_size.y - mdt_panel.size.y) * 0.5)
 
 	var panel_origin: Vector2 = mdt_panel.position
 
-	dispatch_call_label.position = panel_origin + Vector2(78, 122)
+	dispatch_call_label.position = panel_origin + Vector2(78, 118)
 
 	if career_mdt_label != null:
-		career_mdt_label.position = panel_origin + Vector2(78, 122)
+		career_mdt_label.position = panel_origin + Vector2(78, 118)
 
 func open_mdt() -> void:
 	is_mdt_visible = true
