@@ -3,7 +3,31 @@ extends CanvasLayer
 const DESIGN_SIZE: Vector2 = Vector2(1536.0, 1024.0)
 const PAUSE_BACKGROUND_PATH: String = "res://Art/Menu/dutyra_pause_menu_background.png"
 const MAIN_MENU_SCENE_PATH: String = "res://Scenes/MainMenu.tscn"
+const CONTROL_ACTIONS := [
+	"move_forward",
+	"move_back",
+	"move_left",
+	"move_right",
+	"sprint",
+	"crouch",
+	"jump",
+	"interact",
+	"toggle_radio_menu",
+	"toggle_mdt"
+]
 
+const CONTROL_LABELS := {
+	"move_forward": "MOVE FORWARD",
+	"move_back": "MOVE BACKWARD",
+	"move_left": "MOVE LEFT",
+	"move_right": "MOVE RIGHT",
+	"sprint": "SPRINT",
+	"crouch": "CROUCH",
+	"jump": "JUMP",
+	"interact": "INTERACT / SELECT",
+	"toggle_radio_menu": "RADIO WHEEL",
+	"toggle_mdt": "MDT"
+}
 var screen_root: Control
 var design_canvas: Control
 var resume_button: Button
@@ -44,7 +68,11 @@ var radio_volume_value: Label
 var mouse_sensitivity_slider: HSlider
 var mouse_sensitivity_value: Label
 var updating_settings: bool = false
-
+var controls_blocker: ColorRect
+var controls_panel: Panel
+var controls_status_label: Label
+var control_buttons: Dictionary = {}
+var waiting_for_control_action: String = ""
 var save_toast_panel: Panel
 var save_toast_label: Label
 var save_toast_timer: Timer
@@ -84,6 +112,7 @@ func _ready() -> void:
 	create_bottom_hints()
 	create_information_modal()
 	create_settings_panel()
+	create_controls_panel()
 	create_save_toast()
 
 	get_viewport().size_changed.connect(update_pause_layout)
@@ -103,9 +132,37 @@ func _ready() -> void:
 
 
 func _input(event: InputEvent) -> void:
+	if waiting_for_control_action != "":
+		if event is InputEventKey:
+			var rebind_key_event: InputEventKey = (
+				event as InputEventKey
+			)
+
+			if (
+				rebind_key_event.pressed
+				and not rebind_key_event.echo
+			):
+				handle_control_rebind(
+					rebind_key_event
+				)
+
+				get_viewport().set_input_as_handled()
+
+		return
+
 	if event is InputEventKey:
-		if event.pressed and not event.echo:
-			if event.keycode == KEY_F5 and pause_open:
+		var pause_key_event: InputEventKey = (
+			event as InputEventKey
+		)
+
+		if (
+			pause_key_event.pressed
+			and not pause_key_event.echo
+		):
+			if (
+				pause_key_event.keycode == KEY_F5
+				and pause_open
+			):
 				quick_save()
 				get_viewport().set_input_as_handled()
 				return
@@ -113,7 +170,18 @@ func _input(event: InputEvent) -> void:
 	if not event.is_action_pressed("ui_cancel"):
 		return
 
-	if settings_panel != null and settings_panel.visible:
+	if (
+		controls_panel != null
+		and controls_panel.visible
+	):
+		hide_controls_panel()
+		get_viewport().set_input_as_handled()
+		return
+
+	if (
+		settings_panel != null
+		and settings_panel.visible
+	):
 		hide_settings_panel()
 		get_viewport().set_input_as_handled()
 		return
@@ -1695,7 +1763,542 @@ func _on_reset_settings_pressed() -> void:
 	load_settings_values()
 	apply_saved_mouse_sensitivity()
 
+# -------------------------------------------------------------------
+# CONTROLS PANEL
+# -------------------------------------------------------------------
 
+func create_controls_panel() -> void:
+	controls_blocker = ColorRect.new()
+	controls_blocker.position = Vector2.ZERO
+	controls_blocker.size = DESIGN_SIZE
+	controls_blocker.color = Color(
+		0.0,
+		0.0,
+		0.0,
+		0.80
+	)
+	controls_blocker.visible = false
+	controls_blocker.mouse_filter = (
+		Control.MOUSE_FILTER_STOP
+	)
+	controls_blocker.z_index = 69
+
+	design_canvas.add_child(
+		controls_blocker
+	)
+
+	controls_panel = Panel.new()
+	controls_panel.position = Vector2(
+		288.0,
+		122.0
+	)
+	controls_panel.size = Vector2(
+		960.0,
+		780.0
+	)
+	controls_panel.visible = false
+	controls_panel.mouse_filter = (
+		Control.MOUSE_FILTER_STOP
+	)
+	controls_panel.z_index = 70
+
+	controls_panel.add_theme_stylebox_override(
+		"panel",
+		create_panel_style(
+			Color(
+				0.008,
+				0.014,
+				0.024,
+				0.99
+			),
+			Color(
+				0.0,
+				0.58,
+				1.0,
+				0.95
+			),
+			2
+		)
+	)
+
+	design_canvas.add_child(
+		controls_panel
+	)
+
+	make_label(
+		"CONTROLS",
+		Vector2(38.0, 24.0),
+		Vector2(450.0, 38.0),
+		27,
+		Color(
+			0.95,
+			0.97,
+			1.0,
+			1.0
+		),
+		controls_panel
+	)
+
+	make_label(
+		"Click a key binding, then press the replacement key.",
+		Vector2(40.0, 62.0),
+		Vector2(620.0, 25.0),
+		14,
+		Color(
+			0.58,
+			0.63,
+			0.70,
+			1.0
+		),
+		controls_panel
+	)
+
+	var close_button: Button = Button.new()
+	close_button.text = "X"
+	close_button.position = Vector2(
+		890.0,
+		24.0
+	)
+	close_button.size = Vector2(
+		42.0,
+		38.0
+	)
+
+	close_button.pressed.connect(
+		hide_controls_panel
+	)
+
+	controls_panel.add_child(
+		close_button
+	)
+
+	add_horizontal_line(
+		controls_panel,
+		94.0,
+		890.0,
+		35.0
+	)
+
+	for index: int in range(
+		CONTROL_ACTIONS.size()
+	):
+		var action_name: String = str(
+			CONTROL_ACTIONS[index]
+		)
+
+		var column: int = int(
+			index / 5
+		)
+
+		var row: int = index % 5
+
+		var row_position := Vector2(
+			40.0 + float(column) * 460.0,
+			125.0 + float(row) * 100.0
+		)
+
+		create_control_binding_row(
+			action_name,
+			row_position
+		)
+
+	controls_status_label = make_label(
+		"Select a binding to change it.",
+		Vector2(40.0, 635.0),
+		Vector2(880.0, 34.0),
+		15,
+		Color(
+			0.70,
+			0.78,
+			0.88,
+			1.0
+		),
+		controls_panel
+	)
+
+	controls_status_label.horizontal_alignment = (
+		HORIZONTAL_ALIGNMENT_CENTER
+	)
+
+	controls_status_label.vertical_alignment = (
+		VERTICAL_ALIGNMENT_CENTER
+	)
+
+	add_horizontal_line(
+		controls_panel,
+		687.0,
+		890.0,
+		35.0
+	)
+
+	var reset_button: Button = Button.new()
+	reset_button.text = "RESET DEFAULTS"
+	reset_button.position = Vector2(
+		40.0,
+		710.0
+	)
+	reset_button.size = Vector2(
+		180.0,
+		42.0
+	)
+
+	reset_button.pressed.connect(
+		_on_reset_controls_pressed
+	)
+
+	controls_panel.add_child(
+		reset_button
+	)
+
+	var back_button: Button = Button.new()
+	back_button.text = "BACK"
+	back_button.position = Vector2(
+		780.0,
+		710.0
+	)
+	back_button.size = Vector2(
+		140.0,
+		42.0
+	)
+
+	back_button.pressed.connect(
+		hide_controls_panel
+	)
+
+	controls_panel.add_child(
+		back_button
+	)
+
+
+func create_control_binding_row(
+	action_name: String,
+	row_position: Vector2
+) -> void:
+	var display_name: String = str(
+		CONTROL_LABELS.get(
+			action_name,
+			action_name.to_upper()
+		)
+	)
+
+	make_label(
+		display_name,
+		row_position,
+		Vector2(235.0, 28.0),
+		15,
+		Color(
+			0.91,
+			0.93,
+			0.97,
+			1.0
+		),
+		controls_panel
+	)
+
+	make_label(
+		"Click the key to rebind",
+		Vector2(
+			row_position.x,
+			row_position.y + 30.0
+		),
+		Vector2(235.0, 24.0),
+		11,
+		Color(
+			0.52,
+			0.57,
+			0.64,
+			1.0
+		),
+		controls_panel
+	)
+
+	var bind_button: Button = Button.new()
+
+	bind_button.position = Vector2(
+		row_position.x + 245.0,
+		row_position.y + 3.0
+	)
+
+	bind_button.size = Vector2(
+		165.0,
+		48.0
+	)
+
+	bind_button.text = "UNBOUND"
+
+	bind_button.mouse_default_cursor_shape = (
+		Control.CURSOR_POINTING_HAND
+	)
+
+	bind_button.pressed.connect(
+		_on_control_binding_pressed.bind(
+			action_name
+		)
+	)
+
+	controls_panel.add_child(
+		bind_button
+	)
+
+	control_buttons[action_name] = bind_button
+
+
+func show_controls_panel() -> void:
+	waiting_for_control_action = ""
+
+	refresh_control_bindings()
+
+	controls_status_label.text = (
+		"Select a binding to change it."
+	)
+
+	controls_blocker.visible = true
+	controls_panel.visible = true
+
+	var first_button: Button = (
+		control_buttons.get(
+			"move_forward"
+		) as Button
+	)
+
+	if first_button != null:
+		first_button.grab_focus()
+
+
+func hide_controls_panel() -> void:
+	if waiting_for_control_action != "":
+		refresh_control_bindings()
+
+	waiting_for_control_action = ""
+
+	if controls_status_label != null:
+		controls_status_label.text = (
+			"Select a binding to change it."
+		)
+
+	if controls_blocker != null:
+		controls_blocker.visible = false
+
+	if controls_panel != null:
+		controls_panel.visible = false
+
+
+func refresh_control_bindings() -> void:
+	for action_value: Variant in CONTROL_ACTIONS:
+		var action_name: String = str(
+			action_value
+		)
+
+		var button: Button = (
+			control_buttons.get(
+				action_name
+			) as Button
+		)
+
+		if button == null:
+			continue
+
+		button.text = get_control_key_text(
+			action_name
+		)
+
+
+func get_control_key_text(
+	action_name: String
+) -> String:
+	var keycode: int = int(
+		SettingsManager.get_setting(
+			"controls",
+			action_name,
+			0
+		)
+	)
+
+	if keycode <= 0:
+		return "UNBOUND"
+
+	return get_key_name(keycode)
+
+
+func _on_control_binding_pressed(
+	action_name: String
+) -> void:
+	waiting_for_control_action = action_name
+
+	refresh_control_bindings()
+
+	var button: Button = (
+		control_buttons.get(
+			action_name
+		) as Button
+	)
+
+	if button != null:
+		button.text = "PRESS A KEY..."
+
+	var display_name: String = str(
+		CONTROL_LABELS.get(
+			action_name,
+			action_name.to_upper()
+		)
+	)
+
+	controls_status_label.text = (
+		"Press a key for "
+		+ display_name
+		+ ". Press Esc to cancel."
+	)
+
+
+func handle_control_rebind(
+	key_event: InputEventKey
+) -> void:
+	var physical_keycode: int = int(
+		key_event.physical_keycode
+	)
+
+	if physical_keycode == 0:
+		physical_keycode = int(
+			key_event.keycode
+		)
+
+	if physical_keycode == KEY_ESCAPE:
+		var cancelled_action: String = (
+			waiting_for_control_action
+		)
+
+		waiting_for_control_action = ""
+
+		refresh_control_bindings()
+
+		var cancelled_name: String = str(
+			CONTROL_LABELS.get(
+				cancelled_action,
+				cancelled_action.to_upper()
+			)
+		)
+
+		controls_status_label.text = (
+			"Rebinding cancelled for "
+			+ cancelled_name
+			+ "."
+		)
+
+		return
+
+	if physical_keycode <= 0:
+		return
+
+	var duplicate_action: String = (
+		get_action_using_key(
+			physical_keycode,
+			waiting_for_control_action
+		)
+	)
+
+	if duplicate_action != "":
+		var duplicate_name: String = str(
+			CONTROL_LABELS.get(
+				duplicate_action,
+				duplicate_action.to_upper()
+			)
+		)
+
+		controls_status_label.text = (
+			get_key_name(
+				physical_keycode
+			)
+			+ " is already assigned to "
+			+ duplicate_name
+			+ ". Choose another key."
+		)
+
+		return
+
+	var changed_action: String = (
+		waiting_for_control_action
+	)
+
+	SettingsManager.set_setting(
+		"controls",
+		changed_action,
+		physical_keycode
+	)
+
+	waiting_for_control_action = ""
+
+	refresh_control_bindings()
+
+	var changed_name: String = str(
+		CONTROL_LABELS.get(
+			changed_action,
+			changed_action.to_upper()
+		)
+	)
+
+	controls_status_label.text = (
+		changed_name
+		+ " changed to "
+		+ get_key_name(
+			physical_keycode
+		)
+		+ "."
+	)
+
+
+func get_action_using_key(
+	physical_keycode: int,
+	excluded_action: String
+) -> String:
+	for action_value: Variant in CONTROL_ACTIONS:
+		var action_name: String = str(
+			action_value
+		)
+
+		if action_name == excluded_action:
+			continue
+
+		var assigned_keycode: int = int(
+			SettingsManager.get_setting(
+				"controls",
+				action_name,
+				0
+			)
+		)
+
+		if assigned_keycode == physical_keycode:
+			return action_name
+
+	return ""
+
+
+func get_key_name(
+	physical_keycode: int
+) -> String:
+	var key_text: String = (
+		OS.get_keycode_string(
+			physical_keycode
+		)
+	)
+
+	if key_text.is_empty():
+		return str(physical_keycode)
+
+	return key_text.to_upper()
+
+
+func _on_reset_controls_pressed() -> void:
+	waiting_for_control_action = ""
+
+	SettingsManager.reset_section(
+		"controls"
+	)
+
+	refresh_control_bindings()
+
+	controls_status_label.text = (
+		"Controls restored to defaults."
+	)
 func create_save_toast() -> void:
 	save_toast_panel = Panel.new()
 	save_toast_panel.position = Vector2(1190.0, 900.0)
@@ -1763,6 +2366,7 @@ func close_pause_menu() -> void:
 
 	hide_information_modal()
 	hide_settings_panel()
+	hide_controls_panel()
 	save_toast_panel.visible = false
 	screen_root.visible = false
 	pause_open = false
@@ -1779,10 +2383,7 @@ func _on_settings_pressed() -> void:
 
 
 func _on_controls_pressed() -> void:
-	show_information_modal(
-		"CONTROLS",
-		"WASD — Move\nMouse — Look\nE — Interact\nQ — Radio\nM — MDT\nEsc — Pause Menu"
-	)
+	show_controls_panel()
 
 
 func _on_field_manual_pressed() -> void:
@@ -1814,6 +2415,7 @@ func _on_exit_to_main_menu_pressed() -> void:
 
 	hide_information_modal()
 	hide_settings_panel()
+	hide_controls_panel()
 
 	get_tree().paused = false
 	pause_open = false

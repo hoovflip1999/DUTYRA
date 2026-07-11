@@ -27,17 +27,26 @@ const BASE_DEFAULT_SETTINGS := {
 		"radio_volume": 0.9
 	},
 	"gameplay": {
-		"mouse_sensitivity": 0.15,
+		"mouse_sensitivity": 0.003,
 		"invert_vertical_look": false,
 		"hud_scale": 1.0,
 		"subtitles": true,
 		"camera_shake": true
 	},
-	"controls": {}
+	"controls": {
+		"move_forward": 87,
+		"move_back": 83,
+		"move_left": 65,
+		"move_right": 68,
+		"sprint": 4194325,
+		"crouch": 4194326,
+		"jump": 32,
+		"interact": 69,
+		"toggle_mdt": 77,
+		"toggle_radio_menu": 81
+	}
 }
-
 var settings: Dictionary = {}
-
 
 func _ready() -> void:
 	load_settings()
@@ -220,6 +229,7 @@ func apply_all_settings() -> void:
 	_apply_display_settings()
 	_apply_graphics_settings()
 	_apply_audio_settings()
+	_apply_control_settings()
 
 
 func apply_section(section: String) -> void:
@@ -232,12 +242,13 @@ func apply_section(section: String) -> void:
 
 		"audio":
 			_apply_audio_settings()
-
+		
 		"gameplay":
+
 			pass
 
 		"controls":
-			pass
+			_apply_control_settings()
 
 
 func apply_setting(
@@ -455,7 +466,36 @@ func _apply_audio_bus(
 		linear_to_db(safe_volume)
 	)
 
+func _apply_control_settings() -> void:
+	if not settings.has("controls"):
+		return
 
+	if not settings["controls"] is Dictionary:
+		return
+
+	var control_settings: Dictionary = settings["controls"]
+
+	for action_value: Variant in control_settings.keys():
+		var action_name: String = str(action_value)
+
+		if not InputMap.has_action(action_name):
+			continue
+
+		var physical_keycode: int = int(
+			control_settings[action_value]
+		)
+
+		if physical_keycode <= 0:
+			continue
+
+		var key_event: InputEventKey = InputEventKey.new()
+		key_event.physical_keycode = physical_keycode
+
+		InputMap.action_erase_events(action_name)
+		InputMap.action_add_event(
+			action_name,
+			key_event
+		)
 func _merge_dictionary(
 	target: Dictionary,
 	source: Dictionary
