@@ -11,6 +11,13 @@ signal shift_ended(
 signal game_time_changed()
 signal report_logged()
 signal player_profile_changed()
+signal save_slots_changed()
+
+const SLOT_ONE_PATH: String = "user://dutyra_career_slot_1.json"
+const SLOT_TWO_PATH: String = "user://dutyra_career_slot_2.json"
+const MENU_STATE_PATH: String = "user://dutyra_menu_state.json"
+
+var active_save_slot: int = 0
 
 var is_on_duty: bool = false
 
@@ -59,11 +66,9 @@ var game_clock_accumulator: float = 0.0
 var report_log: Array[Dictionary] = []
 var next_report_number: int = 1001
 
-var profile_save_path: String = "user://dutyra_player_profile.json"
-
 
 func _ready() -> void:
-	load_player_profile()
+	load_last_active_slot()
 
 
 func _process(delta: float) -> void:
@@ -74,108 +79,258 @@ func _process(delta: float) -> void:
 		advance_game_minute()
 
 
+func get_save_slot_path(slot_number: int) -> String:
+	if slot_number == 1:
+		return SLOT_ONE_PATH
+
+	if slot_number == 2:
+		return SLOT_TWO_PATH
+
+	return ""
+
+
+func is_valid_save_slot(slot_number: int) -> bool:
+	return slot_number == 1 or slot_number == 2
+
+
+func has_save_in_slot(slot_number: int) -> bool:
+	var save_path: String = get_save_slot_path(slot_number)
+
+	if save_path == "":
+		return false
+
+	return FileAccess.file_exists(save_path)
+
+
+func get_first_empty_save_slot() -> int:
+	if not has_save_in_slot(1):
+		return 1
+
+	if not has_save_in_slot(2):
+		return 2
+
+	return 0
+
+
 func create_player_profile(first_name: String, last_name: String) -> void:
-	var entered_last_name: String = last_name.strip_edges()
+	var selected_slot: int = get_first_empty_save_slot()
 
-	if entered_last_name == "":
-		entered_last_name = first_name.strip_edges()
+	if selected_slot == 0:
+		selected_slot = 1
 
-	if entered_last_name == "":
-		entered_last_name = "Unknown"
+	var entered_name: String = last_name.strip_edges()
 
-	reset_career_progress()
+	if entered_name == "":
+		entered_name = first_name.strip_edges()
 
-	officer_first_name = ""
-	officer_last_name = entered_last_name
+	create_new_career_in_slot(selected_slot, entered_name)
+
+
+func create_new_career_in_slot(
+	slot_number: int,
+	last_name: String
+) -> bool:
+	if not is_valid_save_slot(slot_number):
+		print("Invalid save slot: " + str(slot_number))
+		return false
+
+	var clean_last_name: String = last_name.strip_edges()
+
+	if clean_last_name == "":
+		return false
+
+	reset_loaded_career_data()
+
+	active_save_slot = slot_number
 	player_profile_created = true
+	officer_first_name = ""
+	officer_last_name = clean_last_name
 
-	save_player_profile()
+	save_active_career()
+	save_menu_state()
 
 	player_profile_changed.emit()
 	career_progress_changed.emit()
+	save_slots_changed.emit()
 
-	print("New career created: " + get_officer_display_name())
+	print(
+		"Created career in slot "
+		+ str(active_save_slot)
+		+ ": "
+		+ get_officer_display_name()
+	)
+
+	return true
 
 
-func reset_career_progress() -> void:
-	is_on_duty = false
+func save_active_career() -> bool:
+	if not player_profile_created:
+		return false
 
-	current_rank_index = 1
-	performance_xp = 0
-	calls_cleared = 0
-	shifts_completed = 0
+	if not is_valid_save_slot(active_save_slot):
+		return false
 
-	current_shift_active = false
-	current_shift_calls_cleared = 0
+	var save_path: String = get_save_slot_path(active_save_slot)
+	var save_file := FileAccess.open(save_path, FileAccess.WRITE)
 
-	game_year = 2026
-	game_month = 7
-	game_day = 11
-	game_hour = 8
-	game_minute = 0
-	game_clock_accumulator = 0.0
+	if save_file == null:
+		print("Could not save career slot " + str(active_save_slot))
+		return false
 
-	report_log.clear()
-	next_report_number = 1001
+	var save_data: Dictionary = build_current_save_data()
+
+	save_file.store_string(JSON.stringify(save_data))
+	save_file.close()
+
+	save_menu_state()
+	save_slots_changed.emit()
+
+	return true
 
 
 func save_player_profile() -> void:
-	var save_data: Dictionary = {
-		"save_version": 2,
-		"profile_created": player_profile_created,
+	save_active_career()
 
+
+func build_current_save_data() -> Dictionary:
+	return {
+		"save_version": 3,
+		"slot_number": active_save_slot,
+		"profile_created": player_profile_created,
 		"first_name": officer_first_name,
 		"last_name": officer_last_name,
 		"badge_number": officer_badge_number,
 		"callsign": officer_callsign,
 		"department": officer_department,
-
 		"career_track": career_track,
 		"current_rank_index": current_rank_index,
-
 		"performance_xp": performance_xp,
 		"calls_cleared": calls_cleared,
 		"shifts_completed": shifts_completed,
-
 		"game_year": game_year,
 		"game_month": game_month,
 		"game_day": game_day,
 		"game_hour": game_hour,
 		"game_minute": game_minute,
-
 		"next_report_number": next_report_number,
 		"report_log": report_log
 	}
 
-	var save_file := FileAccess.open(
-		profile_save_path,
-		FileAccess.WRITE
+
+func load_career_slot(slot_number: int) -> bool:
+	if not is_valid_save_slot(slot_number):
+		return false
+
+	var save_data: Dictionary = read_save_slot_data(slot_number)
+
+	if save_data.is_empty():
+		return false
+
+	apply_save_data(save_data)
+
+	active_save_slot = slot_number
+	player_profile_created = true
+
+	is_on_duty = false
+	current_shift_active = false
+	current_shift_calls_cleared = 0
+	game_clock_accumulator = 0.0
+
+	save_menu_state()
+
+	player_profile_changed.emit()
+	career_progress_changed.emit()
+
+	print(
+		"Loaded career slot "
+		+ str(active_save_slot)
+		+ ": "
+		+ get_officer_display_name()
 	)
 
-	if save_file == null:
-		print("Could not save DUTYRA career data.")
-		return
-
-	save_file.store_string(JSON.stringify(save_data))
-	save_file.close()
-
-	print("Career saved: " + get_officer_display_name())
+	return true
 
 
 func load_player_profile() -> void:
-	if not FileAccess.file_exists(profile_save_path):
-		player_profile_created = false
+	load_last_active_slot()
+
+
+func load_last_active_slot() -> void:
+	var saved_slot: int = read_last_active_slot()
+
+	if is_valid_save_slot(saved_slot):
+		if load_career_slot(saved_slot):
+			return
+
+	var first_available_slot: int = 0
+
+	if has_save_in_slot(1):
+		first_available_slot = 1
+	elif has_save_in_slot(2):
+		first_available_slot = 2
+
+	if first_available_slot > 0:
+		load_career_slot(first_available_slot)
+	else:
+		reset_loaded_career_data()
+		active_save_slot = 0
+
+
+func save_menu_state() -> void:
+	var menu_file := FileAccess.open(
+		MENU_STATE_PATH,
+		FileAccess.WRITE
+	)
+
+	if menu_file == null:
 		return
 
-	var save_file := FileAccess.open(
-		profile_save_path,
+	var menu_data: Dictionary = {
+		"last_active_slot": active_save_slot
+	}
+
+	menu_file.store_string(JSON.stringify(menu_data))
+	menu_file.close()
+
+
+func read_last_active_slot() -> int:
+	if not FileAccess.file_exists(MENU_STATE_PATH):
+		return 0
+
+	var menu_file := FileAccess.open(
+		MENU_STATE_PATH,
 		FileAccess.READ
 	)
 
+	if menu_file == null:
+		return 0
+
+	var file_text: String = menu_file.get_as_text()
+	menu_file.close()
+
+	var parsed_data: Variant = JSON.parse_string(file_text)
+
+	if typeof(parsed_data) != TYPE_DICTIONARY:
+		return 0
+
+	var menu_data: Dictionary = parsed_data
+
+	return int(menu_data.get("last_active_slot", 0))
+
+
+func read_save_slot_data(slot_number: int) -> Dictionary:
+	var save_path: String = get_save_slot_path(slot_number)
+
+	if save_path == "":
+		return {}
+
+	if not FileAccess.file_exists(save_path):
+		return {}
+
+	var save_file := FileAccess.open(save_path, FileAccess.READ)
+
 	if save_file == null:
-		player_profile_created = false
-		print("Could not open DUTYRA career save.")
-		return
+		return {}
 
 	var file_text: String = save_file.get_as_text()
 	save_file.close()
@@ -183,16 +338,12 @@ func load_player_profile() -> void:
 	var parsed_data: Variant = JSON.parse_string(file_text)
 
 	if typeof(parsed_data) != TYPE_DICTIONARY:
-		player_profile_created = false
-		print("DUTYRA career save could not be read.")
-		return
+		return {}
 
-	var save_data: Dictionary = parsed_data
+	return parsed_data
 
-	player_profile_created = bool(
-		save_data.get("profile_created", false)
-	)
 
+func apply_save_data(save_data: Dictionary) -> void:
 	officer_first_name = str(
 		save_data.get("first_name", "")
 	)
@@ -286,25 +437,189 @@ func load_player_profile() -> void:
 			if typeof(saved_report) == TYPE_DICTIONARY:
 				report_log.append(saved_report)
 
-	is_on_duty = false
-	current_shift_active = false
-	current_shift_calls_cleared = 0
-	game_clock_accumulator = 0.0
 
-	if player_profile_created:
-		print("Career loaded: " + get_officer_display_name())
+func get_save_slot_summary(slot_number: int) -> Dictionary:
+	var save_data: Dictionary = read_save_slot_data(slot_number)
+
+	if save_data.is_empty():
+		return {
+			"slot_number": slot_number,
+			"occupied": false,
+			"display_name": "EMPTY CAREER SLOT",
+			"rank": "",
+			"last_name": "",
+			"performance_xp": 0,
+			"calls_cleared": 0,
+			"shifts_completed": 0,
+			"date": "",
+			"time": ""
+		}
+
+	var saved_rank_index: int = clampi(
+		int(save_data.get("current_rank_index", 1)),
+		0,
+		patrol_ranks.size() - 1
+	)
+
+	var saved_last_name: String = str(
+		save_data.get("last_name", "Unknown")
+	)
+
+	var saved_rank: String = patrol_ranks[saved_rank_index]
+
+	return {
+		"slot_number": slot_number,
+		"occupied": true,
+		"display_name": saved_rank + " " + saved_last_name,
+		"rank": saved_rank,
+		"last_name": saved_last_name,
+		"performance_xp": maxi(
+			int(save_data.get("performance_xp", 0)),
+			0
+		),
+		"calls_cleared": maxi(
+			int(save_data.get("calls_cleared", 0)),
+			0
+		),
+		"shifts_completed": maxi(
+			int(save_data.get("shifts_completed", 0)),
+			0
+		),
+		"date": format_saved_date(save_data),
+		"time": format_saved_time(save_data)
+	}
+
+
+func format_saved_date(save_data: Dictionary) -> String:
+	var saved_month: int = clampi(
+		int(save_data.get("game_month", 7)),
+		1,
+		12
+	)
+
+	var saved_day: int = clampi(
+		int(save_data.get("game_day", 11)),
+		1,
+		30
+	)
+
+	var saved_year: int = int(
+		save_data.get("game_year", 2026)
+	)
+
+	return (
+		str(saved_month).pad_zeros(2)
+		+ "/"
+		+ str(saved_day).pad_zeros(2)
+		+ "/"
+		+ str(saved_year)
+	)
+
+
+func format_saved_time(save_data: Dictionary) -> String:
+	var saved_hour: int = clampi(
+		int(save_data.get("game_hour", 8)),
+		0,
+		23
+	)
+
+	var saved_minute: int = clampi(
+		int(save_data.get("game_minute", 0)),
+		0,
+		59
+	)
+
+	return (
+		str(saved_hour).pad_zeros(2)
+		+ ":"
+		+ str(saved_minute).pad_zeros(2)
+	)
+
+
+func delete_career_slot(slot_number: int) -> bool:
+	if not is_valid_save_slot(slot_number):
+		return false
+
+	var save_path: String = get_save_slot_path(slot_number)
+
+	if not FileAccess.file_exists(save_path):
+		return false
+
+	var absolute_path: String = ProjectSettings.globalize_path(
+		save_path
+	)
+
+	var delete_result: Error = DirAccess.remove_absolute(
+		absolute_path
+	)
+
+	if delete_result != OK:
+		print(
+			"Could not delete career slot "
+			+ str(slot_number)
+			+ ". Error: "
+			+ str(delete_result)
+		)
+		return false
+
+	if active_save_slot == slot_number:
+		reset_loaded_career_data()
+		active_save_slot = 0
+		save_menu_state()
+
+		player_profile_changed.emit()
+		career_progress_changed.emit()
+
+	save_slots_changed.emit()
+
+	print("Deleted career slot " + str(slot_number))
+
+	return true
 
 
 func reset_player_profile() -> void:
-	player_profile_created = false
-	officer_first_name = ""
-	officer_last_name = ""
+	if is_valid_save_slot(active_save_slot):
+		delete_career_slot(active_save_slot)
+		return
 
-	reset_career_progress()
-	save_player_profile()
+	reset_loaded_career_data()
+	active_save_slot = 0
+	save_menu_state()
 
 	player_profile_changed.emit()
 	career_progress_changed.emit()
+	save_slots_changed.emit()
+
+
+func reset_loaded_career_data() -> void:
+	is_on_duty = false
+
+	player_profile_created = false
+	officer_first_name = ""
+	officer_last_name = ""
+	officer_badge_number = "024"
+	officer_callsign = "Unit 24"
+	officer_department = "DUTYRA™ Police Department"
+
+	career_track = "Patrol Division"
+	current_rank_index = 1
+
+	performance_xp = 0
+	calls_cleared = 0
+	shifts_completed = 0
+
+	current_shift_active = false
+	current_shift_calls_cleared = 0
+
+	game_year = 2026
+	game_month = 7
+	game_day = 11
+	game_hour = 8
+	game_minute = 0
+	game_clock_accumulator = 0.0
+
+	report_log.clear()
+	next_report_number = 1001
 
 
 func get_officer_full_name() -> String:
@@ -366,52 +681,33 @@ func set_duty_status(new_status: bool) -> void:
 	duty_status_changed.emit(is_on_duty)
 	career_progress_changed.emit()
 
-	save_player_profile()
-
-	if is_on_duty:
-		print("Player is now ON DUTY")
-	else:
-		print("Player is now OFF DUTY")
+	save_active_career()
 
 
 func start_shift() -> void:
 	current_shift_active = true
 	current_shift_calls_cleared = 0
 
-	print("Shift started")
-
 
 func end_shift() -> void:
 	if not current_shift_active:
 		return
 
-	var calls_cleared_this_shift: int = (
-		current_shift_calls_cleared
-	)
-
+	var cleared_this_shift: int = current_shift_calls_cleared
 	var shift_counted: bool = false
 
 	if current_shift_calls_cleared >= required_calls_to_complete_shift:
 		shifts_completed += 1
 		shift_counted = true
 
-		print(
-			"Shift completed. Total shifts completed: "
-			+ str(shifts_completed)
-		)
-	else:
-		print(
-			"Shift ended but did not count. No calls cleared."
-		)
-
 	current_shift_active = false
 	current_shift_calls_cleared = 0
 
-	save_player_profile()
+	save_active_career()
 
 	shift_ended.emit(
 		shift_counted,
-		calls_cleared_this_shift,
+		cleared_this_shift,
 		shifts_completed
 	)
 
@@ -431,14 +727,7 @@ func award_call_performance(amount: int) -> void:
 		)
 
 	career_progress_changed.emit()
-	save_player_profile()
-
-	print(
-		"Call cleared. Performance XP: "
-		+ str(performance_xp)
-		+ " | Calls cleared: "
-		+ str(calls_cleared)
-	)
+	save_active_career()
 
 
 func log_call_report(
@@ -473,15 +762,8 @@ func log_call_report(
 
 	report_log.push_front(report_data)
 
-	save_player_profile()
+	save_active_career()
 	report_logged.emit()
-
-	print(
-		"Report logged: "
-		+ report_number
-		+ " | "
-		+ call_title
-	)
 
 
 func get_report_count() -> int:
@@ -499,32 +781,18 @@ func get_report_at(index: int) -> Dictionary:
 
 
 func get_game_time_text() -> String:
-	var hour_text: String = str(game_hour)
-	var minute_text: String = str(game_minute)
-
-	if game_hour < 10:
-		hour_text = "0" + hour_text
-
-	if game_minute < 10:
-		minute_text = "0" + minute_text
-
-	return hour_text + ":" + minute_text
+	return (
+		str(game_hour).pad_zeros(2)
+		+ ":"
+		+ str(game_minute).pad_zeros(2)
+	)
 
 
 func get_game_date_text() -> String:
-	var month_text: String = str(game_month)
-	var day_text: String = str(game_day)
-
-	if game_month < 10:
-		month_text = "0" + month_text
-
-	if game_day < 10:
-		day_text = "0" + day_text
-
 	return (
-		month_text
+		str(game_month).pad_zeros(2)
 		+ "/"
-		+ day_text
+		+ str(game_day).pad_zeros(2)
 		+ "/"
 		+ str(game_year)
 	)
@@ -630,8 +898,7 @@ func get_career_mdt_text() -> String:
 			required_shifts_for_promotion
 		) + "\n\n" \
 		+ "MISSING\n" \
-		+ get_missing_promotion_requirements_text() + "\n\n" \
-		+ "NOTE: Requirements create eligibility only. Promotion requires supervisor review."
+		+ get_missing_promotion_requirements_text()
 
 
 func get_requirement_line(
