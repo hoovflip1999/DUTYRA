@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://dnkmaaqkn1me8" path="res://Scripts/duty_terminal_controller.gd" id="3_jjvhh"]
 [ext_resource type="Script" uid="uid://bdjumpys7hvfv" path="res://Scripts/call_response_area.gd" id="4_kry3j"]
 [ext_resource type="Script" uid="uid://cdtd2fc6n84ps" path="res://Scripts/call_subject.gd" id="5_21xkr"]
+[ext_resource type="PackedScene" uid="uid://cgxgbk68b6bpy" path="res://Scenes/PauseMenu.tscn" id="7_6bp64"]
 
 [sub_resource type="Environment" id="Environment_7u77a"]
 
@@ -514,3 +515,5 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 5)
 
 [node name="Player" parent="PlayerSetup" unique_id=1417239302 instance=ExtResource("1_jjgbg")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 5)
+
+[node name="PauseMenu" parent="." unique_id=1203647963 instance=ExtResource("7_6bp64")]
