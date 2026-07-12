@@ -3,6 +3,7 @@ extends CanvasLayer
 const DESIGN_SIZE: Vector2 = Vector2(1536.0, 1024.0)
 const PAUSE_BACKGROUND_PATH: String = "res://Art/Menu/dutyra_pause_menu_background.png"
 const MAIN_MENU_SCENE_PATH: String = "res://Scenes/MainMenu.tscn"
+const AUTOSAVE_INTERVAL_SECONDS: float = 300.0
 const CONTROL_ACTIONS := [
 	"move_forward",
 	"move_back",
@@ -76,7 +77,11 @@ var waiting_for_control_action: String = ""
 var save_toast_panel: Panel
 var save_toast_label: Label
 var save_toast_timer: Timer
-
+var autosave_timer: Timer
+var autosave_notice_root: Control
+var autosave_notice_panel: Panel
+var autosave_notice_label: Label
+var autosave_notice_timer: Timer
 var window_modes: Array[String] = [
 	"windowed",
 	"borderless",
@@ -114,6 +119,7 @@ func _ready() -> void:
 	create_settings_panel()
 	create_controls_panel()
 	create_save_toast()
+	create_autosave_system()
 
 	get_viewport().size_changed.connect(update_pause_layout)
 
@@ -2298,6 +2304,344 @@ func _on_reset_controls_pressed() -> void:
 
 	controls_status_label.text = (
 		"Controls restored to defaults."
+	)
+# -------------------------------------------------------------------
+# AUTOSAVE
+# -------------------------------------------------------------------
+
+func create_autosave_system() -> void:
+	autosave_notice_root = Control.new()
+	autosave_notice_root.name = "AutosaveNoticeRoot"
+	autosave_notice_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	add_child(autosave_notice_root)
+
+	autosave_notice_root.set_anchors_and_offsets_preset(
+		Control.PRESET_FULL_RECT
+	)
+
+	autosave_notice_panel = Panel.new()
+	autosave_notice_panel.name = "AutosaveNoticePanel"
+
+	autosave_notice_panel.anchor_left = 1.0
+	autosave_notice_panel.anchor_top = 0.0
+	autosave_notice_panel.anchor_right = 1.0
+	autosave_notice_panel.anchor_bottom = 0.0
+
+	autosave_notice_panel.offset_left = -365.0
+	autosave_notice_panel.offset_top = 28.0
+	autosave_notice_panel.offset_right = -28.0
+	autosave_notice_panel.offset_bottom = 104.0
+
+	autosave_notice_panel.visible = false
+	autosave_notice_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	autosave_notice_panel.pivot_offset = Vector2(337.0, 38.0)
+
+	var autosave_style: StyleBoxFlat = StyleBoxFlat.new()
+
+	autosave_style.bg_color = Color(
+		0.006,
+		0.011,
+		0.019,
+		0.97
+	)
+
+	autosave_style.border_color = Color(
+		0.12,
+		0.36,
+		0.58,
+		0.95
+	)
+
+	autosave_style.border_width_left = 1
+	autosave_style.border_width_top = 1
+	autosave_style.border_width_right = 1
+	autosave_style.border_width_bottom = 1
+
+	autosave_style.corner_radius_top_left = 8
+	autosave_style.corner_radius_top_right = 8
+	autosave_style.corner_radius_bottom_left = 8
+	autosave_style.corner_radius_bottom_right = 8
+
+	autosave_style.shadow_color = Color(
+		0.0,
+		0.0,
+		0.0,
+		0.72
+	)
+
+	autosave_style.shadow_size = 12
+
+	autosave_notice_panel.add_theme_stylebox_override(
+		"panel",
+		autosave_style
+	)
+
+	autosave_notice_root.add_child(
+		autosave_notice_panel
+	)
+
+	var accent_bar: ColorRect = ColorRect.new()
+	accent_bar.position = Vector2(0.0, 8.0)
+	accent_bar.size = Vector2(4.0, 60.0)
+
+	accent_bar.color = Color(
+		0.0,
+		0.61,
+		1.0,
+		1.0
+	)
+
+	accent_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	autosave_notice_panel.add_child(
+		accent_bar
+	)
+
+	var icon_panel: Panel = Panel.new()
+	icon_panel.position = Vector2(16.0, 13.0)
+	icon_panel.size = Vector2(50.0, 50.0)
+	icon_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var icon_style: StyleBoxFlat = StyleBoxFlat.new()
+
+	icon_style.bg_color = Color(
+		0.0,
+		0.25,
+		0.48,
+		0.42
+	)
+
+	icon_style.border_color = Color(
+		0.0,
+		0.61,
+		1.0,
+		0.72
+	)
+
+	icon_style.border_width_left = 1
+	icon_style.border_width_top = 1
+	icon_style.border_width_right = 1
+	icon_style.border_width_bottom = 1
+
+	icon_style.corner_radius_top_left = 6
+	icon_style.corner_radius_top_right = 6
+	icon_style.corner_radius_bottom_left = 6
+	icon_style.corner_radius_bottom_right = 6
+
+	icon_panel.add_theme_stylebox_override(
+		"panel",
+		icon_style
+	)
+
+	autosave_notice_panel.add_child(
+		icon_panel
+	)
+
+	var handcuff_icon: Label = Label.new()
+	handcuff_icon.text = "◉═◉"
+	handcuff_icon.size = Vector2(50.0, 50.0)
+
+	handcuff_icon.horizontal_alignment = (
+		HORIZONTAL_ALIGNMENT_CENTER
+	)
+
+	handcuff_icon.vertical_alignment = (
+		VERTICAL_ALIGNMENT_CENTER
+	)
+
+	handcuff_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	handcuff_icon.add_theme_font_size_override(
+		"font_size",
+		17
+	)
+
+	handcuff_icon.add_theme_color_override(
+		"font_color",
+		Color(
+			0.35,
+			0.78,
+			1.0,
+			1.0
+		)
+	)
+
+	icon_panel.add_child(
+		handcuff_icon
+	)
+
+	var autosave_header: Label = Label.new()
+	autosave_header.text = "AUTOSAVE COMPLETE"
+	autosave_header.position = Vector2(82.0, 12.0)
+	autosave_header.size = Vector2(235.0, 23.0)
+	autosave_header.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	autosave_header.add_theme_font_size_override(
+		"font_size",
+		12
+	)
+
+	autosave_header.add_theme_color_override(
+		"font_color",
+		Color(
+			0.12,
+			0.68,
+			1.0,
+			1.0
+		)
+	)
+
+	autosave_notice_panel.add_child(
+		autosave_header
+	)
+
+	autosave_notice_label = Label.new()
+	autosave_notice_label.text = "CAREER PROGRESS SECURED"
+	autosave_notice_label.position = Vector2(82.0, 33.0)
+	autosave_notice_label.size = Vector2(235.0, 24.0)
+	autosave_notice_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	autosave_notice_label.add_theme_font_size_override(
+		"font_size",
+		15
+	)
+
+	autosave_notice_label.add_theme_color_override(
+		"font_color",
+		Color(
+			0.92,
+			0.95,
+			0.99,
+			1.0
+		)
+	)
+
+	autosave_notice_panel.add_child(
+		autosave_notice_label
+	)
+
+	var autosave_subtitle: Label = Label.new()
+	autosave_subtitle.text = "Officer data and career progress saved"
+	autosave_subtitle.position = Vector2(82.0, 55.0)
+	autosave_subtitle.size = Vector2(235.0, 18.0)
+	autosave_subtitle.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	autosave_subtitle.add_theme_font_size_override(
+		"font_size",
+		10
+	)
+
+	autosave_subtitle.add_theme_color_override(
+		"font_color",
+		Color(
+			0.48,
+			0.55,
+			0.63,
+			1.0
+		)
+	)
+
+	autosave_notice_panel.add_child(
+		autosave_subtitle
+	)
+
+	autosave_notice_timer = Timer.new()
+	autosave_notice_timer.one_shot = true
+	autosave_notice_timer.wait_time = 2.2
+
+	autosave_notice_timer.timeout.connect(
+		_on_autosave_notice_timeout
+	)
+
+	add_child(autosave_notice_timer)
+
+	autosave_timer = Timer.new()
+	autosave_timer.name = "CareerAutosaveTimer"
+	autosave_timer.wait_time = AUTOSAVE_INTERVAL_SECONDS
+	autosave_timer.one_shot = false
+	autosave_timer.autostart = true
+	autosave_timer.process_callback = Timer.TIMER_PROCESS_IDLE
+
+	autosave_timer.timeout.connect(
+		_on_autosave_timeout
+	)
+
+	add_child(autosave_timer)
+
+
+func _on_autosave_timeout() -> void:
+	if not GameState.player_profile_created:
+		return
+
+	if get_tree().paused:
+		return
+
+	if GameState.save_active_career():
+		show_autosave_notice(
+			"CAREER AUTOSAVED"
+		)
+	else:
+		show_autosave_notice(
+			"AUTOSAVE FAILED"
+		)
+
+
+func show_autosave_notice(
+	message_text: String
+) -> void:
+	autosave_notice_label.text = message_text
+
+	autosave_notice_panel.visible = true
+	autosave_notice_panel.modulate = Color(
+		1.0,
+		1.0,
+		1.0,
+		0.0
+	)
+
+	autosave_notice_panel.scale = Vector2(
+		0.96,
+		0.96
+	)
+
+	var tween: Tween = create_tween()
+
+	tween.set_parallel(true)
+
+	tween.tween_property(
+		autosave_notice_panel,
+		"modulate:a",
+		1.0,
+		0.20
+	)
+
+	tween.tween_property(
+		autosave_notice_panel,
+		"scale",
+		Vector2.ONE,
+		0.20
+	).set_trans(
+		Tween.TRANS_QUAD
+	).set_ease(
+		Tween.EASE_OUT
+	)
+
+	autosave_notice_timer.start()
+
+
+func _on_autosave_notice_timeout() -> void:
+	var tween: Tween = create_tween()
+
+	tween.tween_property(
+		autosave_notice_panel,
+		"modulate:a",
+		0.0,
+		0.18
+	)
+
+	tween.tween_callback(
+		autosave_notice_panel.hide
 	)
 func create_save_toast() -> void:
 	save_toast_panel = Panel.new()
