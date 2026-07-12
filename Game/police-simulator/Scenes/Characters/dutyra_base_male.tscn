@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://dlhrrao3crcy0"]
+
+[ext_resource type="PackedScene" uid="uid://bih7orfqca5tp" path="res://Art/Characters/BaseHuman/dutyra_base_male.glb" id="1_f34yh"]
+
+[node name="dutyra_base_male" unique_id=1129634026 instance=ExtResource("1_f34yh")]
+
+[node name="Head" parent="Game_engine/Skeleton3D" parent_id_path=PackedInt32Array(1182056250) index="1" unique_id=2084195826]
+layers = 2
+
+[node name="high-polyMesh" parent="Game_engine/Skeleton3D" parent_id_path=PackedInt32Array(1182056250) index="2" unique_id=2075531783]
+layers = 2

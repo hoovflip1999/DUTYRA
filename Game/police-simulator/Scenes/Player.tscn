@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://dw7sn20cefjue"]
 
 [ext_resource type="Script" uid="uid://ppp7q0nwbn1t" path="res://Scripts/player_controller.gd" id="1_v0iea"]
+[ext_resource type="PackedScene" uid="uid://dlhrrao3crcy0" path="res://Scenes/Characters/dutyra_base_male.tscn" id="2_cvnsp"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_qjvm4"]
 
@@ -21,7 +22,7 @@ mesh = SubResource("CapsuleMesh_7oaoy")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
 
 [node name="PlayerCamera" type="Camera3D" parent="CameraPivot" unique_id=500036245]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.2)
+cull_mask = 1048573
 current = true
 
 [node name="InteractionRay" type="RayCast3D" parent="CameraPivot/PlayerCamera" unique_id=979379544]
@@ -59,3 +60,6 @@ offset_top = 140.0
 offset_right = 720.0
 offset_bottom = 220.0
 text = "RADIO"
+
+[node name="dutyra_base_male" parent="." unique_id=1129634026 instance=ExtResource("2_cvnsp")]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 0, 0.1)

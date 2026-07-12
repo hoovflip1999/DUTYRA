@@ -147,7 +147,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		rotate_y(-event.relative.x * mouse_sensitivity)
 
 		camera_pitch -= event.relative.y * mouse_sensitivity
-		camera_pitch = clamp(camera_pitch, deg_to_rad(-80), deg_to_rad(80))
+		camera_pitch = clamp(camera_pitch, deg_to_rad(-50), deg_to_rad(80))
 		camera_pivot.rotation.x = camera_pitch
 
 	if event.is_action_pressed("ui_cancel"):
