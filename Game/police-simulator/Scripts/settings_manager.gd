@@ -40,7 +40,6 @@ const BASE_DEFAULT_SETTINGS := {
 		"move_right": 68,
 		"sprint": 4194325,
 		"crouch": 4194326,
-		"jump": 32,
 		"interact": 69,
 		"toggle_mdt": 77,
 		"toggle_radio_menu": 81

@@ -1,13 +1,21 @@
 extends CharacterBody3D
 
-@export var walk_speed: float = 5.0
-@export var sprint_speed: float = 8.0
-@export var crouch_speed: float = 2.5
-@export var jump_velocity: float = 6.0
-@export var gravity: float = 20.0
+@export var walk_speed: float = 4.6
+@export var sprint_speed: float = 7.4
+@export var crouch_speed: float = 2.3
+
+@export var ground_acceleration: float = 18.0
+@export var ground_deceleration: float = 24.0
+
+@export var backward_speed_multiplier: float = 0.78
+@export var strafe_speed_multiplier: float = 0.90
+
+@export var gravity: float = 24.0
 @export var mouse_sensitivity: float = 0.003
+
 @export var standing_camera_height: float = 1.6
 @export var crouching_camera_height: float = 1.0
+@export var crouch_transition_speed: float = 5.0
 @export var radio_message_seconds: float = 3.2
 @export var standard_call_performance_xp: int = 25
 
@@ -101,6 +109,9 @@ var highlighted_radio_option_index: int = -1
 
 func _ready() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	floor_snap_length = 0.35
+	floor_max_angle = deg_to_rad(46.0)
+	floor_stop_on_slope = true
 
 	interaction_prompt.visible = false
 	dispatch_call_label.visible = false
@@ -199,45 +210,97 @@ func _physics_process(delta: float) -> void:
 		lock_player_movement(delta)
 		return
 
-	var input_dir := Vector2.ZERO
+	var input_dir: Vector2 = Input.get_vector(
+		"move_left",
+		"move_right",
+		"move_forward",
+		"move_back"
+	)
 
-	if Input.is_action_pressed("move_forward"):
-		input_dir.y -= 1
+	var is_crouching: bool = (
+		Input.is_action_pressed("crouch")
+	)
 
-	if Input.is_action_pressed("move_back"):
-		input_dir.y += 1
+	var is_sprinting: bool = (
+		Input.is_action_pressed("sprint")
+		and input_dir.y < -0.25
+		and not is_crouching
+	)
 
-	if Input.is_action_pressed("move_left"):
-		input_dir.x -= 1
+	var target_camera_height: float = (
+		crouching_camera_height
+		if is_crouching
+		else standing_camera_height
+	)
 
-	if Input.is_action_pressed("move_right"):
-		input_dir.x += 1
+	camera_pivot.position.y = move_toward(
+		camera_pivot.position.y,
+		target_camera_height,
+		crouch_transition_speed * delta
+	)
 
-	input_dir = input_dir.normalized()
+	var direction: Vector3 = (
+		global_transform.basis
+		* Vector3(
+			input_dir.x,
+			0.0,
+			input_dir.y
+		)
+	)
 
-	var direction := (global_transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	direction.y = 0.0
+	direction = direction.normalized()
 
-	var current_speed := walk_speed
+	var current_speed: float = walk_speed
 
-	if Input.is_action_pressed("crouch"):
+	if is_crouching:
 		current_speed = crouch_speed
-		camera_pivot.position.y = crouching_camera_height
-	elif Input.is_action_pressed("sprint"):
+	elif is_sprinting:
 		current_speed = sprint_speed
-		camera_pivot.position.y = standing_camera_height
-	else:
-		camera_pivot.position.y = standing_camera_height
 
-	velocity.x = direction.x * current_speed
-	velocity.z = direction.z * current_speed
+	if input_dir.y > 0.1:
+		current_speed *= (
+			backward_speed_multiplier
+		)
+
+	if (
+		absf(input_dir.x) > 0.1
+		and absf(input_dir.y) < 0.1
+	):
+		current_speed *= (
+			strafe_speed_multiplier
+		)
+
+	var target_horizontal_velocity: Vector3 = (
+		direction * current_speed
+	)
+
+	var horizontal_velocity := Vector3(
+		velocity.x,
+		0.0,
+		velocity.z
+	)
+
+	var movement_rate: float = (
+		ground_acceleration
+		if input_dir.length_squared() > 0.0
+		else ground_deceleration
+	)
+
+	horizontal_velocity = (
+		horizontal_velocity.move_toward(
+			target_horizontal_velocity,
+			movement_rate * delta
+		)
+	)
+
+	velocity.x = horizontal_velocity.x
+	velocity.z = horizontal_velocity.z
 
 	if not is_on_floor():
 		velocity.y -= gravity * delta
-	else:
-		if Input.is_action_just_pressed("jump"):
-			velocity.y = jump_velocity
-		else:
-			velocity.y = 0
+	elif velocity.y < 0.0:
+		velocity.y = 0.0
 
 	move_and_slide()
 
