@@ -23,7 +23,23 @@ extends CharacterBody3D
 @export var body_crouch_transition_speed: float = 5.0
 @export var crouching_collision_height: float = 1.2
 @export var collision_crouch_transition_speed: float = 5.0
+
+
+@export var max_stamina: float = 100.0
+@export var sprint_stamina_drain_per_second: float = 7.0
+@export var stamina_recovery_per_second: float = 9.0
+@export var sprint_unlock_threshold: float = 25.0
+
+@export var sprint_slowdown_start_ratio: float = 0.45
+@export var tired_walk_speed: float = 2.2
+
+@export var tired_camera_bob_amount: float = 0.045
+@export var tired_camera_bob_speed: float = 7.5
+@export var camera_bob_return_speed: float = 10.0
+
+
 @onready var camera_pivot: Node3D = $CameraPivot
+@onready var player_camera: Camera3D = $CameraPivot/PlayerCamera
 @onready var interaction_ray: RayCast3D = $CameraPivot/PlayerCamera/InteractionRay
 @onready var interaction_prompt: Label = $PlayerUI/InteractionPrompt
 @onready var duty_status_label: Label = $PlayerUI/DutyStatusLabel
@@ -115,13 +131,24 @@ var highlighted_radio_option_index: int = -1
 var standing_collision_height: float = 0.0
 var standing_collision_y: float = 0.0
 
+var current_stamina: float = 0.0
+var sprint_locked: bool = false
+
+var camera_base_position: Vector3 = Vector3.ZERO
+var camera_bob_time: float = 0.0
+
 func _ready() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	
+	current_stamina = max_stamina
+	camera_base_position = player_camera.position
+
 	var capsule := player_collision.shape as CapsuleShape3D
 
 	if capsule != null:
 		standing_collision_height = capsule.height
 		standing_collision_y = player_collision.position.y
+		
 	floor_snap_length = 0.35
 	floor_max_angle = deg_to_rad(46.0)
 	floor_stop_on_slope = true
@@ -220,6 +247,7 @@ func _physics_process(delta: float) -> void:
 	update_context_prompt()
 
 	if is_radio_wheel_visible or is_mdt_visible:
+		update_stamina(delta, false)
 		lock_player_movement(delta)
 		return
 
@@ -230,14 +258,34 @@ func _physics_process(delta: float) -> void:
 		"move_back"
 	)
 
-	var is_crouching: bool = (
-		Input.is_action_pressed("crouch")
+	var is_crouching: bool = Input.is_action_pressed(
+		"crouch"
 	)
 
-	var is_sprinting: bool = (
+	var wants_to_sprint: bool = (
 		Input.is_action_pressed("sprint")
 		and input_dir.y < -0.25
 		and not is_crouching
+	)
+
+	var is_sprinting: bool = update_stamina(
+		delta,
+		wants_to_sprint
+	)
+
+	var stamina_ratio: float = clampf(
+		current_stamina / maxf(max_stamina, 0.01),
+		0.0,
+		1.0
+	)
+
+	var fatigue_amount: float = 1.0 - clampf(
+		stamina_ratio / maxf(
+			sprint_slowdown_start_ratio,
+			0.01
+		),
+		0.0,
+		1.0
 	)
 
 	var target_camera_height: float = (
@@ -252,7 +300,50 @@ func _physics_process(delta: float) -> void:
 		crouch_transition_speed * delta
 	)
 
-	var capsule := player_collision.shape as CapsuleShape3D
+	var is_moving_input: bool = (
+		input_dir.length_squared() > 0.01
+	)
+
+	var target_camera_local_position: Vector3 = (
+		camera_base_position
+	)
+
+	if (
+		is_moving_input
+		and not is_crouching
+		and fatigue_amount > 0.0
+	):
+		camera_bob_time += (
+			delta * tired_camera_bob_speed
+		)
+
+		target_camera_local_position.y += (
+			sin(camera_bob_time)
+			* tired_camera_bob_amount
+			* fatigue_amount
+		)
+
+		target_camera_local_position.x += (
+			sin(camera_bob_time * 0.5)
+			* tired_camera_bob_amount
+			* 0.35
+			* fatigue_amount
+		)
+	else:
+		camera_bob_time = 0.0
+
+	player_camera.position = player_camera.position.lerp(
+		target_camera_local_position,
+		clampf(
+			camera_bob_return_speed * delta,
+			0.0,
+			1.0
+		)
+	)
+
+	var capsule := (
+		player_collision.shape as CapsuleShape3D
+	)
 
 	if capsule != null:
 		var target_collision_height: float = (
@@ -291,7 +382,6 @@ func _physics_process(delta: float) -> void:
 			input_dir.y
 		)
 	)
-	
 
 	direction.y = 0.0
 	direction = direction.normalized()
@@ -301,20 +391,44 @@ func _physics_process(delta: float) -> void:
 	if is_crouching:
 		current_speed = crouch_speed
 	elif is_sprinting:
-		current_speed = sprint_speed
+		var sprint_speed_factor: float = clampf(
+			stamina_ratio / maxf(
+				sprint_slowdown_start_ratio,
+				0.01
+			),
+			0.0,
+			1.0
+		)
+
+		current_speed = lerpf(
+			tired_walk_speed,
+			sprint_speed,
+			sprint_speed_factor
+		)
+	elif sprint_locked:
+		var recovery_speed_factor: float = clampf(
+			current_stamina / maxf(
+				sprint_unlock_threshold,
+				0.01
+			),
+			0.0,
+			1.0
+		)
+
+		current_speed = lerpf(
+			tired_walk_speed,
+			walk_speed,
+			recovery_speed_factor
+		)
 
 	if input_dir.y > 0.1:
-		current_speed *= (
-			backward_speed_multiplier
-		)
+		current_speed *= backward_speed_multiplier
 
 	if (
 		absf(input_dir.x) > 0.1
 		and absf(input_dir.y) < 0.1
 	):
-		current_speed *= (
-			strafe_speed_multiplier
-		)
+		current_speed *= strafe_speed_multiplier
 
 	var target_horizontal_velocity: Vector3 = (
 		direction * current_speed
@@ -332,11 +446,9 @@ func _physics_process(delta: float) -> void:
 		else ground_deceleration
 	)
 
-	horizontal_velocity = (
-		horizontal_velocity.move_toward(
-			target_horizontal_velocity,
-			movement_rate * delta
-		)
+	horizontal_velocity = horizontal_velocity.move_toward(
+		target_horizontal_velocity,
+		movement_rate * delta
 	)
 
 	velocity.x = horizontal_velocity.x
@@ -346,16 +458,36 @@ func _physics_process(delta: float) -> void:
 		velocity.y -= gravity * delta
 	elif velocity.y < 0.0:
 		velocity.y = 0.0
-		
+
 	move_and_slide()
 
-	var is_moving := input_dir.length_squared() > 0.01
+	var is_moving: bool = (
+		input_dir.length_squared() > 0.01
+	)
+
 	var movement_animation_speed: float = 1.0
 
 	if is_crouching:
 		movement_animation_speed = 0.50
-	elif is_sprinting:
-		movement_animation_speed = 1.65
+	elif is_sprinting or sprint_locked:
+		var animation_speed_ratio: float = clampf(
+			(
+				current_speed
+				- tired_walk_speed
+			) / maxf(
+				sprint_speed
+				- tired_walk_speed,
+				0.01
+			),
+			0.0,
+			1.0
+		)
+
+		movement_animation_speed = lerpf(
+			0.60,
+			1.65,
+			animation_speed_ratio
+		)
 
 	if dutyra_character.has_method("set_moving"):
 		dutyra_character.call(
@@ -363,8 +495,55 @@ func _physics_process(delta: float) -> void:
 			is_moving,
 			movement_animation_speed
 		)
+func update_stamina(
+	delta: float,
+	wants_to_sprint: bool
+) -> bool:
+	var can_sprint: bool = (
+		wants_to_sprint
+		and not sprint_locked
+		and current_stamina > 0.0
+	)
 
+	if can_sprint:
+		current_stamina = maxf(
+			current_stamina
+			- sprint_stamina_drain_per_second * delta,
+			0.0
+		)
+
+		if current_stamina <= 0.0:
+			current_stamina = 0.0
+			sprint_locked = true
+			return false
+
+		return true
+
+	current_stamina = minf(
+		current_stamina
+		+ stamina_recovery_per_second * delta,
+		max_stamina
+	)
+
+	if (
+		sprint_locked
+		and current_stamina >= sprint_unlock_threshold
+	):
+		sprint_locked = false
+
+	return false
 func lock_player_movement(delta: float) -> void:
+	camera_bob_time = 0.0
+
+	player_camera.position = player_camera.position.lerp(
+		camera_base_position,
+		clampf(
+			camera_bob_return_speed * delta,
+			0.0,
+			1.0
+		)
+	)
+
 	velocity.x = 0
 	velocity.z = 0
 
