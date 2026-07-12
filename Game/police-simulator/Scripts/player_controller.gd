@@ -26,6 +26,7 @@ extends CharacterBody3D
 @onready var dispatch_call_label: Label = $PlayerUI/DispatchCallLabel
 @onready var radio_message_label: Label = $PlayerUI/RadioMessageLabel
 @onready var player_ui: CanvasLayer = $PlayerUI
+@onready var dutyra_character: Node3D = $DUTYRA_Character
 @onready var animated_character: Node = $DUTYRA_Character
 
 var camera_pitch: float = 0.0
@@ -304,7 +305,13 @@ func _physics_process(delta: float) -> void:
 		velocity.y = 0.0
 
 	move_and_slide()
+	if dutyra_character.has_method("set_moving"):
+		var is_moving := Vector2(
+			velocity.x,
+			velocity.z
+		).length() > 0.15
 
+		dutyra_character.call("set_moving", is_moving)
 	animated_character.call(
 		"set_moving",
 		Vector2(velocity.x, velocity.z).length() > 0.15
