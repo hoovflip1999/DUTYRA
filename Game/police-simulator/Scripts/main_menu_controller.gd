@@ -41,7 +41,7 @@ var confirmation_slot: int = 0
 var info_panel: Panel
 var info_title_label: Label
 var info_body_label: Label
-
+var main_menu_settings_overlay
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -55,7 +55,7 @@ func _ready() -> void:
 	create_slot_panel()
 	create_confirmation_panel()
 	create_info_panel()
-
+	create_main_menu_settings_overlay()
 	GameState.player_profile_changed.connect(_on_profile_changed)
 	GameState.career_progress_changed.connect(_on_career_progress_changed)
 	GameState.save_slots_changed.connect(_on_save_slots_changed)
@@ -1163,7 +1163,18 @@ func _on_confirmation_pressed() -> void:
 # -------------------------------------------------------------------
 # SETTINGS / CREDITS
 # -------------------------------------------------------------------
+func create_main_menu_settings_overlay() -> void:
+	main_menu_settings_overlay = preload(
+		"res://Scripts/main_menu_settings_overlay.gd"
+	).new()
 
+	main_menu_settings_overlay.name = (
+		"MainMenuSettingsOverlay"
+	)
+
+	add_child(
+		main_menu_settings_overlay
+	)
 func create_info_panel() -> void:
 	info_panel = Panel.new()
 	info_panel.name = "InfoPanel"
@@ -1284,10 +1295,8 @@ func _on_load_game_pressed() -> void:
 
 
 func _on_settings_pressed() -> void:
-	show_info_panel(
-		"SETTINGS",
-		"Settings are not active yet.\n\nFuture options will include graphics, audio, controls, mouse sensitivity, HUD settings, and accessibility."
-	)
+	close_all_modal_panels()
+	main_menu_settings_overlay.show_overlay()
 
 
 func _on_credits_pressed() -> void:
