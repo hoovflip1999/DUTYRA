@@ -14,11 +14,15 @@ extends CharacterBody3D
 @export var mouse_sensitivity: float = 0.003
 
 @export var standing_camera_height: float = 1.6
-@export var crouching_camera_height: float = 1.0
+@export var crouching_camera_height: float = 1.25
 @export var crouch_transition_speed: float = 5.0
 @export var radio_message_seconds: float = 3.2
 @export var standard_call_performance_xp: int = 25
-
+@export var standing_body_height: float = 0.0
+@export var crouching_body_height: float = 0.0
+@export var body_crouch_transition_speed: float = 5.0
+@export var crouching_collision_height: float = 1.2
+@export var collision_crouch_transition_speed: float = 5.0
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var interaction_ray: RayCast3D = $CameraPivot/PlayerCamera/InteractionRay
 @onready var interaction_prompt: Label = $PlayerUI/InteractionPrompt
@@ -28,7 +32,7 @@ extends CharacterBody3D
 @onready var player_ui: CanvasLayer = $PlayerUI
 @onready var dutyra_character: Node3D = $DUTYRA_Character
 @onready var animated_character: Node = $DUTYRA_Character
-
+@onready var player_collision: CollisionShape3D = $PlayerCollision
 var camera_pitch: float = 0.0
 var is_mdt_visible: bool = false
 var mdt_tab_index: int = 0
@@ -108,9 +112,16 @@ var radio_wheel_container: Control
 var is_radio_wheel_visible: bool = false
 var radio_wheel_options: Array[Dictionary] = []
 var highlighted_radio_option_index: int = -1
+var standing_collision_height: float = 0.0
+var standing_collision_y: float = 0.0
 
 func _ready() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	var capsule := player_collision.shape as CapsuleShape3D
+
+	if capsule != null:
+		standing_collision_height = capsule.height
+		standing_collision_y = player_collision.position.y
 	floor_snap_length = 0.35
 	floor_max_angle = deg_to_rad(46.0)
 	floor_stop_on_slope = true
@@ -241,6 +252,37 @@ func _physics_process(delta: float) -> void:
 		crouch_transition_speed * delta
 	)
 
+	var capsule := player_collision.shape as CapsuleShape3D
+
+	if capsule != null:
+		var target_collision_height: float = (
+			crouching_collision_height
+			if is_crouching
+			else standing_collision_height
+		)
+
+		capsule.height = move_toward(
+			capsule.height,
+			target_collision_height,
+			collision_crouch_transition_speed * delta
+		)
+
+		var height_difference: float = (
+			standing_collision_height
+			- capsule.height
+		)
+
+		var target_collision_y: float = (
+			standing_collision_y
+			- height_difference * 0.5
+		)
+
+		player_collision.position.y = move_toward(
+			player_collision.position.y,
+			target_collision_y,
+			collision_crouch_transition_speed * delta
+		)
+
 	var direction: Vector3 = (
 		global_transform.basis
 		* Vector3(
@@ -249,6 +291,7 @@ func _physics_process(delta: float) -> void:
 			input_dir.y
 		)
 	)
+	
 
 	direction.y = 0.0
 	direction = direction.normalized()
@@ -303,19 +346,23 @@ func _physics_process(delta: float) -> void:
 		velocity.y -= gravity * delta
 	elif velocity.y < 0.0:
 		velocity.y = 0.0
-
+		
 	move_and_slide()
-	if dutyra_character.has_method("set_moving"):
-		var is_moving := Vector2(
-			velocity.x,
-			velocity.z
-		).length() > 0.15
 
-		dutyra_character.call("set_moving", is_moving)
-	animated_character.call(
-		"set_moving",
-		Vector2(velocity.x, velocity.z).length() > 0.15
-	)
+	var is_moving := input_dir.length_squared() > 0.01
+	var movement_animation_speed: float = 1.0
+
+	if is_crouching:
+		movement_animation_speed = 0.50
+	elif is_sprinting:
+		movement_animation_speed = 1.65
+
+	if dutyra_character.has_method("set_moving"):
+		dutyra_character.call(
+			"set_moving",
+			is_moving,
+			movement_animation_speed
+		)
 
 func lock_player_movement(delta: float) -> void:
 	velocity.x = 0

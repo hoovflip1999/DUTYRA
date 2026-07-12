@@ -35,11 +35,25 @@ func _ready() -> void:
 	play_idle()
 
 
-func set_moving(is_moving: bool) -> void:
+func set_moving(
+	is_moving: bool,
+	movement_animation_speed: float = 1.0
+) -> void:
+	if animation_player == null:
+		return
+
 	if is_moving:
-		play_walk()
+		animation_player.play(
+			WALK_ANIMATION,
+			0.15,
+			movement_animation_speed
+		)
 	else:
-		play_idle()
+		animation_player.play(
+			IDLE_ANIMATION,
+			0.15,
+			1.0
+		)
 
 
 func play_idle() -> void:
