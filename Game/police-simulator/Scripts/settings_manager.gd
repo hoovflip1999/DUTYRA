@@ -41,7 +41,7 @@ const BASE_DEFAULT_SETTINGS := {
 		"sprint": 4194325,
 		"crouch": 4194326,
 		"interact": 69,
-		"toggle_flashlight": 84,
+		"utility_wheel": 70,
 		"toggle_mdt": 77,
 		"toggle_radio_menu": 81
 	}

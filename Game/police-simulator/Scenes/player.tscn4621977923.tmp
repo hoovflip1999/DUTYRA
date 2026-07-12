@@ -1,0 +1,75 @@
+[gd_scene format=3 uid="uid://dw7sn20cefjue"]
+
+[ext_resource type="Script" uid="uid://ppp7q0nwbn1t" path="res://Scripts/player_controller.gd" id="1_v0iea"]
+[ext_resource type="PackedScene" uid="uid://dx416qjtehnro" path="res://Scenes/Characters/dutyra_character.tscn" id="2_cvnsp"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_qjvm4"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_7oaoy"]
+
+[node name="Player" type="CharacterBody3D" unique_id=1417239302]
+script = ExtResource("1_v0iea")
+standing_camera_height = 1.83
+
+[node name="PlayerCollision" type="CollisionShape3D" parent="." unique_id=2021703068]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CapsuleShape3D_qjvm4")
+
+[node name="PlayerBody" type="MeshInstance3D" parent="." unique_id=1284249446]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+visible = false
+mesh = SubResource("CapsuleMesh_7oaoy")
+
+[node name="CameraPivot" type="Node3D" parent="." unique_id=162239239]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 0)
+
+[node name="PlayerCamera" type="Camera3D" parent="CameraPivot" unique_id=500036245]
+cull_mask = 1048573
+current = true
+
+[node name="InteractionRay" type="RayCast3D" parent="CameraPivot/PlayerCamera" unique_id=979379544]
+target_position = Vector3(0, 0, -3)
+
+[node name="Flashlight" type="SpotLight3D" parent="CameraPivot/PlayerCamera" unique_id=630232343]
+transform = Transform3D(0.99417055, 0.027421217, 0.10427384, -0.034814484, 0.9969564, 0.06975647, -0.10204366, -0.07298007, 0.99209934, 0.32, 0.18, -0.2)
+visible = false
+light_energy = 4.0
+shadow_enabled = true
+spot_range = 30.0
+spot_angle = 24.0
+
+[node name="PlayerUI" type="CanvasLayer" parent="." unique_id=996975244]
+
+[node name="InteractionPrompt" type="Label" parent="PlayerUI" unique_id=1636440078]
+visible = false
+offset_left = 760.0
+offset_top = 520.0
+offset_right = 1160.0
+offset_bottom = 580.0
+text = "Press E to interact"
+
+[node name="DutyStatusLabel" type="Label" parent="PlayerUI" unique_id=1698535038]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 320.0
+offset_bottom = 43.0
+text = "OFF DUTY"
+
+[node name="DispatchCallLabel" type="Label" parent="PlayerUI" unique_id=656336601]
+visible = false
+offset_left = 20.0
+offset_top = 60.0
+offset_right = 620.0
+offset_bottom = 140.0
+text = "MDT: No active call"
+
+[node name="RadioMessageLabel" type="Label" parent="PlayerUI" unique_id=69855900]
+visible = false
+offset_left = 20.0
+offset_top = 140.0
+offset_right = 720.0
+offset_bottom = 220.0
+text = "RADIO"
+
+[node name="DUTYRA_Character" parent="." unique_id=1129634026 instance=ExtResource("2_cvnsp")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0.065)

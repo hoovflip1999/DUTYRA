@@ -1,14 +1,54 @@
 extends CharacterBody3D
-const FOOTSTEP_SOUNDS = [
-	preload("res://Assets/Audio/Footsteps/natural_boot_step_01.wav"),
-	preload("res://Assets/Audio/Footsteps/natural_boot_step_02.wav"),
-	preload("res://Assets/Audio/Footsteps/natural_boot_step_03.wav"),
-	preload("res://Assets/Audio/Footsteps/natural_boot_step_04.wav"),
-	preload("res://Assets/Audio/Footsteps/natural_boot_step_05.wav"),
-	preload("res://Assets/Audio/Footsteps/natural_boot_step_06.wav"),
-	preload("res://Assets/Audio/Footsteps/natural_boot_step_07.wav"),
-	preload("res://Assets/Audio/Footsteps/natural_boot_step_08.wav")
-]
+
+const MAX_UTILITY_SLOTS: int = 8
+
+const EQUIPMENT_DATABASE := {
+	"hands": {
+		"name": "HANDS",
+		"category": "DEFAULT"
+	},
+	"flashlight": {
+		"name": "FLASHLIGHT",
+		"category": "UTILITY"
+	},
+	"taser": {
+		"name": "TASER",
+		"category": "LESS LETHAL"
+	},
+	"handgun": {
+		"name": "HANDGUN",
+		"category": "FIREARM"
+	},
+	"handcuffs": {
+		"name": "HANDCUFFS",
+		"category": "RESTRAINT"
+	},
+	"baton": {
+		"name": "BATON",
+		"category": "LESS LETHAL"
+	},
+	"pepper_spray": {
+		"name": "PEPPER SPRAY",
+		"category": "LESS LETHAL"
+	},
+	"rifle": {
+		"name": "PATROL RIFLE",
+		"category": "FIREARM"
+	},
+	"road_spikes": {
+		"name": "ROAD SPIKES",
+		"category": "TRAFFIC"
+	},
+	"medkit": {
+		"name": "MEDICAL KIT",
+		"category": "MEDICAL"
+	},
+	"breaching_tool": {
+		"name": "BREACHING TOOL",
+		"category": "SPECIAL"
+	}
+}
+
 
 @export var walk_speed: float = 4.6
 @export var sprint_speed: float = 7.4
@@ -26,14 +66,16 @@ const FOOTSTEP_SOUNDS = [
 @export var standing_camera_height: float = 1.6
 @export var crouching_camera_height: float = 1.25
 @export var crouch_transition_speed: float = 5.0
+
 @export var radio_message_seconds: float = 3.2
 @export var standard_call_performance_xp: int = 25
+
 @export var standing_body_height: float = 0.0
 @export var crouching_body_height: float = 0.0
 @export var body_crouch_transition_speed: float = 5.0
+
 @export var crouching_collision_height: float = 1.2
 @export var collision_crouch_transition_speed: float = 5.0
-
 
 @export var max_stamina: float = 100.0
 @export var sprint_stamina_drain_per_second: float = 7.0
@@ -47,19 +89,37 @@ const FOOTSTEP_SOUNDS = [
 @export var tired_camera_bob_speed: float = 7.5
 @export var camera_bob_return_speed: float = 10.0
 
+@export var utility_wheel_hold_seconds: float = 0.20
+
 
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var player_camera: Camera3D = $CameraPivot/PlayerCamera
-@onready var flashlight: SpotLight3D = $CameraPivot/PlayerCamera/Flashlight
-@onready var interaction_ray: RayCast3D = $CameraPivot/PlayerCamera/InteractionRay
-@onready var interaction_prompt: Label = $PlayerUI/InteractionPrompt
-@onready var duty_status_label: Label = $PlayerUI/DutyStatusLabel
-@onready var dispatch_call_label: Label = $PlayerUI/DispatchCallLabel
-@onready var radio_message_label: Label = $PlayerUI/RadioMessageLabel
+@onready var flashlight: SpotLight3D = (
+	$CameraPivot/PlayerCamera/Flashlight
+)
+@onready var interaction_ray: RayCast3D = (
+	$CameraPivot/PlayerCamera/InteractionRay
+)
+@onready var interaction_prompt: Label = (
+	$PlayerUI/InteractionPrompt
+)
+@onready var duty_status_label: Label = (
+	$PlayerUI/DutyStatusLabel
+)
+@onready var dispatch_call_label: Label = (
+	$PlayerUI/DispatchCallLabel
+)
+@onready var radio_message_label: Label = (
+	$PlayerUI/RadioMessageLabel
+)
 @onready var player_ui: CanvasLayer = $PlayerUI
 @onready var dutyra_character: Node3D = $DUTYRA_Character
 @onready var animated_character: Node = $DUTYRA_Character
-@onready var player_collision: CollisionShape3D = $PlayerCollision
+@onready var player_collision: CollisionShape3D = (
+	$PlayerCollision
+)
+
+
 var camera_pitch: float = 0.0
 var is_mdt_visible: bool = false
 var mdt_tab_index: int = 0
@@ -139,6 +199,7 @@ var radio_wheel_container: Control
 var is_radio_wheel_visible: bool = false
 var radio_wheel_options: Array[Dictionary] = []
 var highlighted_radio_option_index: int = -1
+
 var standing_collision_height: float = 0.0
 var standing_collision_y: float = 0.0
 
@@ -147,28 +208,58 @@ var sprint_locked: bool = false
 
 var camera_base_position: Vector3 = Vector3.ZERO
 var camera_bob_time: float = 0.0
-var footstep_player: AudioStreamPlayer
-var footstep_timer: float = 0.0
-var last_footstep_index: int = -1
+
+var current_equipment_id: String = "hands"
+
+var carried_equipment_ids: Array[String] = [
+	"flashlight",
+	"taser",
+	"handgun",
+	"handcuffs"
+]
+
+var utility_wheel_container: Control
+var utility_wheel_background: ColorRect
+var utility_wheel_header_label: Label
+var utility_wheel_footer_label: Label
+var utility_wheel_center_panel: Panel
+var utility_wheel_center_name_label: Label
+var utility_wheel_center_category_label: Label
+var utility_wheel_center_hint_label: Label
+
+var utility_wheel_option_panels: Array[Panel] = []
+var utility_wheel_option_number_labels: Array[Label] = []
+var utility_wheel_option_name_labels: Array[Label] = []
+var utility_wheel_option_status_labels: Array[Label] = []
+
+var utility_wheel_key_held: bool = false
+var utility_wheel_hold_time: float = 0.0
+var is_utility_wheel_visible: bool = false
+var highlighted_utility_slot: int = -1
 
 
 func _ready() -> void:
-	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
-	
+	Input.set_mouse_mode(
+		Input.MOUSE_MODE_CAPTURED
+	)
+
 	current_stamina = max_stamina
 	camera_base_position = player_camera.position
 	flashlight.visible = false
 
-	footstep_player = AudioStreamPlayer.new()
-	footstep_player.name = "FootstepPlayer"
-	add_child(footstep_player)
+	utility_wheel_key_held = false
+	utility_wheel_hold_time = 0.0
+	is_utility_wheel_visible = false
+	highlighted_utility_slot = -1
 
-	var capsule := player_collision.shape as CapsuleShape3D
+	var capsule := (
+		player_collision.shape as CapsuleShape3D
+	)
 
 	if capsule != null:
 		standing_collision_height = capsule.height
 		standing_collision_y = player_collision.position.y
-		
+
 	floor_snap_length = 0.35
 	floor_max_angle = deg_to_rad(46.0)
 	floor_stop_on_slope = true
@@ -176,10 +267,19 @@ func _ready() -> void:
 	interaction_prompt.visible = false
 	dispatch_call_label.visible = false
 	radio_message_label.visible = false
-	radio_message_label.size = Vector2(560, 70)
-	radio_message_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	radio_message_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	radio_message_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	radio_message_label.size = Vector2(
+		560.0,
+		70.0
+	)
+	radio_message_label.autowrap_mode = (
+		TextServer.AUTOWRAP_WORD_SMART
+	)
+	radio_message_label.horizontal_alignment = (
+		HORIZONTAL_ALIGNMENT_LEFT
+	)
+	radio_message_label.vertical_alignment = (
+		VERTICAL_ALIGNMENT_TOP
+	)
 
 	create_main_status_hud()
 	create_mdt_ui()
@@ -188,27 +288,125 @@ func _ready() -> void:
 	create_shift_summary_ui()
 	create_xp_popup_ui()
 	create_radio_wheel_ui()
+	create_utility_wheel()
 
-	GameState.duty_status_changed.connect(_on_duty_status_changed)
-	GameState.performance_xp_changed.connect(_on_performance_xp_changed)
-	GameState.career_progress_changed.connect(_on_career_progress_changed)
-	GameState.shift_ended.connect(_on_shift_ended)
-	GameState.game_time_changed.connect(_on_game_time_changed)
-	GameState.report_logged.connect(_on_report_logged)
-	update_duty_status_label(GameState.is_on_duty)
+	equip_equipment_item("hands")
 
-	DispatchManager.active_call_changed.connect(_on_active_call_changed)
-	update_dispatch_call_label(DispatchManager.get_display_text(), DispatchManager.has_active_call)
+	GameState.duty_status_changed.connect(
+		_on_duty_status_changed
+	)
+	GameState.performance_xp_changed.connect(
+		_on_performance_xp_changed
+	)
+	GameState.career_progress_changed.connect(
+		_on_career_progress_changed
+	)
+	GameState.shift_ended.connect(
+		_on_shift_ended
+	)
+	GameState.game_time_changed.connect(
+		_on_game_time_changed
+	)
+	GameState.report_logged.connect(
+		_on_report_logged
+	)
 
-	RadioManager.radio_message_sent.connect(_on_radio_message_sent)
+	update_duty_status_label(
+		GameState.is_on_duty
+	)
+
+	DispatchManager.active_call_changed.connect(
+		_on_active_call_changed
+	)
+
+	update_dispatch_call_label(
+		DispatchManager.get_display_text(),
+		DispatchManager.has_active_call
+	)
+
+	RadioManager.radio_message_sent.connect(
+		_on_radio_message_sent
+	)
+
+
+func _process(delta: float) -> void:
+	if (
+		utility_wheel_key_held
+		and not Input.is_action_pressed(
+			"utility_wheel"
+		)
+	):
+		finish_utility_wheel_input()
+		return
+
+	if (
+		utility_wheel_key_held
+		and not is_utility_wheel_visible
+		and not is_mdt_visible
+		and not is_radio_wheel_visible
+	):
+		utility_wheel_hold_time += delta
+
+		if (
+			utility_wheel_hold_time
+			>= utility_wheel_hold_seconds
+		):
+			show_utility_wheel()
+
+	if is_utility_wheel_visible:
+		update_utility_wheel_selection()
+
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventMouseMotion and not is_radio_wheel_visible and not is_mdt_visible:
-		rotate_y(-event.relative.x * mouse_sensitivity)
+	if event.is_action_pressed(
+		"utility_wheel"
+	):
+		if (
+			is_mdt_visible
+			or is_radio_wheel_visible
+		):
+			return
 
-		camera_pitch -= event.relative.y * mouse_sensitivity
-		camera_pitch = clamp(camera_pitch, deg_to_rad(-50), deg_to_rad(80))
-		camera_pivot.rotation.x = camera_pitch
+		utility_wheel_key_held = true
+		utility_wheel_hold_time = 0.0
+		return
+
+	if event.is_action_released(
+		"utility_wheel"
+	):
+		finish_utility_wheel_input()
+		return
+
+	if is_utility_wheel_visible:
+		if event.is_action_pressed("ui_cancel"):
+			cancel_utility_wheel()
+		return
+
+	if (
+		event is InputEventMouseMotion
+		and not is_radio_wheel_visible
+		and not is_mdt_visible
+		and not is_utility_wheel_visible
+	):
+		rotate_y(
+			-event.relative.x
+			* mouse_sensitivity
+		)
+
+		camera_pitch -= (
+			event.relative.y
+			* mouse_sensitivity
+		)
+
+		camera_pitch = clampf(
+			camera_pitch,
+			deg_to_rad(-50.0),
+			deg_to_rad(80.0)
+		)
+
+		camera_pivot.rotation.x = (
+			camera_pitch
+		)
 
 	if event.is_action_pressed("ui_cancel"):
 		if is_radio_wheel_visible:
@@ -216,7 +414,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif is_mdt_visible:
 			close_mdt()
 		else:
-			Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+			Input.set_mouse_mode(
+				Input.MOUSE_MODE_VISIBLE
+			)
 
 		return
 
@@ -227,7 +427,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	if is_mdt_visible:
 		return
 
-	if event.is_action_pressed("toggle_radio_menu"):
+	if event.is_action_pressed(
+		"toggle_radio_menu"
+	):
 		toggle_radio_wheel()
 		return
 
@@ -235,13 +437,13 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event is InputEventMouseMotion:
 			update_radio_wheel_mouse_selection()
 			return
-			
-	if event.is_action_pressed("toggle_flashlight"):
-		flashlight.visible = not flashlight.visible
-		return
-		
+
 		if event is InputEventMouseButton:
-			if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			if (
+				event.button_index
+				== MOUSE_BUTTON_LEFT
+				and event.pressed
+			):
 				update_radio_wheel_mouse_selection()
 				select_highlighted_radio_option()
 
@@ -254,24 +456,40 @@ func _unhandled_input(event: InputEvent) -> void:
 
 		if event is InputEventKey:
 			if event.pressed and not event.echo:
-				handle_radio_wheel_number_input(event.keycode)
+				handle_radio_wheel_number_input(
+					event.keycode
+				)
 
 			return
 
 		return
 
 	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-			Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+		if (
+			event.button_index
+			== MOUSE_BUTTON_LEFT
+			and event.pressed
+		):
+			Input.set_mouse_mode(
+				Input.MOUSE_MODE_CAPTURED
+			)
 
 	if event.is_action_pressed("interact"):
 		handle_interact_input()
 
+
 func _physics_process(delta: float) -> void:
 	update_context_prompt()
 
-	if is_radio_wheel_visible or is_mdt_visible:
-		update_stamina(delta, false)
+	if (
+		is_radio_wheel_visible
+		or is_mdt_visible
+		or is_utility_wheel_visible
+	):
+		update_stamina(
+			delta,
+			false
+		)
 		lock_player_movement(delta)
 		return
 
@@ -282,8 +500,8 @@ func _physics_process(delta: float) -> void:
 		"move_back"
 	)
 
-	var is_crouching: bool = Input.is_action_pressed(
-		"crouch"
+	var is_crouching: bool = (
+		Input.is_action_pressed("crouch")
 	)
 
 	var wants_to_sprint: bool = (
@@ -298,18 +516,23 @@ func _physics_process(delta: float) -> void:
 	)
 
 	var stamina_ratio: float = clampf(
-		current_stamina / maxf(max_stamina, 0.01),
+		current_stamina
+		/ maxf(max_stamina, 0.01),
 		0.0,
 		1.0
 	)
 
-	var fatigue_amount: float = 1.0 - clampf(
-		stamina_ratio / maxf(
-			sprint_slowdown_start_ratio,
-			0.01
-		),
-		0.0,
+	var fatigue_amount: float = (
 		1.0
+		- clampf(
+			stamina_ratio
+			/ maxf(
+				sprint_slowdown_start_ratio,
+				0.01
+			),
+			0.0,
+			1.0
+		)
 	)
 
 	var target_camera_height: float = (
@@ -338,7 +561,8 @@ func _physics_process(delta: float) -> void:
 		and fatigue_amount > 0.0
 	):
 		camera_bob_time += (
-			delta * tired_camera_bob_speed
+			delta
+			* tired_camera_bob_speed
 		)
 
 		target_camera_local_position.y += (
@@ -356,17 +580,21 @@ func _physics_process(delta: float) -> void:
 	else:
 		camera_bob_time = 0.0
 
-	player_camera.position = player_camera.position.lerp(
-		target_camera_local_position,
-		clampf(
-			camera_bob_return_speed * delta,
-			0.0,
-			1.0
+	player_camera.position = (
+		player_camera.position.lerp(
+			target_camera_local_position,
+			clampf(
+				camera_bob_return_speed
+				* delta,
+				0.0,
+				1.0
+			)
 		)
 	)
 
 	var capsule := (
-		player_collision.shape as CapsuleShape3D
+		player_collision.shape
+		as CapsuleShape3D
 	)
 
 	if capsule != null:
@@ -379,7 +607,8 @@ func _physics_process(delta: float) -> void:
 		capsule.height = move_toward(
 			capsule.height,
 			target_collision_height,
-			collision_crouch_transition_speed * delta
+			collision_crouch_transition_speed
+			* delta
 		)
 
 		var height_difference: float = (
@@ -392,10 +621,13 @@ func _physics_process(delta: float) -> void:
 			- height_difference * 0.5
 		)
 
-		player_collision.position.y = move_toward(
-			player_collision.position.y,
-			target_collision_y,
-			collision_crouch_transition_speed * delta
+		player_collision.position.y = (
+			move_toward(
+				player_collision.position.y,
+				target_collision_y,
+				collision_crouch_transition_speed
+				* delta
+			)
 		)
 
 	var direction: Vector3 = (
@@ -414,14 +646,18 @@ func _physics_process(delta: float) -> void:
 
 	if is_crouching:
 		current_speed = crouch_speed
+
 	elif is_sprinting:
-		var sprint_speed_factor: float = clampf(
-			stamina_ratio / maxf(
-				sprint_slowdown_start_ratio,
-				0.01
-			),
-			0.0,
-			1.0
+		var sprint_speed_factor: float = (
+			clampf(
+				stamina_ratio
+				/ maxf(
+					sprint_slowdown_start_ratio,
+					0.01
+				),
+				0.0,
+				1.0
+			)
 		)
 
 		current_speed = lerpf(
@@ -429,14 +665,18 @@ func _physics_process(delta: float) -> void:
 			sprint_speed,
 			sprint_speed_factor
 		)
+
 	elif sprint_locked:
-		var recovery_speed_factor: float = clampf(
-			current_stamina / maxf(
-				sprint_unlock_threshold,
-				0.01
-			),
-			0.0,
-			1.0
+		var recovery_speed_factor: float = (
+			clampf(
+				current_stamina
+				/ maxf(
+					sprint_unlock_threshold,
+					0.01
+				),
+				0.0,
+				1.0
+			)
 		)
 
 		current_speed = lerpf(
@@ -446,13 +686,17 @@ func _physics_process(delta: float) -> void:
 		)
 
 	if input_dir.y > 0.1:
-		current_speed *= backward_speed_multiplier
+		current_speed *= (
+			backward_speed_multiplier
+		)
 
 	if (
 		absf(input_dir.x) > 0.1
 		and absf(input_dir.y) < 0.1
 	):
-		current_speed *= strafe_speed_multiplier
+		current_speed *= (
+			strafe_speed_multiplier
+		)
 
 	var target_horizontal_velocity: Vector3 = (
 		direction * current_speed
@@ -470,9 +714,11 @@ func _physics_process(delta: float) -> void:
 		else ground_deceleration
 	)
 
-	horizontal_velocity = horizontal_velocity.move_toward(
-		target_horizontal_velocity,
-		movement_rate * delta
+	horizontal_velocity = (
+		horizontal_velocity.move_toward(
+			target_horizontal_velocity,
+			movement_rate * delta
+		)
 	)
 
 	velocity.x = horizontal_velocity.x
@@ -489,23 +735,26 @@ func _physics_process(delta: float) -> void:
 		input_dir.length_squared() > 0.01
 	)
 
-	
 	var movement_animation_speed: float = 1.0
 
 	if is_crouching:
 		movement_animation_speed = 0.50
+
 	elif is_sprinting or sprint_locked:
-		var animation_speed_ratio: float = clampf(
-			(
-				current_speed
-				- tired_walk_speed
-			) / maxf(
-				sprint_speed
-				- tired_walk_speed,
-				0.01
-			),
-			0.0,
-			1.0
+		var animation_speed_ratio: float = (
+			clampf(
+				(
+					current_speed
+					- tired_walk_speed
+				)
+				/ maxf(
+					sprint_speed
+					- tired_walk_speed,
+					0.01
+				),
+				0.0,
+				1.0
+			)
 		)
 
 		movement_animation_speed = lerpf(
@@ -514,93 +763,16 @@ func _physics_process(delta: float) -> void:
 			animation_speed_ratio
 		)
 
-	if dutyra_character.has_method("set_moving"):
+	if dutyra_character.has_method(
+		"set_moving"
+	):
 		dutyra_character.call(
 			"set_moving",
 			is_moving,
 			movement_animation_speed
 		)
-func update_footsteps(
-	delta: float,
-	is_moving: bool,
-	is_crouching: bool,
-	is_sprinting: bool,
-	current_speed: float
-) -> void:
-	if not is_moving or not is_on_floor():
-		footstep_timer = 0.0
-		return
 
-	footstep_timer -= delta
 
-	if footstep_timer > 0.0:
-		return
-
-	var step_interval: float = 0.48
-	var step_volume = -16.0
-
-	if is_crouching:
-		step_interval = 0.70
-		step_volume = -6.0
-
-	elif is_sprinting:
-		var sprint_speed_ratio: float = clampf(
-			(
-				current_speed
-				- tired_walk_speed
-			) / maxf(
-				sprint_speed
-				- tired_walk_speed,
-				0.01
-			),
-			0.0,
-			1.0
-		)
-
-		step_interval = lerpf(
-			0.62,
-			0.30,
-			sprint_speed_ratio
-		)
-
-		step_volume = lerpf(
-			-10.0,
-			-6.0,
-			sprint_speed_ratio
-		)
-
-	elif sprint_locked:
-		step_interval = 0.62
-		step_volume = -14.0
-
-	footstep_timer = step_interval
-
-	var sound_index: int = randi_range(
-		0,
-		FOOTSTEP_SOUNDS.size() - 1
-	)
-
-	if (
-		FOOTSTEP_SOUNDS.size() > 1
-		and sound_index == last_footstep_index
-	):
-		sound_index = (
-			sound_index + 1
-		) % FOOTSTEP_SOUNDS.size()
-
-	last_footstep_index = sound_index
-
-	footstep_player.stream = FOOTSTEP_SOUNDS[
-		sound_index
-	]
-
-	footstep_player.volume_db = step_volume
-	footstep_player.pitch_scale = randf_range(
-		0.96,
-		1.04
-	)
-
-	footstep_player.play()
 func update_stamina(
 	delta: float,
 	wants_to_sprint: bool
@@ -614,7 +786,8 @@ func update_stamina(
 	if can_sprint:
 		current_stamina = maxf(
 			current_stamina
-			- sprint_stamina_drain_per_second * delta,
+			- sprint_stamina_drain_per_second
+			* delta,
 			0.0
 		)
 
@@ -627,39 +800,1143 @@ func update_stamina(
 
 	current_stamina = minf(
 		current_stamina
-		+ stamina_recovery_per_second * delta,
+		+ stamina_recovery_per_second
+		* delta,
 		max_stamina
 	)
 
 	if (
 		sprint_locked
-		and current_stamina >= sprint_unlock_threshold
+		and current_stamina
+		>= sprint_unlock_threshold
 	):
 		sprint_locked = false
 
 	return false
+
+
 func lock_player_movement(delta: float) -> void:
 	camera_bob_time = 0.0
 
-	player_camera.position = player_camera.position.lerp(
-		camera_base_position,
-		clampf(
-			camera_bob_return_speed * delta,
-			0.0,
-			1.0
+	player_camera.position = (
+		player_camera.position.lerp(
+			camera_base_position,
+			clampf(
+				camera_bob_return_speed
+				* delta,
+				0.0,
+				1.0
+			)
 		)
 	)
 
-	velocity.x = 0
-	velocity.z = 0
+	velocity.x = 0.0
+	velocity.z = 0.0
 
 	if not is_on_floor():
 		velocity.y -= gravity * delta
 	else:
-		velocity.y = 0
+		velocity.y = 0.0
 
 	move_and_slide()
-	animated_character.call("set_moving", false)
+
+	if animated_character.has_method(
+		"set_moving"
+	):
+		animated_character.call(
+			"set_moving",
+			false,
+			1.0
+		)
+
+
+func create_utility_wheel() -> void:
+	utility_wheel_container = Control.new()
+	utility_wheel_container.name = (
+		"UtilityWheel"
+	)
+	utility_wheel_container.visible = false
+	utility_wheel_container.mouse_filter = (
+		Control.MOUSE_FILTER_IGNORE
+	)
+	utility_wheel_container.z_index = 90
+
+	player_ui.add_child(
+		utility_wheel_container
+	)
+
+	utility_wheel_container.set_anchors_and_offsets_preset(
+		Control.PRESET_FULL_RECT
+	)
+
+	utility_wheel_background = ColorRect.new()
+	utility_wheel_background.color = Color(
+		0.002,
+		0.008,
+		0.016,
+		0.82
+	)
+	utility_wheel_background.mouse_filter = (
+		Control.MOUSE_FILTER_IGNORE
+	)
+
+	utility_wheel_container.add_child(
+		utility_wheel_background
+	)
+
+	utility_wheel_background.set_anchors_and_offsets_preset(
+		Control.PRESET_FULL_RECT
+	)
+
+	utility_wheel_header_label = Label.new()
+	utility_wheel_header_label.text = (
+		"DUTYRA  //  ACTIVE LOADOUT"
+	)
+	utility_wheel_header_label.size = Vector2(
+		700.0,
+		44.0
+	)
+	utility_wheel_header_label.horizontal_alignment = (
+		HORIZONTAL_ALIGNMENT_CENTER
+	)
+	utility_wheel_header_label.vertical_alignment = (
+		VERTICAL_ALIGNMENT_CENTER
+	)
+	utility_wheel_header_label.mouse_filter = (
+		Control.MOUSE_FILTER_IGNORE
+	)
+	utility_wheel_header_label.add_theme_font_size_override(
+		"font_size",
+		19
+	)
+	utility_wheel_header_label.add_theme_color_override(
+		"font_color",
+		Color(
+			0.48,
+			0.86,
+			1.0,
+			1.0
+		)
+	)
+
+	utility_wheel_container.add_child(
+		utility_wheel_header_label
+	)
+
+	utility_wheel_footer_label = Label.new()
+	utility_wheel_footer_label.text = (
+		"MOVE MOUSE TO SELECT"
+		+ "  //  RELEASE F TO EQUIP"
+		+ "  //  TAP F TO HOLSTER"
+	)
+	utility_wheel_footer_label.size = Vector2(
+		900.0,
+		36.0
+	)
+	utility_wheel_footer_label.horizontal_alignment = (
+		HORIZONTAL_ALIGNMENT_CENTER
+	)
+	utility_wheel_footer_label.vertical_alignment = (
+		VERTICAL_ALIGNMENT_CENTER
+	)
+	utility_wheel_footer_label.mouse_filter = (
+		Control.MOUSE_FILTER_IGNORE
+	)
+	utility_wheel_footer_label.add_theme_font_size_override(
+		"font_size",
+		13
+	)
+	utility_wheel_footer_label.add_theme_color_override(
+		"font_color",
+		Color(
+			0.48,
+			0.60,
+			0.72,
+			1.0
+		)
+	)
+
+	utility_wheel_container.add_child(
+		utility_wheel_footer_label
+	)
+
+	utility_wheel_center_panel = Panel.new()
+	utility_wheel_center_panel.size = Vector2(
+		230.0,
+		230.0
+	)
+	utility_wheel_center_panel.mouse_filter = (
+		Control.MOUSE_FILTER_IGNORE
+	)
+	utility_wheel_center_panel.add_theme_stylebox_override(
+		"panel",
+		make_utility_panel_style(
+			Color(
+				0.008,
+				0.025,
+				0.042,
+				0.99
+			),
+			Color(
+				0.05,
+				0.68,
+				1.0,
+				1.0
+			),
+			115,
+			3
+		)
+	)
+
+	utility_wheel_container.add_child(
+		utility_wheel_center_panel
+	)
+
+	utility_wheel_center_name_label = Label.new()
+	utility_wheel_center_name_label.position = Vector2(
+		20.0,
+		58.0
+	)
+	utility_wheel_center_name_label.size = Vector2(
+		190.0,
+		55.0
+	)
+	utility_wheel_center_name_label.horizontal_alignment = (
+		HORIZONTAL_ALIGNMENT_CENTER
+	)
+	utility_wheel_center_name_label.vertical_alignment = (
+		VERTICAL_ALIGNMENT_CENTER
+	)
+	utility_wheel_center_name_label.autowrap_mode = (
+		TextServer.AUTOWRAP_WORD_SMART
+	)
+	utility_wheel_center_name_label.mouse_filter = (
+		Control.MOUSE_FILTER_IGNORE
+	)
+	utility_wheel_center_name_label.add_theme_font_size_override(
+		"font_size",
+		22
+	)
+	utility_wheel_center_name_label.add_theme_color_override(
+		"font_color",
+		Color.WHITE
+	)
+
+	utility_wheel_center_panel.add_child(
+		utility_wheel_center_name_label
+	)
+
+	utility_wheel_center_category_label = Label.new()
+	utility_wheel_center_category_label.position = Vector2(
+		20.0,
+		117.0
+	)
+	utility_wheel_center_category_label.size = Vector2(
+		190.0,
+		25.0
+	)
+	utility_wheel_center_category_label.horizontal_alignment = (
+		HORIZONTAL_ALIGNMENT_CENTER
+	)
+	utility_wheel_center_category_label.vertical_alignment = (
+		VERTICAL_ALIGNMENT_CENTER
+	)
+	utility_wheel_center_category_label.mouse_filter = (
+		Control.MOUSE_FILTER_IGNORE
+	)
+	utility_wheel_center_category_label.add_theme_font_size_override(
+		"font_size",
+		12
+	)
+	utility_wheel_center_category_label.add_theme_color_override(
+		"font_color",
+		Color(
+			0.35,
+			0.77,
+			1.0,
+			1.0
+		)
+	)
+
+	utility_wheel_center_panel.add_child(
+		utility_wheel_center_category_label
+	)
+
+	utility_wheel_center_hint_label = Label.new()
+	utility_wheel_center_hint_label.position = Vector2(
+		20.0,
+		154.0
+	)
+	utility_wheel_center_hint_label.size = Vector2(
+		190.0,
+		30.0
+	)
+	utility_wheel_center_hint_label.horizontal_alignment = (
+		HORIZONTAL_ALIGNMENT_CENTER
+	)
+	utility_wheel_center_hint_label.vertical_alignment = (
+		VERTICAL_ALIGNMENT_CENTER
+	)
+	utility_wheel_center_hint_label.mouse_filter = (
+		Control.MOUSE_FILTER_IGNORE
+	)
+	utility_wheel_center_hint_label.add_theme_font_size_override(
+		"font_size",
+		11
+	)
+	utility_wheel_center_hint_label.add_theme_color_override(
+		"font_color",
+		Color(
+			0.58,
+			0.67,
+			0.76,
+			1.0
+		)
+	)
+
+	utility_wheel_center_panel.add_child(
+		utility_wheel_center_hint_label
+	)
+
+	for index in range(MAX_UTILITY_SLOTS):
+		var option_panel := Panel.new()
+		option_panel.size = Vector2(
+			190.0,
+			92.0
+		)
+		option_panel.mouse_filter = (
+			Control.MOUSE_FILTER_IGNORE
+		)
+
+		utility_wheel_container.add_child(
+			option_panel
+		)
+
+		var number_label := Label.new()
+		number_label.position = Vector2(
+			10.0,
+			9.0
+		)
+		number_label.size = Vector2(
+			38.0,
+			24.0
+		)
+		number_label.mouse_filter = (
+			Control.MOUSE_FILTER_IGNORE
+		)
+		number_label.add_theme_font_size_override(
+			"font_size",
+			12
+		)
+
+		option_panel.add_child(
+			number_label
+		)
+
+		var name_label := Label.new()
+		name_label.position = Vector2(
+			12.0,
+			29.0
+		)
+		name_label.size = Vector2(
+			166.0,
+			34.0
+		)
+		name_label.horizontal_alignment = (
+			HORIZONTAL_ALIGNMENT_CENTER
+		)
+		name_label.vertical_alignment = (
+			VERTICAL_ALIGNMENT_CENTER
+		)
+		name_label.autowrap_mode = (
+			TextServer.AUTOWRAP_WORD_SMART
+		)
+		name_label.mouse_filter = (
+			Control.MOUSE_FILTER_IGNORE
+		)
+		name_label.add_theme_font_size_override(
+			"font_size",
+			15
+		)
+
+		option_panel.add_child(
+			name_label
+		)
+
+		var status_label := Label.new()
+		status_label.position = Vector2(
+			12.0,
+			67.0
+		)
+		status_label.size = Vector2(
+			166.0,
+			18.0
+		)
+		status_label.horizontal_alignment = (
+			HORIZONTAL_ALIGNMENT_CENTER
+		)
+		status_label.vertical_alignment = (
+			VERTICAL_ALIGNMENT_CENTER
+		)
+		status_label.mouse_filter = (
+			Control.MOUSE_FILTER_IGNORE
+		)
+		status_label.add_theme_font_size_override(
+			"font_size",
+			10
+		)
+
+		option_panel.add_child(
+			status_label
+		)
+
+		utility_wheel_option_panels.append(
+			option_panel
+		)
+		utility_wheel_option_number_labels.append(
+			number_label
+		)
+		utility_wheel_option_name_labels.append(
+			name_label
+		)
+		utility_wheel_option_status_labels.append(
+			status_label
+		)
+
+	position_utility_wheel()
+	refresh_utility_wheel()
+
+	get_viewport().size_changed.connect(
+		position_utility_wheel
+	)
+
+
+func make_utility_panel_style(
+	background_color: Color,
+	border_color: Color,
+	corner_radius: int,
+	border_width: int
+) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+
+	style.bg_color = background_color
+	style.border_color = border_color
+
+	style.border_width_left = border_width
+	style.border_width_top = border_width
+	style.border_width_right = border_width
+	style.border_width_bottom = border_width
+
+	style.corner_radius_top_left = (
+		corner_radius
+	)
+	style.corner_radius_top_right = (
+		corner_radius
+	)
+	style.corner_radius_bottom_left = (
+		corner_radius
+	)
+	style.corner_radius_bottom_right = (
+		corner_radius
+	)
+
+	style.shadow_color = Color(
+		0.0,
+		0.30,
+		0.58,
+		0.20
+	)
+	style.shadow_size = 10
+
+	return style
+
+
+func position_utility_wheel() -> void:
+	if utility_wheel_container == null:
+		return
+
+	var viewport_size: Vector2 = (
+		get_viewport().get_visible_rect().size
+	)
+
+	var screen_center: Vector2 = (
+		viewport_size * 0.5
+	)
+
+	utility_wheel_header_label.position = Vector2(
+		screen_center.x - 350.0,
+		maxf(
+			screen_center.y - 390.0,
+			24.0
+		)
+	)
+
+	utility_wheel_footer_label.position = Vector2(
+		screen_center.x - 450.0,
+		minf(
+			screen_center.y + 355.0,
+			viewport_size.y - 48.0
+		)
+	)
+
+	utility_wheel_center_panel.position = (
+		screen_center
+		- utility_wheel_center_panel.size
+		* 0.5
+	)
+
+	var available_equipment: Array[String] = (
+		get_available_equipment_ids()
+	)
+
+	var option_count: int = (
+		available_equipment.size()
+	)
+
+	for index in range(
+		utility_wheel_option_panels.size()
+	):
+		var option_panel: Panel = (
+			utility_wheel_option_panels[index]
+		)
+
+		option_panel.visible = (
+			index < option_count
+		)
+
+	if option_count <= 0:
+		return
+
+	var option_radius: float = 285.0
+	var angle_size: float = (
+		TAU / float(option_count)
+	)
+
+	for index in range(option_count):
+		var option_angle: float = (
+			-PI * 0.5
+			+ angle_size * float(index)
+		)
+
+		var direction := Vector2(
+			cos(option_angle),
+			sin(option_angle)
+		)
+
+		var option_panel: Panel = (
+			utility_wheel_option_panels[index]
+		)
+
+		option_panel.position = (
+			screen_center
+			+ direction * option_radius
+			- option_panel.size * 0.5
+		)
+
+
+func show_utility_wheel() -> void:
+	if (
+		is_mdt_visible
+		or is_radio_wheel_visible
+	):
+		utility_wheel_key_held = false
+		utility_wheel_hold_time = 0.0
+		return
+
+	if utility_wheel_container == null:
+		utility_wheel_key_held = false
+		utility_wheel_hold_time = 0.0
+		is_utility_wheel_visible = false
+
+		Input.set_mouse_mode(
+			Input.MOUSE_MODE_CAPTURED
+		)
+		return
+
+	highlighted_utility_slot = -1
+
+	position_utility_wheel()
+	refresh_utility_wheel()
+
+	utility_wheel_container.visible = true
+	is_utility_wheel_visible = true
+
+	Input.set_mouse_mode(
+		Input.MOUSE_MODE_VISIBLE
+	)
+
+	var viewport_center: Vector2 = (
+		get_viewport().get_visible_rect().size
+		* 0.5
+	)
+
+	Input.warp_mouse(
+		viewport_center
+	)
+
+
+func hide_utility_wheel() -> void:
+	is_utility_wheel_visible = false
+	highlighted_utility_slot = -1
+
+	if utility_wheel_container != null:
+		utility_wheel_container.visible = false
+
+	if (
+		not is_mdt_visible
+		and not is_radio_wheel_visible
+	):
+		Input.set_mouse_mode(
+			Input.MOUSE_MODE_CAPTURED
+		)
+
+
+func cancel_utility_wheel() -> void:
+	utility_wheel_key_held = false
+	utility_wheel_hold_time = 0.0
+
+	hide_utility_wheel()
+
+
+func finish_utility_wheel_input() -> void:
+	if (
+		not utility_wheel_key_held
+		and not is_utility_wheel_visible
+	):
+		return
+
+	utility_wheel_key_held = false
+	utility_wheel_hold_time = 0.0
+
+	if is_utility_wheel_visible:
+		var selected_equipment_id: String = (
+			get_equipment_id_for_slot(
+				highlighted_utility_slot
+			)
+		)
+
+		hide_utility_wheel()
+
+		if selected_equipment_id != "":
+			equip_equipment_item(
+				selected_equipment_id
+			)
+
+		return
+
+	equip_equipment_item("hands")
+
+	Input.set_mouse_mode(
+		Input.MOUSE_MODE_CAPTURED
+	)
+
+
+func update_utility_wheel_selection() -> void:
+	if not is_utility_wheel_visible:
+		return
+
+	var available_equipment: Array[String] = (
+		get_available_equipment_ids()
+	)
+
+	var option_count: int = (
+		available_equipment.size()
+	)
+
+	if option_count <= 0:
+		return
+
+	var viewport_center: Vector2 = (
+		get_viewport().get_visible_rect().size
+		* 0.5
+	)
+
+	var mouse_offset: Vector2 = (
+		get_viewport().get_mouse_position()
+		- viewport_center
+	)
+
+	var new_highlighted_slot: int = -1
+
+	if mouse_offset.length() >= 90.0:
+		var option_angle_size: float = (
+			TAU / float(option_count)
+		)
+
+		var mouse_angle: float = atan2(
+			mouse_offset.y,
+			mouse_offset.x
+		)
+
+		var adjusted_angle: float = fposmod(
+			mouse_angle
+			+ PI * 0.5
+			+ option_angle_size * 0.5,
+			TAU
+		)
+
+		var option_index: int = int(
+			floor(
+				adjusted_angle
+				/ option_angle_size
+			)
+		)
+
+		new_highlighted_slot = (
+			option_index + 1
+		)
+
+	if (
+		new_highlighted_slot
+		== highlighted_utility_slot
+	):
+		return
+
+	highlighted_utility_slot = (
+		new_highlighted_slot
+	)
+
+	refresh_utility_wheel()
+
+
+func refresh_utility_wheel() -> void:
+	if utility_wheel_container == null:
+		return
+
+	var available_equipment: Array[String] = (
+		get_available_equipment_ids()
+	)
+
+	for index in range(
+		utility_wheel_option_panels.size()
+	):
+		var option_panel: Panel = (
+			utility_wheel_option_panels[index]
+		)
+
+		var number_label: Label = (
+			utility_wheel_option_number_labels[index]
+		)
+
+		var name_label: Label = (
+			utility_wheel_option_name_labels[index]
+		)
+
+		var status_label: Label = (
+			utility_wheel_option_status_labels[index]
+		)
+
+		if index >= available_equipment.size():
+			option_panel.visible = false
+			continue
+
+		option_panel.visible = true
+
+		var slot: int = index + 1
+		var equipment_id: String = (
+			available_equipment[index]
+		)
+
+		var is_equipped: bool = (
+			equipment_id
+			== current_equipment_id
+		)
+
+		var is_highlighted: bool = (
+			slot
+			== highlighted_utility_slot
+		)
+
+		var background_color := Color(
+			0.015,
+			0.035,
+			0.055,
+			0.97
+		)
+
+		var border_color := Color(
+			0.15,
+			0.28,
+			0.39,
+			0.95
+		)
+
+		var name_color := Color(
+			0.74,
+			0.82,
+			0.90,
+			1.0
+		)
+
+		var status_text: String = (
+			get_equipment_category(
+				equipment_id
+			)
+		)
+
+		var name_font_size: int = 15
+		var border_width: int = 2
+
+		if is_equipped:
+			background_color = Color(
+				0.012,
+				0.105,
+				0.17,
+				0.99
+			)
+
+			border_color = Color(
+				0.0,
+				0.58,
+				0.94,
+				1.0
+			)
+
+			name_color = Color(
+				0.46,
+				0.86,
+				1.0,
+				1.0
+			)
+
+			status_text = "EQUIPPED"
+
+		if is_highlighted:
+			background_color = Color(
+				0.015,
+				0.30,
+				0.49,
+				0.99
+			)
+
+			border_color = Color(
+				0.52,
+				0.94,
+				1.0,
+				1.0
+			)
+
+			name_color = Color.WHITE
+			name_font_size = 17
+			border_width = 3
+			status_text = "RELEASE TO EQUIP"
+
+		option_panel.add_theme_stylebox_override(
+			"panel",
+			make_utility_panel_style(
+				background_color,
+				border_color,
+				13,
+				border_width
+			)
+		)
+
+		number_label.text = (
+			"0" + str(slot)
+		)
+		number_label.add_theme_color_override(
+			"font_color",
+			border_color
+		)
+
+		name_label.text = (
+			get_equipment_name(
+				equipment_id
+			)
+		)
+		name_label.add_theme_color_override(
+			"font_color",
+			name_color
+		)
+		name_label.add_theme_font_size_override(
+			"font_size",
+			name_font_size
+		)
+
+		status_label.text = status_text
+		status_label.add_theme_color_override(
+			"font_color",
+			Color(
+				0.52,
+				0.65,
+				0.76,
+				1.0
+			)
+		)
+
+	var center_equipment_id: String = (
+		current_equipment_id
+	)
+
+	if highlighted_utility_slot > 0:
+		var highlighted_id: String = (
+			get_equipment_id_for_slot(
+				highlighted_utility_slot
+			)
+		)
+
+		if highlighted_id != "":
+			center_equipment_id = (
+				highlighted_id
+			)
+
+	utility_wheel_center_name_label.text = (
+		get_equipment_name(
+			center_equipment_id
+		)
+	)
+
+	utility_wheel_center_category_label.text = (
+		get_equipment_category(
+			center_equipment_id
+		)
+	)
+
+	if highlighted_utility_slot > 0:
+		utility_wheel_center_hint_label.text = (
+			"RELEASE F TO EQUIP"
+		)
+	else:
+		utility_wheel_center_hint_label.text = (
+			"MOVE MOUSE OUTWARD"
+		)
+
+
+func equip_equipment_item(
+	equipment_id: String
+) -> void:
+	if not EQUIPMENT_DATABASE.has(
+		equipment_id
+	):
+		return
+
+	if (
+		equipment_id != "hands"
+		and not carried_equipment_ids.has(
+			equipment_id
+		)
+	):
+		return
+
+	current_equipment_id = equipment_id
+
+	flashlight.visible = (
+		current_equipment_id
+		== "flashlight"
+	)
+
+	refresh_utility_wheel()
+
+
+func get_available_equipment_ids() -> Array[String]:
+	var available_equipment: Array[String] = [
+		"hands"
+	]
+
+	for equipment_id: String in carried_equipment_ids:
+		if (
+			available_equipment.size()
+			>= MAX_UTILITY_SLOTS
+		):
+			break
+
+		if equipment_id == "hands":
+			continue
+
+		if not EQUIPMENT_DATABASE.has(
+			equipment_id
+		):
+			continue
+
+		if available_equipment.has(
+			equipment_id
+		):
+			continue
+
+		available_equipment.append(
+			equipment_id
+		)
+
+	return available_equipment
+
+
+func get_equipment_id_for_slot(
+	slot: int
+) -> String:
+	var available_equipment: Array[String] = (
+		get_available_equipment_ids()
+	)
+
+	var index: int = slot - 1
+
+	if (
+		index < 0
+		or index >= available_equipment.size()
+	):
+		return ""
+
+	return available_equipment[index]
+
+
+func get_equipment_name(
+	equipment_id: String
+) -> String:
+	if not EQUIPMENT_DATABASE.has(
+		equipment_id
+	):
+		return "UNKNOWN"
+
+	var equipment_data: Dictionary = (
+		EQUIPMENT_DATABASE[equipment_id]
+	)
+
+	return str(
+		equipment_data.get(
+			"name",
+			"UNKNOWN"
+		)
+	)
+
+
+func get_equipment_category(
+	equipment_id: String
+) -> String:
+	if not EQUIPMENT_DATABASE.has(
+		equipment_id
+	):
+		return "UNKNOWN"
+
+	var equipment_data: Dictionary = (
+		EQUIPMENT_DATABASE[equipment_id]
+	)
+
+	return str(
+		equipment_data.get(
+			"category",
+			"UTILITY"
+		)
+	)
+
+
+func has_equipment(
+	equipment_id: String
+) -> bool:
+	if equipment_id == "hands":
+		return true
+
+	return carried_equipment_ids.has(
+		equipment_id
+	)
+
+
+func add_equipment(
+	equipment_id: String
+) -> bool:
+	if equipment_id == "hands":
+		return false
+
+	if not EQUIPMENT_DATABASE.has(
+		equipment_id
+	):
+		push_warning(
+			"Unknown equipment: "
+			+ equipment_id
+		)
+		return false
+
+	if carried_equipment_ids.has(
+		equipment_id
+	):
+		return false
+
+	if (
+		carried_equipment_ids.size()
+		>= MAX_UTILITY_SLOTS - 1
+	):
+		push_warning(
+			"Utility wheel is full."
+		)
+		return false
+
+	carried_equipment_ids.append(
+		equipment_id
+	)
+
+	update_utility_wheel_inventory()
+	return true
+
+
+func remove_equipment(
+	equipment_id: String
+) -> bool:
+	if not carried_equipment_ids.has(
+		equipment_id
+	):
+		return false
+
+	carried_equipment_ids.erase(
+		equipment_id
+	)
+
+	if current_equipment_id == equipment_id:
+		current_equipment_id = "hands"
+		flashlight.visible = false
+
+	update_utility_wheel_inventory()
+	return true
+
+
+func set_shift_loadout(
+	equipment_ids: Array[String]
+) -> void:
+	carried_equipment_ids.clear()
+
+	for equipment_id: String in equipment_ids:
+		if (
+			carried_equipment_ids.size()
+			>= MAX_UTILITY_SLOTS - 1
+		):
+			break
+
+		if equipment_id == "hands":
+			continue
+
+		if not EQUIPMENT_DATABASE.has(
+			equipment_id
+		):
+			continue
+
+		if carried_equipment_ids.has(
+			equipment_id
+		):
+			continue
+
+		carried_equipment_ids.append(
+			equipment_id
+		)
+
+	if not has_equipment(
+		current_equipment_id
+	):
+		current_equipment_id = "hands"
+		flashlight.visible = false
+
+	update_utility_wheel_inventory()
+
+
+func update_utility_wheel_inventory() -> void:
+	highlighted_utility_slot = -1
+
+	if utility_wheel_container == null:
+		return
+
+	position_utility_wheel()
+	refresh_utility_wheel()
+
+
+# KEEP YOUR EXISTING:
+# func create_main_status_hud() -> void:
+# AND EVERYTHING BELOW IT DIRECTLY AFTER THIS LINE.
 
 func create_main_status_hud() -> void:
 	hud_status_dot = Panel.new()
