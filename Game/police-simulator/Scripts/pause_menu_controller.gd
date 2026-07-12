@@ -12,6 +12,7 @@ const CONTROL_ACTIONS := [
 	"sprint",
 	"crouch",
 	"interact",
+	"toggle_flashlight",
 	"toggle_radio_menu",
 	"toggle_mdt"
 ]
@@ -24,6 +25,7 @@ const CONTROL_LABELS := {
 	"sprint": "SPRINT",
 	"crouch": "CROUCH",
 	"interact": "INTERACT / SELECT",
+	"toggle_flashlight": "FLASHLIGHT",
 	"toggle_radio_menu": "RADIO WHEEL",
 	"toggle_mdt": "MDT"
 }

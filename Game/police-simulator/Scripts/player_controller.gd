@@ -1,4 +1,14 @@
 extends CharacterBody3D
+const FOOTSTEP_SOUNDS = [
+	preload("res://Assets/Audio/Footsteps/natural_boot_step_01.wav"),
+	preload("res://Assets/Audio/Footsteps/natural_boot_step_02.wav"),
+	preload("res://Assets/Audio/Footsteps/natural_boot_step_03.wav"),
+	preload("res://Assets/Audio/Footsteps/natural_boot_step_04.wav"),
+	preload("res://Assets/Audio/Footsteps/natural_boot_step_05.wav"),
+	preload("res://Assets/Audio/Footsteps/natural_boot_step_06.wav"),
+	preload("res://Assets/Audio/Footsteps/natural_boot_step_07.wav"),
+	preload("res://Assets/Audio/Footsteps/natural_boot_step_08.wav")
+]
 
 @export var walk_speed: float = 4.6
 @export var sprint_speed: float = 7.4
@@ -40,6 +50,7 @@ extends CharacterBody3D
 
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var player_camera: Camera3D = $CameraPivot/PlayerCamera
+@onready var flashlight: SpotLight3D = $CameraPivot/PlayerCamera/Flashlight
 @onready var interaction_ray: RayCast3D = $CameraPivot/PlayerCamera/InteractionRay
 @onready var interaction_prompt: Label = $PlayerUI/InteractionPrompt
 @onready var duty_status_label: Label = $PlayerUI/DutyStatusLabel
@@ -136,12 +147,21 @@ var sprint_locked: bool = false
 
 var camera_base_position: Vector3 = Vector3.ZERO
 var camera_bob_time: float = 0.0
+var footstep_player: AudioStreamPlayer
+var footstep_timer: float = 0.0
+var last_footstep_index: int = -1
+
 
 func _ready() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	
 	current_stamina = max_stamina
 	camera_base_position = player_camera.position
+	flashlight.visible = false
+
+	footstep_player = AudioStreamPlayer.new()
+	footstep_player.name = "FootstepPlayer"
+	add_child(footstep_player)
 
 	var capsule := player_collision.shape as CapsuleShape3D
 
@@ -215,7 +235,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event is InputEventMouseMotion:
 			update_radio_wheel_mouse_selection()
 			return
-
+			
+	if event.is_action_pressed("toggle_flashlight"):
+		flashlight.visible = not flashlight.visible
+		return
+		
 		if event is InputEventMouseButton:
 			if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 				update_radio_wheel_mouse_selection()
@@ -465,6 +489,7 @@ func _physics_process(delta: float) -> void:
 		input_dir.length_squared() > 0.01
 	)
 
+	
 	var movement_animation_speed: float = 1.0
 
 	if is_crouching:
@@ -495,6 +520,87 @@ func _physics_process(delta: float) -> void:
 			is_moving,
 			movement_animation_speed
 		)
+func update_footsteps(
+	delta: float,
+	is_moving: bool,
+	is_crouching: bool,
+	is_sprinting: bool,
+	current_speed: float
+) -> void:
+	if not is_moving or not is_on_floor():
+		footstep_timer = 0.0
+		return
+
+	footstep_timer -= delta
+
+	if footstep_timer > 0.0:
+		return
+
+	var step_interval: float = 0.48
+	var step_volume = -16.0
+
+	if is_crouching:
+		step_interval = 0.70
+		step_volume = -6.0
+
+	elif is_sprinting:
+		var sprint_speed_ratio: float = clampf(
+			(
+				current_speed
+				- tired_walk_speed
+			) / maxf(
+				sprint_speed
+				- tired_walk_speed,
+				0.01
+			),
+			0.0,
+			1.0
+		)
+
+		step_interval = lerpf(
+			0.62,
+			0.30,
+			sprint_speed_ratio
+		)
+
+		step_volume = lerpf(
+			-10.0,
+			-6.0,
+			sprint_speed_ratio
+		)
+
+	elif sprint_locked:
+		step_interval = 0.62
+		step_volume = -14.0
+
+	footstep_timer = step_interval
+
+	var sound_index: int = randi_range(
+		0,
+		FOOTSTEP_SOUNDS.size() - 1
+	)
+
+	if (
+		FOOTSTEP_SOUNDS.size() > 1
+		and sound_index == last_footstep_index
+	):
+		sound_index = (
+			sound_index + 1
+		) % FOOTSTEP_SOUNDS.size()
+
+	last_footstep_index = sound_index
+
+	footstep_player.stream = FOOTSTEP_SOUNDS[
+		sound_index
+	]
+
+	footstep_player.volume_db = step_volume
+	footstep_player.pitch_scale = randf_range(
+		0.96,
+		1.04
+	)
+
+	footstep_player.play()
 func update_stamina(
 	delta: float,
 	wants_to_sprint: bool

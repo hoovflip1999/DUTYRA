@@ -30,6 +30,14 @@ current = true
 [node name="InteractionRay" type="RayCast3D" parent="CameraPivot/PlayerCamera" unique_id=979379544]
 target_position = Vector3(0, 0, -3)
 
+[node name="Flashlight" type="SpotLight3D" parent="CameraPivot/PlayerCamera" unique_id=630232343]
+transform = Transform3D(0.99417055, 0.027421217, 0.10427384, -0.034814484, 0.9969564, 0.06975647, -0.10204366, -0.07298007, 0.99209934, 0.32, 0.18, -0.2)
+visible = false
+light_energy = 4.0
+shadow_enabled = true
+spot_range = 30.0
+spot_angle = 24.0
+
 [node name="PlayerUI" type="CanvasLayer" parent="." unique_id=996975244]
 
 [node name="InteractionPrompt" type="Label" parent="PlayerUI" unique_id=1636440078]
