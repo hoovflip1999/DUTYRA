@@ -1,0 +1,22 @@
+# Blender 5.1.2 MTL File: 'dutyra_base_male_animations.blend'
+# www.blender.org
+
+newmtl dutyra_base_male
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.590333 0.440000 0.338000
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+
+newmtl high-poly
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 2
+map_Kd C:/Users/khoov/OneDrive/Documents/makehuman/v1py3/exports/textures/brown_eye.png
+map_d C:/Users/khoov/OneDrive/Documents/makehuman/v1py3/exports/textures/brown_eye.png

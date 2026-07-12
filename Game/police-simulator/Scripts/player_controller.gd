@@ -26,6 +26,7 @@ extends CharacterBody3D
 @onready var dispatch_call_label: Label = $PlayerUI/DispatchCallLabel
 @onready var radio_message_label: Label = $PlayerUI/RadioMessageLabel
 @onready var player_ui: CanvasLayer = $PlayerUI
+@onready var animated_character: Node = $DUTYRA_Character
 
 var camera_pitch: float = 0.0
 var is_mdt_visible: bool = false
@@ -304,6 +305,11 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
+	animated_character.call(
+		"set_moving",
+		Vector2(velocity.x, velocity.z).length() > 0.15
+	)
+
 func lock_player_movement(delta: float) -> void:
 	velocity.x = 0
 	velocity.z = 0
@@ -314,6 +320,7 @@ func lock_player_movement(delta: float) -> void:
 		velocity.y = 0
 
 	move_and_slide()
+	animated_character.call("set_moving", false)
 
 func create_main_status_hud() -> void:
 	hud_status_dot = Panel.new()

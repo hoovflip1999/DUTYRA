@@ -27,6 +27,10 @@ SettingsManager="*uid://yimc1yj3h25x"
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
+[filesystem]
+
+import/blender/enabled=false
+
 [input]
 
 move_forward={

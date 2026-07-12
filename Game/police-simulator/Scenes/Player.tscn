@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://dw7sn20cefjue"]
 
 [ext_resource type="Script" uid="uid://ppp7q0nwbn1t" path="res://Scripts/player_controller.gd" id="1_v0iea"]
-[ext_resource type="PackedScene" uid="uid://dlhrrao3crcy0" path="res://Scenes/Characters/dutyra_base_male.tscn" id="2_cvnsp"]
+[ext_resource type="PackedScene" uid="uid://dx416qjtehnro" path="res://Scenes/Characters/dutyra_character.tscn" id="2_cvnsp"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_qjvm4"]
 
@@ -9,6 +9,7 @@
 
 [node name="Player" type="CharacterBody3D" unique_id=1417239302]
 script = ExtResource("1_v0iea")
+standing_camera_height = 1.83
 
 [node name="PlayerCollision" type="CollisionShape3D" parent="." unique_id=2021703068]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
@@ -16,10 +17,11 @@ shape = SubResource("CapsuleShape3D_qjvm4")
 
 [node name="PlayerBody" type="MeshInstance3D" parent="." unique_id=1284249446]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+visible = false
 mesh = SubResource("CapsuleMesh_7oaoy")
 
 [node name="CameraPivot" type="Node3D" parent="." unique_id=162239239]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 0)
 
 [node name="PlayerCamera" type="Camera3D" parent="CameraPivot" unique_id=500036245]
 cull_mask = 1048573
@@ -61,5 +63,5 @@ offset_right = 720.0
 offset_bottom = 220.0
 text = "RADIO"
 
-[node name="dutyra_base_male" parent="." unique_id=1129634026 instance=ExtResource("2_cvnsp")]
-transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 0, 0.1)
+[node name="DUTYRA_Character" parent="." unique_id=1129634026 instance=ExtResource("2_cvnsp")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0.065)
