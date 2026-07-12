@@ -21,3 +21,12 @@ Desktop.ini
 
 # Prevent accidental nested project folder from being tracked
 Police Simulator/
+
+
+.godot/
+.import/
+build/
+builds/
+export/
+*.log
+*.tmp
