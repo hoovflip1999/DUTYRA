@@ -97,6 +97,9 @@ const EQUIPMENT_DATABASE := {
 @onready var flashlight: SpotLight3D = (
 	$CameraPivot/PlayerCamera/Flashlight
 )
+@onready var held_flashlight: Node3D = (
+	$CameraPivot/PlayerCamera/HeldFlashlight
+)
 @onready var interaction_ray: RayCast3D = (
 	$CameraPivot/PlayerCamera/InteractionRay
 )
@@ -1701,7 +1704,13 @@ func refresh_utility_wheel() -> void:
 			"MOVE MOUSE OUTWARD"
 		)
 
+func update_equipment_visuals() -> void:
+	var flashlight_equipped: bool = (
+		current_equipment_id == "flashlight"
+	)
 
+	flashlight.visible = flashlight_equipped
+	held_flashlight.visible = flashlight_equipped
 func equip_equipment_item(
 	equipment_id: String
 ) -> void:
@@ -1720,13 +1729,8 @@ func equip_equipment_item(
 
 	current_equipment_id = equipment_id
 
-	flashlight.visible = (
-		current_equipment_id
-		== "flashlight"
-	)
-
+	update_equipment_visuals()
 	refresh_utility_wheel()
-
 
 func get_available_equipment_ids() -> Array[String]:
 	var available_equipment: Array[String] = [
@@ -1880,7 +1884,7 @@ func remove_equipment(
 
 	if current_equipment_id == equipment_id:
 		current_equipment_id = "hands"
-		flashlight.visible = false
+		update_equipment_visuals()
 
 	update_utility_wheel_inventory()
 	return true
@@ -1919,7 +1923,7 @@ func set_shift_loadout(
 		current_equipment_id
 	):
 		current_equipment_id = "hands"
-		flashlight.visible = false
+		update_equipment_visuals()
 
 	update_utility_wheel_inventory()
 
