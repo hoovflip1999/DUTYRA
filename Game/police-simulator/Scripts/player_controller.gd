@@ -223,17 +223,17 @@ var carried_equipment_ids: Array[String] = [
 
 var utility_wheel_container: Control
 var utility_wheel_background: ColorRect
-var utility_wheel_header_label: Label
-var utility_wheel_footer_label: Label
+var utility_wheel_backplate: Panel
+
 var utility_wheel_center_panel: Panel
 var utility_wheel_center_name_label: Label
 var utility_wheel_center_category_label: Label
 var utility_wheel_center_hint_label: Label
 
-var utility_wheel_option_panels: Array[Panel] = []
-var utility_wheel_option_number_labels: Array[Label] = []
-var utility_wheel_option_name_labels: Array[Label] = []
-var utility_wheel_option_status_labels: Array[Label] = []
+var utility_wheel_segment_polygons: Array[Polygon2D] = []
+var utility_wheel_segment_outlines: Array[Line2D] = []
+var utility_wheel_option_labels: Array[Label] = []
+
 
 var utility_wheel_key_held: bool = false
 var utility_wheel_hold_time: float = 0.0
@@ -852,12 +852,9 @@ func lock_player_movement(delta: float) -> void:
 			1.0
 		)
 
-
 func create_utility_wheel() -> void:
 	utility_wheel_container = Control.new()
-	utility_wheel_container.name = (
-		"UtilityWheel"
-	)
+	utility_wheel_container.name = "UtilityWheel"
 	utility_wheel_container.visible = false
 	utility_wheel_container.mouse_filter = (
 		Control.MOUSE_FILTER_IGNORE
@@ -874,10 +871,10 @@ func create_utility_wheel() -> void:
 
 	utility_wheel_background = ColorRect.new()
 	utility_wheel_background.color = Color(
-		0.002,
-		0.008,
-		0.016,
-		0.82
+		0.0,
+		0.0,
+		0.0,
+		0.58
 	)
 	utility_wheel_background.mouse_filter = (
 		Control.MOUSE_FILTER_IGNORE
@@ -891,77 +888,125 @@ func create_utility_wheel() -> void:
 		Control.PRESET_FULL_RECT
 	)
 
-	utility_wheel_header_label = Label.new()
-	utility_wheel_header_label.text = (
-		"DUTYRA  //  ACTIVE LOADOUT"
+	utility_wheel_backplate = Panel.new()
+	utility_wheel_backplate.size = Vector2(
+		690.0,
+		690.0
 	)
-	utility_wheel_header_label.size = Vector2(
-		700.0,
-		44.0
-	)
-	utility_wheel_header_label.horizontal_alignment = (
-		HORIZONTAL_ALIGNMENT_CENTER
-	)
-	utility_wheel_header_label.vertical_alignment = (
-		VERTICAL_ALIGNMENT_CENTER
-	)
-	utility_wheel_header_label.mouse_filter = (
+	utility_wheel_backplate.mouse_filter = (
 		Control.MOUSE_FILTER_IGNORE
 	)
-	utility_wheel_header_label.add_theme_font_size_override(
-		"font_size",
-		19
-	)
-	utility_wheel_header_label.add_theme_color_override(
-		"font_color",
-		Color(
-			0.48,
-			0.86,
-			1.0,
-			1.0
+	utility_wheel_backplate.add_theme_stylebox_override(
+		"panel",
+		make_utility_circle_style(
+			Color(
+				0.012,
+				0.016,
+				0.021,
+				0.97
+			),
+			Color(
+				0.16,
+				0.19,
+				0.22,
+				0.96
+			),
+			345,
+			3
 		)
 	)
 
 	utility_wheel_container.add_child(
-		utility_wheel_header_label
+		utility_wheel_backplate
 	)
 
-	utility_wheel_footer_label = Label.new()
-	utility_wheel_footer_label.text = (
-		"MOVE MOUSE TO SELECT"
-		+ "  //  RELEASE F TO EQUIP"
-		+ "  //  TAP F TO HOLSTER"
-	)
-	utility_wheel_footer_label.size = Vector2(
-		900.0,
-		36.0
-	)
-	utility_wheel_footer_label.horizontal_alignment = (
-		HORIZONTAL_ALIGNMENT_CENTER
-	)
-	utility_wheel_footer_label.vertical_alignment = (
-		VERTICAL_ALIGNMENT_CENTER
-	)
-	utility_wheel_footer_label.mouse_filter = (
-		Control.MOUSE_FILTER_IGNORE
-	)
-	utility_wheel_footer_label.add_theme_font_size_override(
-		"font_size",
-		13
-	)
-	utility_wheel_footer_label.add_theme_color_override(
-		"font_color",
-		Color(
-			0.48,
-			0.60,
-			0.72,
+	for index in range(MAX_UTILITY_SLOTS):
+		var segment := Polygon2D.new()
+		segment.color = Color(
+			0.030,
+			0.036,
+			0.043,
+			0.98
+		)
+
+		utility_wheel_container.add_child(
+			segment
+		)
+
+		utility_wheel_segment_polygons.append(
+			segment
+		)
+
+		var outline := Line2D.new()
+		outline.width = 2.0
+		outline.default_color = Color(
+			0.13,
+			0.16,
+			0.19,
 			1.0
 		)
-	)
+		outline.closed = true
+		outline.antialiased = true
 
-	utility_wheel_container.add_child(
-		utility_wheel_footer_label
-	)
+		utility_wheel_container.add_child(
+			outline
+		)
+
+		utility_wheel_segment_outlines.append(
+			outline
+		)
+
+		var option_label := Label.new()
+		option_label.size = Vector2(
+			156.0,
+			74.0
+		)
+		option_label.horizontal_alignment = (
+			HORIZONTAL_ALIGNMENT_CENTER
+		)
+		option_label.vertical_alignment = (
+			VERTICAL_ALIGNMENT_CENTER
+		)
+		option_label.autowrap_mode = (
+			TextServer.AUTOWRAP_WORD_SMART
+		)
+		option_label.mouse_filter = (
+			Control.MOUSE_FILTER_IGNORE
+		)
+		option_label.add_theme_font_size_override(
+			"font_size",
+			14
+		)
+		option_label.add_theme_color_override(
+			"font_color",
+			Color(
+				0.78,
+				0.82,
+				0.86,
+				1.0
+			)
+		)
+		option_label.add_theme_color_override(
+			"font_outline_color",
+			Color(
+				0.0,
+				0.0,
+				0.0,
+				0.90
+			)
+		)
+		option_label.add_theme_constant_override(
+			"outline_size",
+			4
+		)
+
+		utility_wheel_container.add_child(
+			option_label
+		)
+
+		utility_wheel_option_labels.append(
+			option_label
+		)
 
 	utility_wheel_center_panel = Panel.new()
 	utility_wheel_center_panel.size = Vector2(
@@ -973,17 +1018,17 @@ func create_utility_wheel() -> void:
 	)
 	utility_wheel_center_panel.add_theme_stylebox_override(
 		"panel",
-		make_utility_panel_style(
+		make_utility_circle_style(
 			Color(
 				0.008,
-				0.025,
-				0.042,
-				0.99
+				0.012,
+				0.017,
+				1.0
 			),
 			Color(
-				0.05,
-				0.68,
-				1.0,
+				0.23,
+				0.28,
+				0.32,
 				1.0
 			),
 			115,
@@ -998,11 +1043,11 @@ func create_utility_wheel() -> void:
 	utility_wheel_center_name_label = Label.new()
 	utility_wheel_center_name_label.position = Vector2(
 		20.0,
-		58.0
+		52.0
 	)
 	utility_wheel_center_name_label.size = Vector2(
 		190.0,
-		55.0
+		70.0
 	)
 	utility_wheel_center_name_label.horizontal_alignment = (
 		HORIZONTAL_ALIGNMENT_CENTER
@@ -1032,11 +1077,11 @@ func create_utility_wheel() -> void:
 	utility_wheel_center_category_label = Label.new()
 	utility_wheel_center_category_label.position = Vector2(
 		20.0,
-		117.0
+		122.0
 	)
 	utility_wheel_center_category_label.size = Vector2(
 		190.0,
-		25.0
+		24.0
 	)
 	utility_wheel_center_category_label.horizontal_alignment = (
 		HORIZONTAL_ALIGNMENT_CENTER
@@ -1054,9 +1099,9 @@ func create_utility_wheel() -> void:
 	utility_wheel_center_category_label.add_theme_color_override(
 		"font_color",
 		Color(
-			0.35,
-			0.77,
-			1.0,
+			0.56,
+			0.68,
+			0.76,
 			1.0
 		)
 	)
@@ -1068,11 +1113,11 @@ func create_utility_wheel() -> void:
 	utility_wheel_center_hint_label = Label.new()
 	utility_wheel_center_hint_label.position = Vector2(
 		20.0,
-		154.0
+		158.0
 	)
 	utility_wheel_center_hint_label.size = Vector2(
 		190.0,
-		30.0
+		28.0
 	)
 	utility_wheel_center_hint_label.horizontal_alignment = (
 		HORIZONTAL_ALIGNMENT_CENTER
@@ -1090,9 +1135,9 @@ func create_utility_wheel() -> void:
 	utility_wheel_center_hint_label.add_theme_color_override(
 		"font_color",
 		Color(
+			0.44,
+			0.52,
 			0.58,
-			0.67,
-			0.76,
 			1.0
 		)
 	)
@@ -1100,111 +1145,6 @@ func create_utility_wheel() -> void:
 	utility_wheel_center_panel.add_child(
 		utility_wheel_center_hint_label
 	)
-
-	for index in range(MAX_UTILITY_SLOTS):
-		var option_panel := Panel.new()
-		option_panel.size = Vector2(
-			190.0,
-			92.0
-		)
-		option_panel.mouse_filter = (
-			Control.MOUSE_FILTER_IGNORE
-		)
-
-		utility_wheel_container.add_child(
-			option_panel
-		)
-
-		var number_label := Label.new()
-		number_label.position = Vector2(
-			10.0,
-			9.0
-		)
-		number_label.size = Vector2(
-			38.0,
-			24.0
-		)
-		number_label.mouse_filter = (
-			Control.MOUSE_FILTER_IGNORE
-		)
-		number_label.add_theme_font_size_override(
-			"font_size",
-			12
-		)
-
-		option_panel.add_child(
-			number_label
-		)
-
-		var name_label := Label.new()
-		name_label.position = Vector2(
-			12.0,
-			29.0
-		)
-		name_label.size = Vector2(
-			166.0,
-			34.0
-		)
-		name_label.horizontal_alignment = (
-			HORIZONTAL_ALIGNMENT_CENTER
-		)
-		name_label.vertical_alignment = (
-			VERTICAL_ALIGNMENT_CENTER
-		)
-		name_label.autowrap_mode = (
-			TextServer.AUTOWRAP_WORD_SMART
-		)
-		name_label.mouse_filter = (
-			Control.MOUSE_FILTER_IGNORE
-		)
-		name_label.add_theme_font_size_override(
-			"font_size",
-			15
-		)
-
-		option_panel.add_child(
-			name_label
-		)
-
-		var status_label := Label.new()
-		status_label.position = Vector2(
-			12.0,
-			67.0
-		)
-		status_label.size = Vector2(
-			166.0,
-			18.0
-		)
-		status_label.horizontal_alignment = (
-			HORIZONTAL_ALIGNMENT_CENTER
-		)
-		status_label.vertical_alignment = (
-			VERTICAL_ALIGNMENT_CENTER
-		)
-		status_label.mouse_filter = (
-			Control.MOUSE_FILTER_IGNORE
-		)
-		status_label.add_theme_font_size_override(
-			"font_size",
-			10
-		)
-
-		option_panel.add_child(
-			status_label
-		)
-
-		utility_wheel_option_panels.append(
-			option_panel
-		)
-		utility_wheel_option_number_labels.append(
-			number_label
-		)
-		utility_wheel_option_name_labels.append(
-			name_label
-		)
-		utility_wheel_option_status_labels.append(
-			status_label
-		)
 
 	position_utility_wheel()
 	refresh_utility_wheel()
@@ -1214,7 +1154,7 @@ func create_utility_wheel() -> void:
 	)
 
 
-func make_utility_panel_style(
+func make_utility_circle_style(
 	background_color: Color,
 	border_color: Color,
 	corner_radius: int,
@@ -1230,28 +1170,81 @@ func make_utility_panel_style(
 	style.border_width_right = border_width
 	style.border_width_bottom = border_width
 
-	style.corner_radius_top_left = (
-		corner_radius
-	)
-	style.corner_radius_top_right = (
-		corner_radius
-	)
-	style.corner_radius_bottom_left = (
-		corner_radius
-	)
-	style.corner_radius_bottom_right = (
-		corner_radius
-	)
+	style.corner_radius_top_left = corner_radius
+	style.corner_radius_top_right = corner_radius
+	style.corner_radius_bottom_left = corner_radius
+	style.corner_radius_bottom_right = corner_radius
 
 	style.shadow_color = Color(
 		0.0,
-		0.30,
-		0.58,
-		0.20
+		0.0,
+		0.0,
+		0.65
 	)
-	style.shadow_size = 10
+	style.shadow_size = 18
 
 	return style
+
+
+func create_utility_segment_points(
+	center: Vector2,
+	inner_radius: float,
+	outer_radius: float,
+	start_angle: float,
+	end_angle: float
+) -> PackedVector2Array:
+	var points := PackedVector2Array()
+	var curve_points: int = 22
+
+	for point_index in range(
+		curve_points + 1
+	):
+		var progress: float = (
+			float(point_index)
+			/ float(curve_points)
+		)
+
+		var angle: float = lerpf(
+			start_angle,
+			end_angle,
+			progress
+		)
+
+		points.append(
+			center
+			+ Vector2(
+				cos(angle),
+				sin(angle)
+			)
+			* outer_radius
+		)
+
+	for point_index in range(
+		curve_points,
+		-1,
+		-1
+	):
+		var progress: float = (
+			float(point_index)
+			/ float(curve_points)
+		)
+
+		var angle: float = lerpf(
+			start_angle,
+			end_angle,
+			progress
+		)
+
+		points.append(
+			center
+			+ Vector2(
+				cos(angle),
+				sin(angle)
+			)
+			* inner_radius
+		)
+
+	return points
 
 
 func position_utility_wheel() -> void:
@@ -1266,20 +1259,10 @@ func position_utility_wheel() -> void:
 		viewport_size * 0.5
 	)
 
-	utility_wheel_header_label.position = Vector2(
-		screen_center.x - 350.0,
-		maxf(
-			screen_center.y - 390.0,
-			24.0
-		)
-	)
-
-	utility_wheel_footer_label.position = Vector2(
-		screen_center.x - 450.0,
-		minf(
-			screen_center.y + 355.0,
-			viewport_size.y - 48.0
-		)
+	utility_wheel_backplate.position = (
+		screen_center
+		- utility_wheel_backplate.size
+		* 0.5
 	)
 
 	utility_wheel_center_panel.position = (
@@ -1297,43 +1280,84 @@ func position_utility_wheel() -> void:
 	)
 
 	for index in range(
-		utility_wheel_option_panels.size()
+		utility_wheel_segment_polygons.size()
 	):
-		var option_panel: Panel = (
-			utility_wheel_option_panels[index]
+		var is_available: bool = (
+			index < option_count
 		)
 
-		option_panel.visible = (
-			index < option_count
+		utility_wheel_segment_polygons[index].visible = (
+			is_available
+		)
+		utility_wheel_segment_outlines[index].visible = (
+			is_available
+		)
+		utility_wheel_option_labels[index].visible = (
+			is_available
 		)
 
 	if option_count <= 0:
 		return
 
-	var option_radius: float = 285.0
+	var inner_radius: float = 122.0
+	var outer_radius: float = 325.0
+	var label_radius: float = 228.0
 	var angle_size: float = (
 		TAU / float(option_count)
 	)
+	var angle_gap: float = 0.018
 
 	for index in range(option_count):
-		var option_angle: float = (
+		var center_angle: float = (
 			-PI * 0.5
 			+ angle_size * float(index)
 		)
 
-		var direction := Vector2(
-			cos(option_angle),
-			sin(option_angle)
+		var start_angle: float = (
+			center_angle
+			- angle_size * 0.5
+			+ angle_gap
 		)
 
-		var option_panel: Panel = (
-			utility_wheel_option_panels[index]
+		var end_angle: float = (
+			center_angle
+			+ angle_size * 0.5
+			- angle_gap
 		)
 
-		option_panel.position = (
+		var segment_points: PackedVector2Array = (
+			create_utility_segment_points(
+				screen_center,
+				inner_radius,
+				outer_radius,
+				start_angle,
+				end_angle
+			)
+		)
+
+		var segment: Polygon2D = (
+			utility_wheel_segment_polygons[index]
+		)
+		segment.polygon = segment_points
+
+		var outline: Line2D = (
+			utility_wheel_segment_outlines[index]
+		)
+		outline.points = segment_points
+
+		var option_direction := Vector2(
+			cos(center_angle),
+			sin(center_angle)
+		)
+
+		var option_label: Label = (
+			utility_wheel_option_labels[index]
+		)
+
+		option_label.position = (
 			screen_center
-			+ direction * option_radius
-			- option_panel.size * 0.5
+			+ option_direction * label_radius
+			- option_label.size * 0.5
 		)
 
 
@@ -1461,7 +1485,7 @@ func update_utility_wheel_selection() -> void:
 
 	var new_highlighted_slot: int = -1
 
-	if mouse_offset.length() >= 90.0:
+	if mouse_offset.length() >= 112.0:
 		var option_angle_size: float = (
 			TAU / float(option_count)
 		)
@@ -1511,29 +1535,29 @@ func refresh_utility_wheel() -> void:
 	)
 
 	for index in range(
-		utility_wheel_option_panels.size()
+		utility_wheel_segment_polygons.size()
 	):
-		var option_panel: Panel = (
-			utility_wheel_option_panels[index]
+		var segment: Polygon2D = (
+			utility_wheel_segment_polygons[index]
 		)
 
-		var number_label: Label = (
-			utility_wheel_option_number_labels[index]
+		var outline: Line2D = (
+			utility_wheel_segment_outlines[index]
 		)
 
-		var name_label: Label = (
-			utility_wheel_option_name_labels[index]
-		)
-
-		var status_label: Label = (
-			utility_wheel_option_status_labels[index]
+		var label: Label = (
+			utility_wheel_option_labels[index]
 		)
 
 		if index >= available_equipment.size():
-			option_panel.visible = false
+			segment.visible = false
+			outline.visible = false
+			label.visible = false
 			continue
 
-		option_panel.visible = true
+		segment.visible = true
+		outline.visible = true
+		label.visible = true
 
 		var slot: int = index + 1
 		var equipment_id: String = (
@@ -1550,122 +1574,117 @@ func refresh_utility_wheel() -> void:
 			== highlighted_utility_slot
 		)
 
-		var background_color := Color(
-			0.015,
-			0.035,
-			0.055,
-			0.97
+		var segment_color := Color(
+			0.030,
+			0.036,
+			0.043,
+			0.98
 		)
 
-		var border_color := Color(
-			0.15,
-			0.28,
-			0.39,
-			0.95
-		)
-
-		var name_color := Color(
-			0.74,
-			0.82,
-			0.90,
+		var outline_color := Color(
+			0.13,
+			0.16,
+			0.19,
 			1.0
 		)
 
-		var status_text: String = (
-			get_equipment_category(
-				equipment_id
-			)
+		var text_color := Color(
+			0.78,
+			0.82,
+			0.86,
+			1.0
 		)
 
-		var name_font_size: int = 15
-		var border_width: int = 2
+		var font_size: int = 14
 
 		if is_equipped:
-			background_color = Color(
-				0.012,
+			segment_color = Color(
+				0.026,
 				0.105,
-				0.17,
+				0.145,
 				0.99
 			)
 
-			border_color = Color(
-				0.0,
-				0.58,
-				0.94,
+			outline_color = Color(
+				0.16,
+				0.65,
+				0.88,
 				1.0
 			)
 
-			name_color = Color(
-				0.46,
-				0.86,
+			text_color = Color(
+				0.65,
+				0.90,
 				1.0,
 				1.0
 			)
-
-			status_text = "EQUIPPED"
 
 		if is_highlighted:
-			background_color = Color(
-				0.015,
-				0.30,
-				0.49,
+			segment_color = Color(
+				0.64,
+				0.77,
+				0.83,
 				0.99
 			)
 
-			border_color = Color(
-				0.52,
-				0.94,
+			outline_color = Color(
+				0.90,
+				0.97,
 				1.0,
 				1.0
 			)
 
-			name_color = Color.WHITE
-			name_font_size = 17
-			border_width = 3
-			status_text = "RELEASE TO EQUIP"
-
-		option_panel.add_theme_stylebox_override(
-			"panel",
-			make_utility_panel_style(
-				background_color,
-				border_color,
-				13,
-				border_width
+			text_color = Color(
+				0.025,
+				0.035,
+				0.045,
+				1.0
 			)
-		)
 
-		number_label.text = (
-			"0" + str(slot)
-		)
-		number_label.add_theme_color_override(
-			"font_color",
-			border_color
-		)
+			font_size = 16
 
-		name_label.text = (
-			get_equipment_name(
+		segment.color = segment_color
+		outline.default_color = outline_color
+
+		label.text = (
+			"0"
+			+ str(slot)
+			+ "\n"
+			+ get_equipment_name(
 				equipment_id
 			)
 		)
-		name_label.add_theme_color_override(
+
+		label.add_theme_color_override(
 			"font_color",
-			name_color
-		)
-		name_label.add_theme_font_size_override(
-			"font_size",
-			name_font_size
+			text_color
 		)
 
-		status_label.text = status_text
-		status_label.add_theme_color_override(
-			"font_color",
-			Color(
-				0.52,
-				0.65,
-				0.76,
-				1.0
-			)
+		label.add_theme_font_size_override(
+			"font_size",
+			font_size
 		)
+
+		if is_highlighted:
+			label.add_theme_color_override(
+				"font_outline_color",
+				Color(
+					1.0,
+					1.0,
+					1.0,
+					0.0
+				)
+			)
+		else:
+			label.add_theme_color_override(
+				"font_outline_color",
+				Color(
+					0.0,
+					0.0,
+					0.0,
+					0.90
+				)
+			)
 
 	var center_equipment_id: String = (
 		current_equipment_id
@@ -1701,8 +1720,9 @@ func refresh_utility_wheel() -> void:
 		)
 	else:
 		utility_wheel_center_hint_label.text = (
-			"MOVE MOUSE OUTWARD"
+			"MOVE MOUSE TO SELECT"
 		)
+
 
 func update_equipment_visuals() -> void:
 	var flashlight_equipped: bool = (
