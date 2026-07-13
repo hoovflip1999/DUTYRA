@@ -691,10 +691,12 @@ func _physics_process(delta: float) -> void:
 			recovery_speed_factor
 		)
 
-	if input_dir.y > 0.1:
-		current_speed *= (
-			backward_speed_multiplier
-		)
+	var is_moving_backward: bool = (
+		input_dir.y > 0.1
+	)
+
+	if is_moving_backward:
+		current_speed *= 0.50
 
 	if (
 		absf(input_dir.x) > 0.1
@@ -714,11 +716,32 @@ func _physics_process(delta: float) -> void:
 		velocity.z
 	)
 
-	var movement_rate: float = (
-		ground_acceleration
-		if input_dir.length_squared() > 0.0
-		else ground_deceleration
-	)
+	var movement_rate: float = ground_deceleration
+
+	if is_moving_input:
+		movement_rate = ground_acceleration
+
+		if (
+			horizontal_velocity.length_squared()
+			> 0.04
+			and direction.length_squared()
+			> 0.01
+		):
+			var current_move_direction: Vector3 = (
+				horizontal_velocity.normalized()
+			)
+
+			var direction_alignment: float = (
+				current_move_direction.dot(
+					direction
+				)
+			)
+
+			if direction_alignment < 0.98:
+				movement_rate = (
+					ground_acceleration
+					* 3.5
+				)
 
 	horizontal_velocity = (
 		horizontal_velocity.move_toward(
@@ -730,6 +753,37 @@ func _physics_process(delta: float) -> void:
 	velocity.x = horizontal_velocity.x
 	velocity.z = horizontal_velocity.z
 
+	var target_body_yaw: float = (
+		global_rotation.y
+	)
+
+	if (
+		is_moving_input
+		and not is_moving_backward
+	):
+		target_body_yaw = atan2(
+			-direction.x,
+			-direction.z
+		)
+
+	var body_rotation: Vector3 = (
+		dutyra_character.global_rotation
+	)
+
+	body_rotation.y = lerp_angle(
+		body_rotation.y,
+		target_body_yaw,
+		clampf(
+			14.0 * delta,
+			0.0,
+			1.0
+		)
+	)
+
+	dutyra_character.global_rotation = (
+		body_rotation
+	)
+
 	if not is_on_floor():
 		velocity.y -= gravity * delta
 	elif velocity.y < 0.0:
@@ -737,8 +791,13 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
+	var actual_horizontal_speed: float = Vector2(
+		velocity.x,
+		velocity.z
+	).length()
+
 	var is_moving: bool = (
-		input_dir.length_squared() > 0.01
+		actual_horizontal_speed > 0.15
 	)
 
 	var movement_animation_speed: float = 1.0
