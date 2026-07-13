@@ -1,11 +1,28 @@
 [gd_scene format=3 uid="uid://dw7sn20cefjue"]
 
 [ext_resource type="Script" uid="uid://ppp7q0nwbn1t" path="res://Scripts/player_controller.gd" id="1_v0iea"]
+[ext_resource type="PackedScene" uid="uid://ixntp2axuqc0" path="res://Scenes/Equipment/held_flashlight.tscn" id="2_6t5aa"]
 [ext_resource type="PackedScene" uid="uid://dx416qjtehnro" path="res://Scenes/Characters/dutyra_character.tscn" id="2_cvnsp"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_qjvm4"]
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_7oaoy"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_qjvm4"]
+radius = 0.07
+height = 0.5
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6t5aa"]
+albedo_color = Color(0.8995744, 0.6022501, 0.44795948, 1)
+roughness = 0.8
+
+[sub_resource type="SphereMesh" id="SphereMesh_7oaoy"]
+radius = 0.09
+height = 0.18
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vgqql"]
+albedo_color = Color(0.8995744, 0.6022501, 0.44795948, 1)
+roughness = 0.8
 
 [node name="Player" type="CharacterBody3D" unique_id=1417239302]
 script = ExtResource("1_v0iea")
@@ -37,6 +54,23 @@ light_energy = 4.0
 shadow_enabled = true
 spot_range = 30.0
 spot_angle = 24.0
+
+[node name="FirstPersonRig" type="Node3D" parent="CameraPivot/PlayerCamera" unique_id=279205811]
+visible = false
+
+[node name="HeldFlashlight" parent="CameraPivot/PlayerCamera/FirstPersonRig" unique_id=607776434 instance=ExtResource("2_6t5aa")]
+transform = Transform3D(0.9939203, 0.03752164, 0.10351119, -0.05182663, 0.9889109, 0.13917309, -0.097141355, -0.14369161, 0.9848432, 0.29, -0.03, -0.52)
+visible = true
+
+[node name="RightForearm" type="MeshInstance3D" parent="CameraPivot/PlayerCamera/FirstPersonRig" unique_id=1849515977]
+transform = Transform3D(0.99026805, 0.1391731, 0, -0.058817092, 0.41850534, 0.9063078, 0.12613368, -0.8974877, 0.42261824, 0.26, -0.18, -0.25)
+mesh = SubResource("CapsuleMesh_qjvm4")
+surface_material_override/0 = SubResource("StandardMaterial3D_6t5aa")
+
+[node name="RightHand" type="MeshInstance3D" parent="CameraPivot/PlayerCamera/FirstPersonRig" unique_id=525105055]
+transform = Transform3D(0.79695576, 0.07844016, 0, -0.06972459, 0.8965752, 0, 0, 0, 1.15, 0.29, -0.06, -0.45)
+mesh = SubResource("SphereMesh_7oaoy")
+surface_material_override/0 = SubResource("StandardMaterial3D_vgqql")
 
 [node name="PlayerUI" type="CanvasLayer" parent="." unique_id=996975244]
 

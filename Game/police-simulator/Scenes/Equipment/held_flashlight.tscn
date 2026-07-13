@@ -44,7 +44,6 @@ albedo_color = Color(0.038397167, 0.038397167, 0.03839716, 1)
 
 [node name="HeldFlashlight" type="Node3D" unique_id=607776434]
 transform = Transform3D(0.9888706, 0.05456549, 0.1384107, -0.06937434, 0.99209934, 0.104528464, -0.13161351, -0.11296728, 0.98484325, 0, 0, 0)
-visible = false
 
 [node name="Body" type="MeshInstance3D" parent="." unique_id=721234334]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0)

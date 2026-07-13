@@ -98,12 +98,10 @@ const EQUIPMENT_DATABASE := {
 	$CameraPivot/PlayerCamera/Flashlight
 )
 @onready var held_flashlight: Node3D = (
-	$DUTYRA_Character.find_child(
-		"HeldFlashlight",
-		true,
-		false
-	) as Node3D
+	$CameraPivot/PlayerCamera/FirstPersonRig
 )
+
+
 @onready var interaction_ray: RayCast3D = (
 	$CameraPivot/PlayerCamera/InteractionRay
 )
@@ -1787,9 +1785,11 @@ func update_equipment_visuals() -> void:
 	)
 
 	flashlight.visible = flashlight_equipped
-	held_flashlight.visible = flashlight_equipped
 
-
+	if held_flashlight != null:
+		held_flashlight.visible = (
+			flashlight_equipped
+		)
 func equip_equipment_item(
 	equipment_id: String
 ) -> void:
