@@ -1,0 +1,1531 @@
+# DUTYRA — Master Game Design and Development Notes
+
+**Status date:** July 13, 2026
+**Project:** DUTYRA
+**Genre:** Realistic open-world police career simulator
+**Engine:** Godot
+**Repository:** `hoovflip1999/DUTYRA`
+
+---
+
+# 1. Game Overview
+
+DUTYRA is intended to be a realistic police-career simulator built around one officer’s entire career.
+
+The player does not select disconnected missions or switch between unrelated characters. The player creates one officer, joins a department, works patrol shifts, gains experience, earns qualifications, receives promotions, and lives with the long-term consequences of their decisions.
+
+The game should feel like an active police world rather than a traditional mission-based police game.
+
+The core experience is:
+
+1. Begin a shift.
+2. Become available for calls.
+3. Patrol the open world.
+4. Receive or encounter incidents.
+5. Decide how to respond.
+6. Investigate and interact.
+7. Take enforcement action, provide assistance, or leave.
+8. Document and clear the incident.
+9. Experience career, financial, legal, physical, and world consequences.
+10. End the shift and continue building the same officer’s career.
+
+---
+
+# 2. Core Game Philosophy
+
+## Player choice creates world reaction
+
+The main DUTYRA rule is:
+
+> **The game should not force the player to make the correct decision. The world should react to the decision they make.**
+
+The game may explain that an action lacks legal justification, violates policy, or creates danger, but it should generally not block the player from performing it.
+
+Examples include:
+
+* Conducting an unjustified search.
+* Arresting someone without enough evidence.
+* Leaving a crash without reporting it.
+* Ignoring an injured person.
+* Refusing medical treatment.
+* Continuing a pursuit against policy.
+* Using unnecessary force.
+* Failing to complete a report.
+* Leaving a call before it is resolved.
+
+The game records what happened and reacts through systems such as:
+
+* Witness statements.
+* Body-camera footage.
+* Dash-camera footage.
+* Security cameras.
+* Complaints.
+* Supervisor reviews.
+* Internal Affairs.
+* Court cases.
+* Civil lawsuits.
+* Department discipline.
+* Retraining.
+* Suspension.
+* Termination.
+* Reputation changes.
+* Financial consequences.
+* NPC behavior.
+* News coverage.
+* Career delays.
+
+## No obvious “correct answer” system
+
+DUTYRA should not constantly display:
+
+* Correct choice.
+* Wrong choice.
+* Good cop points.
+* Bad cop points.
+* Public trust minus 10.
+* Morality meter.
+* Mission failed.
+
+Consequences should usually appear through believable parts of the world instead.
+
+## Relevant choices are easy; unusual choices remain possible
+
+The interaction design rule is:
+
+> **Show the player the most relevant choices immediately while always leaving a path to broader actions.**
+
+The game should not display every possible action at once.
+
+Common actions should be easy to reach. Rare, unusual, or questionable actions can appear one level deeper.
+
+## The game simulates circumstances, not scripts
+
+Calls provide starting circumstances, but they should not completely control what the player can do.
+
+A noise complaint should not become a rigid sequence of:
+
+1. Talk to resident.
+2. Give warning.
+3. Leave.
+
+Instead, the player may:
+
+* Speak calmly.
+* Demand identification.
+* Separate people.
+* Investigate another possible crime.
+* Request backup.
+* Issue a citation.
+* Arrest someone.
+* Ignore the complaint.
+* Leave the area.
+* Escalate unnecessarily.
+
+The situation and world then respond.
+
+---
+
+# 3. World Structure
+
+## One open world
+
+The current design is for one main open world rather than separate game modes for every department.
+
+The world should contain different departmental regions and jurisdictions, such as:
+
+* City police areas.
+* County sheriff areas.
+* Highway patrol areas.
+* Rural roads.
+* Commercial districts.
+* Residential neighborhoods.
+* Industrial districts.
+* Government locations.
+* Parks.
+* Highways.
+* Apartment complexes.
+* Businesses.
+* Police facilities.
+
+The player should generally be free to travel outside their assigned jurisdiction, but their authority, responsibilities, available calls, and department response may change.
+
+## Events continue existing
+
+Events should not freeze until the player arrives.
+
+Examples:
+
+* A suspect may leave.
+* A fight may end.
+* A fire may spread.
+* An injured person may deteriorate.
+* A stolen vehicle may continue moving.
+* Witnesses may leave.
+* Evidence may be disturbed.
+* Another officer may resolve the incident.
+* A crash may cause another crash.
+
+## Accessible locations
+
+The long-term goal includes entering many buildings rather than keeping the entire game outside.
+
+Possible locations include:
+
+* Police stations.
+* Homes.
+* Apartments.
+* Stores.
+* Gas stations.
+* Restaurants.
+* Hospitals.
+* Courthouses.
+* Jails.
+* Garages.
+* Gyms.
+* Government buildings.
+* Warehouses.
+
+Not every building needs to be fully unique. Reusable interiors can be combined with different layouts, objects, NPCs, and circumstances.
+
+---
+
+# 4. One Officer, One Career
+
+The player builds one officer rather than choosing separate patrol, SWAT, detective, or highway-patrol characters.
+
+The officer’s record should track:
+
+* Name.
+* Department.
+* Rank.
+* Division.
+* Current assignment.
+* Qualifications.
+* Certifications.
+* Training.
+* Performance.
+* Complaints.
+* Discipline.
+* Awards.
+* Injuries.
+* Use-of-force incidents.
+* Crashes.
+* Arrests.
+* Citations.
+* Reports.
+* Court outcomes.
+* Finances.
+* Property.
+* Vehicles.
+* Career history.
+
+## Promotion and qualification are different
+
+A promotion changes rank and authority.
+
+A qualification gives access to specialized responsibilities.
+
+An officer may be a normal patrol officer while also being qualified for a specialized team.
+
+Example profile:
+
+```text
+Rank:
+Sergeant
+
+Current Assignment:
+Patrol
+
+Qualifications:
+SWAT
+Crisis Negotiator
+Firearms Instructor
+```
+
+The officer works a normal patrol shift until a qualifying situation causes a specialized activation.
+
+## Current planned rank structure
+
+The game already has the beginning of a Patrol Division rank structure and promotion-review system. The precise final rank names can still be changed.
+
+Possible long-term structure:
+
+* Recruit.
+* Probationary Officer.
+* Police Officer.
+* Senior Officer.
+* Corporal.
+* Sergeant.
+* Lieutenant.
+* Captain.
+* Command staff.
+
+Promotion should not come only from XP.
+
+Possible requirements include:
+
+* Time in service.
+* Calls completed.
+* Shift performance.
+* Training.
+* Qualification scores.
+* Supervisor recommendation.
+* Disciplinary record.
+* Written examination.
+* Assessment.
+* Open department position.
+
+## Qualifications and specialized teams
+
+Possible qualifications include:
+
+* SWAT.
+* K9 handler.
+* Detective.
+* Crisis negotiator.
+* Field Training Officer.
+* Firearms instructor.
+* Accident reconstruction.
+* Drone operator.
+* Motorcycle officer.
+* Commercial vehicle enforcement.
+* School Resource Officer.
+* Crime-scene technician.
+
+Passing a qualification does not mean that equipment is permanently carried.
+
+It means the officer can be assigned or activated for that duty.
+
+---
+
+# 5. Department and Assignment System
+
+Equipment, calls, authority, vehicles, and responsibilities should be based on:
+
+```text
+Department
++ Rank
++ Qualifications
++ Current Assignment
++ Current Vehicle
++ Department Policy
+= Available Responsibilities and Equipment
+```
+
+## Normal patrol officer
+
+Possible patrol equipment:
+
+* Handgun.
+* Taser.
+* Handcuffs.
+* Flashlight.
+* Pepper spray.
+* Baton.
+* Radio.
+* Basic medical supplies.
+
+## SWAT-qualified officer
+
+Possible SWAT equipment:
+
+* Patrol or tactical rifle.
+* Ballistic shield.
+* Breaching tools.
+* Tear gas.
+* Less-lethal launcher.
+* Specialized armor.
+* Tactical medical equipment.
+
+Tear gas and breaching equipment should not automatically be available during regular patrol.
+
+A SWAT-qualified patrol officer would respond to staging, change equipment, and join the operation after activation.
+
+## Highway patrol
+
+Possible highway-patrol equipment:
+
+* Road spikes.
+* Speed radar.
+* Crash-investigation tools.
+* Traffic-control equipment.
+* Commercial vehicle inspection equipment.
+
+Road spikes should not be available to every officer in every vehicle.
+
+## K9 unit
+
+Possible K9 systems:
+
+* K9 commands.
+* Tracking.
+* Building searches.
+* Vehicle sniffs.
+* Suspect apprehension.
+* Dog medical supplies.
+* Leash handling.
+
+---
+
+# 6. Shift System
+
+The player should be able to decide when to begin and end a shift rather than being trapped inside a fixed mission length.
+
+## Shift states
+
+Possible status flow:
+
+```text
+Off Duty
+→ 10-41 / Starting Shift
+→ Available
+→ Call Pending
+→ En Route
+→ On Scene
+→ Busy
+→ Available
+→ 10-42 / Ending Shift
+```
+
+## Already implemented
+
+The current game tracks beginning and ending shifts.
+
+Going on duty begins a shift. Clearing calls adds progress. Ending the shift only counts as a completed shift when the player has cleared at least one call. A shift-summary popup explains whether the shift counted toward promotion progress.
+
+The player’s HUD and radio wheel can display duty and call status.
+
+## Long-term shift design
+
+Future shifts may include:
+
+* Day, evening, and night assignments.
+* Different staffing levels.
+* Weather changes.
+* Shift briefings.
+* Vehicle assignments.
+* Equipment checkout.
+* Supervisor instructions.
+* Special details.
+* Court appearances.
+* Training days.
+* Overtime.
+* Callouts while off duty.
+
+The world should use faster in-game time, but it should not require hunger, sleep, thirst, or stress-maintenance meters.
+
+---
+
+# 7. Dispatch and Call System
+
+## Design goal
+
+Dispatch should eventually respond to activity already occurring in the world instead of only spawning traditional missions.
+
+Example:
+
+1. A crash occurs.
+2. A witness calls 911.
+3. Dispatch creates an incident.
+4. The nearest available unit is assigned.
+5. The event continues while units respond.
+
+The player may also witness an event before dispatch receives it.
+
+## Already implemented
+
+The dispatch system currently uses structured call data capable of storing:
+
+* Call type.
+* Priority.
+* Location.
+* Objectives.
+* Status.
+* Notes.
+* Resolution information.
+* MDT details.
+
+Calls are delayed after the officer becomes available rather than being assigned immediately. Additional calls can be assigned after previous calls are cleared.
+
+The system currently supports at least two test calls:
+
+* Suspicious person at a gas station.
+* Noise complaint at an apartment building.
+
+Call areas and subjects only respond when they match the active dispatch location.
+
+The suspicious-person call currently requires:
+
+* Reporting on scene.
+* Contacting the subject.
+* Clearing the call.
+
+Subject interactions can create different radio messages and MDT-resolution notes depending on the call type.
+
+## Future call categories
+
+Possible calls include:
+
+* Suspicious person.
+* Noise complaint.
+* Domestic disturbance.
+* Traffic crash.
+* Disabled vehicle.
+* Reckless driver.
+* Shoplifting.
+* Theft.
+* Burglary.
+* Trespassing.
+* Missing person.
+* Welfare check.
+* Mental-health crisis.
+* Assault.
+* Robbery.
+* Shots fired.
+* Barricaded suspect.
+* Pursuit.
+* Medical emergency.
+* Fire assistance.
+* Officer needs assistance.
+* Civil dispute.
+* Animal complaint.
+* Alarm activation.
+
+Calls should be created from combinations of reusable systems rather than each being an entirely separate scripted mission.
+
+---
+
+# 8. Interaction System Design
+
+The interaction system has been designed conceptually but is not yet fully implemented.
+
+## Main interaction categories
+
+A contextual interaction wheel may use categories such as:
+
+* Talk.
+* Command.
+* Investigate.
+* Enforcement.
+* Assistance.
+* Equipment.
+* Special.
+* End Interaction.
+
+The main wheel should stay consistent while the submenu changes based on circumstances.
+
+## Circumstance-based actions
+
+The system should read tags such as:
+
+```text
+Person in vehicle
+Person injured
+Weapon visible
+Reasonable suspicion
+Probable cause
+Person detained
+Person hostile
+Witness present
+Active crime
+Medical emergency
+```
+
+A traffic stop may offer:
+
+* Introduce yourself.
+* Request license.
+* Request registration.
+* Explain reason for stop.
+* Ask about alcohol.
+* Order driver out.
+* Issue warning.
+* Issue citation.
+* Request backup.
+* End stop.
+
+A domestic call may offer:
+
+* Separate involved people.
+* Ask what happened.
+* Check for injuries.
+* Ask about weapons.
+* Speak to witnesses.
+* Order someone to leave.
+* Detain.
+* Request EMS.
+* Request supervisor.
+
+## Persistent interaction posture
+
+The officer may have a current interaction posture:
+
+* Calm.
+* Professional.
+* Firm.
+* Aggressive.
+
+The player should not have to choose a tone before every sentence. The current posture influences dialogue, animation, NPC reaction, escalation, and available phrasing.
+
+## Illegal actions
+
+Illegal or unjustified actions should often remain selectable.
+
+Example warning:
+
+```text
+SEARCH PERSON
+
+No legal justification currently established.
+```
+
+The game informs the player without automatically preventing the action.
+
+---
+
+# 9. NPC and World-Reaction Design
+
+NPCs should eventually be capable of:
+
+* Cooperating.
+* Refusing.
+* Lying.
+* Remaining silent.
+* Becoming nervous.
+* Recording the officer.
+* Calling 911.
+* Running away.
+* Fighting.
+* Surrendering.
+* Hiding.
+* Destroying evidence.
+* Helping another person.
+* Giving conflicting statements.
+* Remembering previous interactions.
+
+NPC reactions should be influenced by:
+
+* Officer posture.
+* Commands.
+* Threat level.
+* Prior police contact.
+* Personality.
+* Intoxication.
+* Mental state.
+* Nearby witnesses.
+* Available escape routes.
+* Evidence.
+* Whether the officer’s actions appear lawful.
+
+NPC voice acting should be limited and reusable rather than requiring thousands of unique spoken lines. Text, short voice lines, animations, and contextual reactions can work together.
+
+---
+
+# 10. Equipment and Inventory Design
+
+## Core rule
+
+The player should not carry every weapon and tool at once.
+
+Equipment availability depends on role, department, qualification, assignment, vehicle, and policy.
+
+## Eight-slot equipment wheel
+
+The game currently has a fixed eight-slot utility/equipment wheel.
+
+Current behavior:
+
+* Eight permanent sections.
+* Slot one is Hands.
+* Empty sections remain visible but disabled.
+* Equipment positions do not shift when something is added or removed.
+* The wheel is smaller and partially transparent.
+* The player can continue moving and sprinting while the wheel is open.
+* Equipment is selected with the mouse.
+* The wheel supports tap-to-holster behavior.
+
+## Equipment database currently present in code
+
+The controller currently includes entries for:
+
+* Hands.
+* Flashlight.
+* Taser.
+* Handgun.
+* Handcuffs.
+* Baton.
+* Pepper spray.
+* Patrol rifle.
+* Road spikes.
+* Medical kit.
+* Breaching tool.
+
+These entries do not mean every item is fully modeled or functional. Most are currently equipment-system placeholders.
+
+The flashlight is the first item receiving a visible first-person implementation.
+
+## Storage design
+
+Large or specialized equipment should remain in:
+
+* Patrol vehicle.
+* Trunk.
+* Station armory.
+* SWAT vehicle.
+* Command truck.
+* Equipment locker.
+
+The officer must retrieve it rather than instantly selecting it from an unlimited inventory.
+
+---
+
+# 11. Injury and Medical System Design
+
+## No traditional health bar
+
+The long-term rule is:
+
+> **The player does not simply lose health points. The officer receives injuries.**
+
+Possible condition levels:
+
+* Fine.
+* Bruised.
+* Wounded.
+* Seriously injured.
+* Critical.
+
+## Injury effects
+
+### Leg injury
+
+* Limping.
+* Reduced walking speed.
+* Unable to sprint.
+* Slower climbing.
+* Reduced stability while moving.
+
+### Arm injury
+
+* Slower reload.
+* Increased weapon sway.
+* Difficulty holding equipment steady.
+* Reduced melee ability.
+
+### Chest injury
+
+* Reduced stamina.
+* Heavy breathing.
+* Limited sprinting.
+* Increased camera movement.
+
+### Head injury
+
+* Ringing ears.
+* Blurred vision.
+* Disorientation.
+* Delayed interaction.
+* Possible blackouts.
+
+## Adrenaline
+
+Immediately after an injury, adrenaline may temporarily reduce the symptoms.
+
+The officer may continue moving and fighting briefly before:
+
+* Slowing down.
+* Beginning to limp.
+* Breathing heavily.
+* Losing aim stability.
+* Realizing the injury is serious.
+
+## EMS treatment
+
+The current chosen gameplay idea is that the officer is not fixed automatically.
+
+The player requests EMS. EMS arrives and visibly assesses the officer. After the assessment:
+
+* Minor injuries may be treated on scene.
+* Serious injuries may trigger a recommendation to end the shift.
+* Critical injuries may make the officer unfit for duty.
+* The player may sometimes refuse treatment, creating additional risk.
+
+The simple early implementation may use an EMS assessment animation followed by restoring the player’s condition.
+
+## Long-term possibility
+
+More advanced versions may include:
+
+* Injuries lasting between shifts.
+* Light duty.
+* Medical leave.
+* Permanent limitations.
+* Medical retirement.
+* Injury reports.
+
+This is a design goal and is not currently implemented.
+
+---
+
+# 12. Vehicle and Crash Consequences
+
+Vehicle damage should not only be a visual health bar.
+
+Possible results include:
+
+* Repair costs.
+* Department review.
+* Insurance claims.
+* Civilian claims.
+* Supervisor response.
+* Disabled patrol vehicle.
+* Replacement vehicle request.
+* Tow request.
+* Crash report.
+* Injury investigation.
+
+A proposed rule is that the department covers a percentage of damage based on policy and fault, while the player may be responsible for the remaining cost.
+
+The player should not be physically forced to stop and report a crash, but witnesses, cameras, vehicle telemetry, supervisors, insurance, and Internal Affairs may later reveal what happened.
+
+This system is planned and not yet implemented.
+
+---
+
+# 13. UI and Visual Direction
+
+## Overall UI style
+
+The chosen visual style is:
+
+> **Modern police equipment, practical government software, and minimal cinematic overlays.**
+
+Suggested visual language:
+
+* Dark charcoal panels.
+* Muted blue-gray highlights.
+* White text.
+* Amber warnings.
+* Red only for emergencies.
+* Thin borders.
+* Small clean fonts.
+* Moderate transparency.
+* Minimal animation.
+
+## Normal HUD
+
+The normal screen should remain mostly clear.
+
+Possible permanent or temporary elements:
+
+* Current duty status.
+* Radio status.
+* Active-call summary.
+* Context interaction prompt.
+* Brief equipment name.
+* Small status indicator.
+
+The game should avoid:
+
+* Giant health bars.
+* Giant objective markers.
+* Large minimap covering the screen.
+* Permanent tutorial instructions.
+* Large floating waypoint icons.
+
+## World UI
+
+Information should appear on physical objects when possible:
+
+* Vehicle dashboard.
+* Speedometer.
+* Radar display.
+* MDT.
+* Radio.
+* Station computer.
+* Evidence terminal.
+
+## Quick HUD
+
+Temporary information includes:
+
+* Interaction prompt.
+* Equipment wheel.
+* Dispatch caption.
+* Radio message.
+* Call-cleared result.
+* Shift summary.
+* XP/progress popup.
+
+## Administrative UI
+
+Opened intentionally:
+
+* Reports.
+* Career.
+* Finances.
+* Policies.
+* Evidence.
+* Training.
+* Department records.
+
+## Consequence UI
+
+Consequences should appear through:
+
+* Supervisor message.
+* Complaint notification.
+* Repair invoice.
+* Court result.
+* Internal Affairs notification.
+* Performance evaluation.
+* News report.
+* Pay statement.
+
+The player should understand the consequence without always seeing the exact hidden calculations.
+
+---
+
+# 14. Player Character — Already Implemented
+
+## First-person full body
+
+The original placeholder player was replaced with an animated character model.
+
+The current player includes:
+
+* Visible torso and legs when looking down.
+* Corrected scale and orientation.
+* Hidden head and eye meshes from the first-person camera.
+* Adjusted camera height.
+* Idle animation.
+* Walk animation.
+* Movement-controlled animation switching.
+
+## Movement
+
+Implemented movement includes:
+
+* First-person mouse look.
+* Walking.
+* Sprinting.
+* Crouching.
+* Smooth acceleration.
+* Smooth stopping.
+* Slope handling.
+* No normal jumping.
+* Reduced sideways speed.
+* Reduced backward speed.
+* Movement animations.
+* Crouched movement animation speed.
+* Sprint animation speed.
+* Collision capsule changes while crouching.
+* Camera lowering while crouching.
+
+## Improved turning
+
+The character body now turns toward sideways and diagonal movement more quickly.
+
+When walking backward:
+
+* The character remains facing forward.
+* Backward movement is approximately 50% normal speed.
+* Backward walking uses a slower animation.
+* Direction changes have reduced drifting and sliding.
+
+## Stamina
+
+The implemented stamina system includes:
+
+* Sprint stamina drain.
+* Gradual sprint slowdown as stamina becomes low.
+* Tired walking speed.
+* Sprint lock while exhausted.
+* Gradual recovery.
+* Animation speed tied to fatigue.
+* Subtle tired camera bob.
+
+---
+
+# 15. Flashlight and First-Person Equipment — Current Status
+
+## Flashlight beam
+
+A functioning SpotLight3D flashlight beam is attached to the player camera.
+
+The beam:
+
+* Points with the camera.
+* Has shadows enabled.
+* Uses a defined range and cone angle.
+* Becomes visible when the flashlight is equipped.
+
+## Flashlight model
+
+A basic physical flashlight model exists with:
+
+* Body.
+* Head.
+* Lens.
+* Switch.
+* Metallic dark material.
+* Emissive lens.
+
+## Original hand-socket test
+
+The flashlight was successfully attached to the character’s real right-hand bone using a `BoneAttachment3D`.
+
+That proved:
+
+* The skeleton hand attachment works.
+* Equipment can follow character bones.
+* The same attachment system can later support third-person visuals and shadows.
+
+However, the normal walking animation caused the real hand and flashlight to swing near the waist.
+
+## Failed experimental arm modifier
+
+An experimental `SkeletonModifier3D` was tested to rotate the full-body shoulder, forearm, and hand into a flashlight pose.
+
+Problems included:
+
+* The arm twisting.
+* The arm moving behind the player.
+* The arm disappearing from view.
+* Bone directions differing from assumed coordinates.
+* Walking animation continuing to fight the pose.
+
+That approach was abandoned for the main first-person display.
+
+An experimental `equipment_pose_modifier.gd` file currently exists in the repository from this test, but it should be treated as unused prototype code unless later redesigned.
+
+## Current first-person rig
+
+The latest working setup uses a camera-attached `FirstPersonRig`.
+
+It currently contains:
+
+* Basic flashlight model.
+* Temporary capsule-shaped forearm.
+* Temporary sphere-shaped hand.
+* Skin-colored temporary materials.
+* Camera-relative positioning.
+* Visibility controlled by equipment selection.
+
+The old flashlight was removed from the moving full-body hand, and the camera rig now appears when the flashlight is selected.
+
+The current scene structure is approximately:
+
+```text
+Player
+└── CameraPivot
+    └── PlayerCamera
+        ├── InteractionRay
+        ├── Flashlight
+        └── FirstPersonRig
+            ├── HeldFlashlight
+            ├── RightForearm
+            └── RightHand
+```
+
+## Current limitation
+
+The temporary capsule forearm and sphere hand are placeholders.
+
+The immediate next character task is replacing those shapes with a proper skinned first-person arm and hand model that matches the full character’s:
+
+* Skin tone.
+* Uniform sleeve.
+* Body proportions.
+* Gloves, when applicable.
+* Equipment animations.
+
+---
+
+# 16. Main Menu and Save System — Already Implemented
+
+## Main menu
+
+The game has a DUTYRA main menu using a cinematic branded background.
+
+Implemented main-menu functions include:
+
+* Continue.
+* New career.
+* Saved officer profile display.
+* Career creation using the officer’s last name.
+* Persistent career progress.
+
+## Career slots
+
+The game currently supports two career save slots.
+
+Implemented functions include:
+
+* Two separate career slots.
+* Career loading.
+* Slot-selection screen.
+* New-career slot selection.
+* Career deletion.
+* Deletion confirmation.
+* Overwrite confirmation.
+* Active-career tracking.
+* Continue button support.
+* Main-menu profile information.
+
+## Autosave
+
+Career autosave is implemented.
+
+---
+
+# 17. Pause and Settings — Already Implemented
+
+## Pause menu
+
+A functional in-game pause menu currently includes:
+
+* Resume.
+* Save.
+* Career overview.
+* Options/settings.
+
+## Persistent settings
+
+A `SettingsManager` backend stores settings between sessions.
+
+Implemented categories include:
+
+* Display.
+* Graphics.
+* Audio.
+* Mouse sensitivity.
+* Gameplay/future setting support.
+
+Settings are connected to both:
+
+* Pause menu.
+* Main menu.
+
+## Control rebinding
+
+Implemented control settings include:
+
+* Persistent keyboard rebinding.
+* Duplicate-key protection.
+* Rebinding cancellation.
+* Reset-to-default controls.
+
+---
+
+# 18. Radio System — Already Implemented
+
+The radio currently uses a radial wheel instead of separate old call-control keys.
+
+Implemented functions and visuals include:
+
+* Hold/open radio wheel.
+* Current duty status.
+* Current call status.
+* Off-duty state.
+* Available state.
+* Pending call state.
+* En-route state.
+* On-scene state.
+* Status-colored indicator.
+* Dimmed/blurred background.
+* Center radio display.
+* Short HUD radio summaries.
+* Longer details kept in the MDT.
+* Radio messaging/audio support.
+
+The old accept-call controls and visible objective-marker approach were removed after the radio wheel became the main status system.
+
+---
+
+# 19. MDT — Already Implemented
+
+The MDT currently appears as a laptop-style interface rather than a basic floating text box.
+
+## Current MDT design
+
+Implemented visual features include:
+
+* Large centered laptop frame.
+* Dark physical-laptop border.
+* Computer-style screen.
+* Department portal title.
+* Clean cinematic background.
+* Clickable tabs.
+* Mouse interaction.
+* M or Escape closing.
+* Player movement locked while the MDT is open.
+
+The current test portal identifies the department as **Cedar Heights PD**. This can be kept as the fictional department name or changed later.
+
+## Calls tab
+
+The Calls page displays information such as:
+
+* Current status.
+* Call type.
+* Location.
+* Priority.
+* Next action.
+* Notes.
+* Radio guidance.
+* Resolution notes.
+
+The MDT call information was intentionally simplified so it is readable and not overloaded.
+
+## Career/Personnel tab
+
+The career page includes:
+
+* Officer file.
+* Current rank.
+* Promotion review.
+* Shift status.
+* Performance XP.
+* Calls-cleared progress.
+* Shifts-completed progress.
+* Promotion-requirement cards.
+* Eligibility feedback.
+
+Promotion eligibility does not automatically promote the player. It means the officer can later be reviewed.
+
+## Report-system status
+
+The player controller currently contains scaffolding for a Reports dashboard, including:
+
+* Report list.
+* Report details.
+* Case panel.
+* Involved-person display.
+* Report buttons.
+
+This should be treated as interface groundwork rather than a complete police-report-writing system.
+
+---
+
+# 20. Career Progression — Already Implemented
+
+The current career prototype tracks:
+
+* Rank.
+* Performance XP.
+* Calls cleared.
+* Shifts completed.
+* Requirements for promotion.
+* Promotion-eligibility status.
+
+Clearing a call can award performance XP and update career progress.
+
+Progress appears through a brief popup rather than remaining permanently on screen.
+
+A call-cleared popup provides clear feedback after the player returns to available status.
+
+The current numbers and promotion requirements are prototypes and can later be replaced with a more realistic department-review system.
+
+---
+
+# 21. Current Playable Prototype Loop
+
+In the current build, the player can approximately:
+
+1. Open the main menu.
+2. Continue a career or create/select a career slot.
+3. Enter the game.
+4. Walk around with a visible animated body.
+5. Sprint and use stamina.
+6. Crouch.
+7. Open the pause menu.
+8. Change settings and controls.
+9. Use the radio wheel.
+10. Go on duty.
+11. Become available.
+12. Wait for dispatch to assign a call.
+13. View the call in the MDT.
+14. Respond to the correct call location.
+15. Report on scene.
+16. Contact a subject.
+17. Receive subject dialogue and radio feedback.
+18. Clear the call.
+19. Receive XP and call-completion feedback.
+20. Become available for another call.
+21. End the shift.
+22. Receive a shift-summary result.
+23. Save career progress.
+24. Open the eight-slot equipment wheel.
+25. Equip Hands or Flashlight.
+26. See the flashlight beam and temporary first-person hand rig.
+
+This is the current prototype foundation. It is not yet the full police simulation described in the design sections.
+
+---
+
+# 22. Systems Not Yet Fully Implemented
+
+The following are design decisions or planned systems, not currently complete:
+
+* Full contextual interaction wheel.
+* Advanced NPC behavior.
+* Traffic stops.
+* Vehicle driving.
+* Patrol-car equipment.
+* Pursuits.
+* Arrest animations.
+* Handcuffing.
+* Physical searches.
+* Detailed dialogue trees.
+* Legal justification system.
+* Probable-cause and reasonable-suspicion tracking.
+* Evidence collection.
+* Crime-scene system.
+* Full report writing.
+* Court outcomes.
+* Internal Affairs.
+* Civil lawsuits.
+* Supervisor AI.
+* Police backup units.
+* EMS response.
+* Fire response.
+* Injury system.
+* Limping.
+* Location-specific damage.
+* Long-term medical consequences.
+* Weapon handling.
+* Firearms.
+* Taser.
+* Pepper spray.
+* Baton.
+* Road spikes.
+* SWAT equipment.
+* K9 system.
+* Detective system.
+* Department transfers.
+* Qualification courses.
+* Academy tutorial.
+* Housing.
+* Personal vehicles.
+* Player finances.
+* Gym and fitness progression.
+* Accessible world interiors.
+* Living-city NPC traffic.
+* Dynamic crimes.
+* Fully reactive world events.
+* Body-camera evidence.
+* Dash-camera evidence.
+* News and public-reputation system.
+* Vehicle crash-liability system.
+* Full role-based loadout system.
+
+---
+
+# 23. Immediate Development Priority
+
+The current priority remains completing the main player before expanding calls and NPC systems.
+
+## Recommended next order
+
+### Step 1 — Replace temporary first-person shapes
+
+Replace:
+
+* Capsule forearm.
+* Sphere hand.
+
+With:
+
+* Proper skinned arm mesh.
+* Proper hand and fingers.
+* Uniform sleeve.
+* Matching skin material.
+* Correct flashlight grip.
+
+### Step 2 — First-person arm skeleton
+
+Create a dedicated first-person arm rig containing:
+
+* Upper arm.
+* Forearm.
+* Wrist.
+* Hand.
+* Fingers.
+* Equipment attachment socket.
+
+### Step 3 — Flashlight animations
+
+Add:
+
+* Equip.
+* Lowered idle.
+* Raised ready position.
+* Walk movement.
+* Sprint lowering.
+* Holster.
+* Flashlight-use animation.
+
+### Step 4 — Character visual quality
+
+Improve:
+
+* Real skin material.
+* Face.
+* Eyes.
+* Eyebrows.
+* Hair.
+* Uniform textures.
+* Hands.
+* Body proportions.
+* Boots.
+* Duty belt.
+
+### Step 5 — Reusable equipment animation structure
+
+After the flashlight works, reuse the first-person arm rig for:
+
+* Handgun.
+* Taser.
+* Handcuffs.
+* Pepper spray.
+* Baton.
+* Radio.
+* Medical equipment.
+
+### Step 6 — Finish core player condition
+
+Complete:
+
+* Normal movement animations.
+* Equipment movement.
+* Injury movement.
+* Limp animation.
+* Slower injured walking.
+* Interaction animations.
+* Entering vehicles.
+* Sitting.
+* Reaching for equipment.
+
+Only after the player feels correct should development move heavily into NPCs, traffic stops, and the full interaction system.
+
+---
+
+# 24. Current Known Cleanup Tasks
+
+The project currently has several prototype remnants that should eventually be cleaned up:
+
+* Temporary capsule forearm.
+* Temporary sphere hand.
+* Experimental equipment-pose modifier script.
+* Character backup/copy scene.
+* Basic handmade flashlight model.
+* Placeholder equipment database entries.
+* Prototype career XP values.
+* Prototype call subjects and locations.
+* Test dialogue.
+* Any duplicated or unused equipment nodes.
+
+These are normal prototype elements but should be tracked so they do not become permanent accidentally.
+
+---
+
+# 25. Official DUTYRA Design Rules
+
+These rules summarize the game’s direction.
+
+## Rule 1
+
+> The player is not forced to make the correct choice. The world reacts to the choice.
+
+## Rule 2
+
+> Circumstances decide which actions are relevant, not which actions are possible.
+
+## Rule 3
+
+> Show a small number of useful actions while preserving a path to broader actions.
+
+## Rule 4
+
+> One officer experiences one continuing career.
+
+## Rule 5
+
+> Promotions change authority; qualifications unlock specialized opportunities.
+
+## Rule 6
+
+> Equipment depends on department, assignment, qualification, vehicle, and policy.
+
+## Rule 7
+
+> Specialized teams are part of the officer’s career, not separate game modes.
+
+## Rule 8
+
+> The player has injuries, not merely a visible health percentage.
+
+## Rule 9
+
+> Consequences should appear naturally through the world rather than arcade-style point deductions.
+
+## Rule 10
+
+> The UI should resemble police equipment and government software, not a flashy fantasy HUD.
+
+## Rule 11
+
+> Calls create circumstances rather than rigid mission scripts.
+
+## Rule 12
+
+> Events continue whether or not the player responds correctly or arrives on time.
+
+## Rule 13
+
+> Systems should be reusable so many outcomes can be created without building millions of separate mechanics.
+
+## Rule 14
+
+> Physical actions use direct controls; decision-heavy actions use contextual interfaces.
+
+## Rule 15
+
+> The full player character must feel finished before major new gameplay systems are layered onto it.
+
+---
+
+# 26. Current Overall Status
+
+DUTYRA currently has a strong foundation rather than a complete police simulator.
+
+The strongest implemented areas are:
+
+* Career saving.
+* Main menu.
+* Pause menu.
+* Persistent settings.
+* Control rebinding.
+* First-person movement.
+* Visible animated body.
+* Stamina.
+* Crouching.
+* Duty-status system.
+* Radio wheel.
+* Dispatch-call structure.
+* Two test calls.
+* Subject interactions.
+* MDT.
+* Career and shift progress.
+* Eight-slot equipment wheel.
+* Working flashlight beam.
+* Temporary first-person flashlight rig.
+
+The most important current weakness is the player’s visible first-person arms and equipment handling.
+
+The next milestone should be:
+
+> **A finished-looking first-person officer arm and hand holding the flashlight naturally while standing, walking, sprinting, and holstering it.**
+
+That system will become the visual and animation foundation for every future tool and weapon.

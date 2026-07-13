@@ -1,0 +1,769 @@
+# DUTYRA — Current Development Status
+
+**Last updated:** July 13, 2026
+**Repository:** `hoovflip1999/DUTYRA`
+**Default branch:** `master`
+**Engine:** Godot
+**Current development focus:** Finish the first-person player body, arms, hands, and equipment presentation before expanding major gameplay systems.
+
+---
+
+# 1. Purpose of This File
+
+This file records the exact current state of DUTYRA development.
+
+Before making changes to the project:
+
+1. Read `Docs/DUTYRA_DESIGN_BIBLE.md`.
+2. Read this file.
+3. Inspect the most recent repository version.
+4. Do not assume planned systems are already implemented.
+5. Do not replace working systems without confirming the current structure.
+
+The design bible explains the overall game vision.
+
+This file explains:
+
+* What currently works.
+* What is only a prototype.
+* What is unfinished.
+* What was recently attempted.
+* What should be developed next.
+* Which files are currently important.
+
+---
+
+# 2. Current Main Priority
+
+The current priority is:
+
+> Replace the temporary first-person flashlight forearm and hand with a proper arm and hand that match the full DUTYRA character.
+
+The flashlight system currently works, but the visible hand and forearm are temporary primitive shapes.
+
+Do not begin large new systems such as traffic stops, vehicles, advanced NPCs, firearms, or injuries until the main player presentation is more complete.
+
+---
+
+# 3. Current Working Player Systems
+
+## First-person player movement
+
+The player currently supports:
+
+* First-person mouse movement.
+* Walking.
+* Sprinting.
+* Crouching.
+* Smooth acceleration.
+* Smooth stopping.
+* Slope handling.
+* No standard jumping.
+* Slower sideways movement.
+* Slower backward movement.
+* Reduced movement drifting.
+* Character turning toward sideways and diagonal movement.
+* Forward-facing backpedaling.
+* Slower backward walking animation.
+
+## Stamina
+
+The current stamina system supports:
+
+* Stamina drain while sprinting.
+* Gradual sprint slowdown.
+* Exhausted walking.
+* Sprint lock while extremely tired.
+* Gradual stamina recovery.
+* Animation-speed changes based on fatigue.
+* Subtle tired camera movement.
+
+## Crouching
+
+Crouching currently changes:
+
+* Player movement speed.
+* Camera height.
+* Collision capsule height.
+* Animation speed.
+
+The collision capsule remains aligned with the floor while crouching.
+
+---
+
+# 4. Current Character Model
+
+The player currently uses an animated DUTYRA character model.
+
+The full character provides:
+
+* Visible torso.
+* Visible legs.
+* Visible uniform.
+* Visible boots.
+* Idle animation.
+* Walk animation.
+* Movement-controlled animation playback.
+* Hidden head and eye meshes in first-person view.
+* Adjusted model orientation.
+* Adjusted model scale.
+* Adjusted camera height.
+
+The player can look down and see the character’s body.
+
+## Current limitation
+
+The full-body arm uses the normal character animation.
+
+Because the walking animation swings the arms, equipment attached directly to the full-body hand moves near the waist and swings while walking.
+
+The normal full-body hand is currently not being used as the main visible first-person equipment hand.
+
+---
+
+# 5. Current Flashlight System
+
+## Working flashlight beam
+
+The player has a functioning `SpotLight3D` flashlight beam attached to the camera.
+
+The beam currently:
+
+* Follows the player’s view.
+* Points wherever the camera points.
+* Produces shadows.
+* Has a set range.
+* Uses a controlled cone angle.
+* Appears when the flashlight is equipped.
+* Disappears when the flashlight is holstered.
+
+The flashlight beam should remain attached to the camera unless the equipment system is intentionally redesigned.
+
+## Physical flashlight model
+
+A basic physical flashlight scene exists:
+
+```text
+Scenes/Equipment/held_flashlight.tscn
+```
+
+The flashlight model includes basic parts such as:
+
+* Main body.
+* Flashlight head.
+* Lens.
+* Switch.
+* Dark metallic material.
+* Emissive lens material.
+
+The model is functional as a prototype but is not final-quality.
+
+---
+
+# 6. Current First-Person Equipment Rig
+
+A camera-attached first-person equipment rig is currently working.
+
+The current structure is approximately:
+
+```text
+Player
+└── CameraPivot
+    └── PlayerCamera
+        ├── InteractionRay
+        ├── Flashlight
+        └── FirstPersonRig
+            ├── HeldFlashlight
+            ├── RightForearm
+            └── RightHand
+```
+
+## FirstPersonRig behavior
+
+`FirstPersonRig` is attached directly to `PlayerCamera`.
+
+This means it:
+
+* Remains inside the player’s view.
+* Moves with the camera.
+* Does not swing with the full-body walking animation.
+* Can be hidden when no equipment is equipped.
+* Can later contain different first-person equipment models.
+
+## Temporary forearm
+
+The current `RightForearm` is a temporary `MeshInstance3D` using a `CapsuleMesh`.
+
+It is only being used to prove the first-person equipment position.
+
+It is not a final character arm.
+
+## Temporary hand
+
+The current `RightHand` is a temporary `MeshInstance3D` using a `SphereMesh`.
+
+It is only being used to represent the hand position around the flashlight.
+
+It is not a final hand model.
+
+## Current result
+
+The following now work together:
+
+* The fake forearm appears.
+* The fake hand appears.
+* The flashlight model appears.
+* The flashlight beam appears.
+* The rig follows the camera.
+* The equipment no longer swings near the full-body character’s waist.
+
+---
+
+# 7. Current Script Connection
+
+The current player script uses the entire `FirstPersonRig` as the visible held-flashlight object.
+
+The expected reference is similar to:
+
+```gdscript
+@onready var held_flashlight: Node3D = (
+	$CameraPivot/PlayerCamera/FirstPersonRig
+)
+```
+
+The current equipment-visibility function should remain simple:
+
+```gdscript
+func update_equipment_visuals() -> void:
+	var flashlight_equipped: bool = (
+		current_equipment_id == "flashlight"
+	)
+
+	flashlight.visible = flashlight_equipped
+
+	if held_flashlight != null:
+		held_flashlight.visible = (
+			flashlight_equipped
+		)
+```
+
+This function controls:
+
+* The camera flashlight beam.
+* The full first-person flashlight rig.
+
+Do not reintroduce references to `equipment_pose_modifier` into this function.
+
+---
+
+# 8. Abandoned Full-Body Arm Pose Attempt
+
+A `SkeletonModifier3D` experiment was previously attempted.
+
+The experimental script was:
+
+```text
+Scripts/equipment_pose_modifier.gd
+```
+
+The goal was to rotate the character’s:
+
+* Right upper arm.
+* Right forearm.
+* Right hand.
+
+The experiment did not work correctly because:
+
+* The character skeleton’s bone axes did not match assumed rotations.
+* The arm twisted.
+* The arm moved behind the character.
+* The arm disappeared from view.
+* The walking animation continued affecting the pose.
+* Absolute bone rotations damaged the arm’s normal orientation.
+
+## Current rule
+
+Do not reconnect the experimental modifier to the player without intentionally redesigning it.
+
+The current camera-based first-person rig replaced that approach.
+
+The modifier script may remain in the repository temporarily, but it should eventually be:
+
+* Removed, or
+* Rebuilt for a clearly defined future purpose.
+
+---
+
+# 9. Character Hand Socket
+
+The full-body character has a hand attachment point:
+
+```text
+Skeleton3D
+└── RightHandSocket
+```
+
+The socket is attached to:
+
+```text
+mixamorig_RightHand
+```
+
+A flashlight was previously placed under this socket.
+
+That flashlight instance was removed because it followed the walking arm near the waist.
+
+## Future purpose of RightHandSocket
+
+The socket may still be useful for:
+
+* Third-person character appearance.
+* Mirrors.
+* Character shadows.
+* Other players.
+* NPC views.
+* Cutscenes.
+* External cameras.
+* Equipment seen from outside the character.
+
+It should not currently be used as the main first-person flashlight display.
+
+---
+
+# 10. Equipment Wheel
+
+The game currently has a fixed eight-slot equipment wheel.
+
+Current behavior includes:
+
+* Eight permanent slot positions.
+* Hands occupying the first slot.
+* Disabled empty slots.
+* Equipment positions that do not move when inventory changes.
+* Mouse-based equipment selection.
+* Tap-to-holster behavior.
+* Player movement while the wheel is open.
+* Sprinting while the wheel is open.
+* Smaller transparent wheel presentation.
+
+## Current equipment entries
+
+The equipment database currently contains or has contained entries for:
+
+* Hands.
+* Flashlight.
+* Taser.
+* Handgun.
+* Handcuffs.
+* Baton.
+* Pepper spray.
+* Patrol rifle.
+* Road spikes.
+* Medical kit.
+* Breaching tool.
+
+Most equipment entries are currently placeholders.
+
+The flashlight is the first item with a functioning first-person physical presentation.
+
+---
+
+# 11. Current Menu and Save Systems
+
+## Main menu
+
+The main menu currently supports:
+
+* Continue.
+* New career.
+* Officer profile display.
+* Last-name career creation.
+* Persistent career progress.
+* Cinematic DUTYRA branding.
+
+## Save slots
+
+The game currently supports:
+
+* Two career save slots.
+* Slot selection.
+* Career loading.
+* Career deletion.
+* Deletion confirmation.
+* Overwrite confirmation.
+* Active-career tracking.
+* Continue support.
+
+## Autosave
+
+Career autosave is currently implemented.
+
+---
+
+# 12. Current Pause and Settings Systems
+
+## Pause menu
+
+The pause menu currently includes:
+
+* Resume.
+* Save.
+* Career overview.
+* Settings/options.
+
+## Settings
+
+Persistent settings currently include:
+
+* Display settings.
+* Graphics settings.
+* Audio settings.
+* Mouse sensitivity.
+* Keyboard control rebinding.
+* Duplicate-key protection.
+* Canceling a rebind.
+* Resetting controls to defaults.
+
+Settings are available from both the main menu and pause menu.
+
+---
+
+# 13. Current Radio System
+
+The game currently has a radial radio wheel.
+
+The radio system includes statuses such as:
+
+* Off duty.
+* Available.
+* Call pending.
+* En route.
+* On scene.
+* Active call.
+
+Current radio presentation includes:
+
+* Status-colored indicator.
+* Center radio display.
+* Dimmed or blurred wheel background.
+* Short radio HUD messages.
+* Longer information stored in the MDT.
+* Radio message support.
+* Radio audio support.
+
+The old direct accept-call control was removed after the radio wheel became the main call-status interface.
+
+---
+
+# 14. Current Dispatch System
+
+The dispatch system currently uses structured call data.
+
+Call information can include:
+
+* Call type.
+* Location.
+* Priority.
+* Current status.
+* Objectives.
+* MDT details.
+* Notes.
+* Resolution notes.
+
+## Current call behavior
+
+The player can:
+
+1. Go on duty.
+2. Become available.
+3. Receive a delayed dispatch call.
+4. Review the call through the MDT.
+5. Travel to the correct call location.
+6. Report on scene.
+7. Contact the correct call subject.
+8. Receive subject dialogue.
+9. Receive call-specific radio feedback.
+10. Clear the call.
+11. Become available again.
+12. Receive another call after a delay.
+
+## Current test calls
+
+At least two test calls currently exist:
+
+* Suspicious person at a gas station.
+* Noise complaint at an apartment building.
+
+The call areas and subjects only respond when they match the active dispatch call.
+
+---
+
+# 15. Current MDT System
+
+The MDT currently appears as a centered laptop-style interface.
+
+Current MDT features include:
+
+* Laptop frame.
+* Dark screen.
+* Department portal heading.
+* Mouse interaction.
+* Calls tab.
+* Career or Personnel tab.
+* M key toggle.
+* Escape key closing.
+* Player movement locked while the MDT is open.
+
+## Calls page
+
+The Calls page can display:
+
+* Call status.
+* Call type.
+* Priority.
+* Location.
+* Next action.
+* Notes.
+* Radio guidance.
+* Resolution information.
+
+## Career or Personnel page
+
+The career page currently displays information such as:
+
+* Officer file.
+* Current rank.
+* Promotion review.
+* Calls cleared.
+* Shifts completed.
+* Performance XP.
+* Promotion requirements.
+* Eligibility status.
+
+The MDT currently uses the fictional department name:
+
+```text
+Cedar Heights PD
+```
+
+This name can still be changed later.
+
+---
+
+# 16. Current Career and Shift Progress
+
+The game currently tracks prototype career statistics such as:
+
+* Current rank.
+* Performance XP.
+* Calls cleared.
+* Shifts completed.
+* Promotion requirements.
+* Promotion eligibility.
+
+## Shift completion
+
+Going on duty begins a shift.
+
+Clearing calls adds progress during the shift.
+
+Ending the shift only counts as a completed shift when at least one call was cleared.
+
+A shift summary explains whether the shift counted.
+
+## Promotion status
+
+Promotion eligibility currently depends on prototype requirements.
+
+Eligibility does not automatically promote the officer.
+
+The final promotion system will eventually need:
+
+* Supervisor review.
+* Time in service.
+* Training.
+* Department openings.
+* Discipline history.
+* Performance evaluations.
+
+---
+
+# 17. Current Known Prototype Files
+
+Important current files include:
+
+```text
+Game/police-simulator/Scripts/player_controller.gd
+```
+
+Main player movement, UI, equipment, radio, MDT, interaction, and related systems.
+
+```text
+Game/police-simulator/Scenes/Player.tscn
+```
+
+Main player scene containing the camera, body, UI, flashlight beam, and first-person rig.
+
+```text
+Game/police-simulator/Scenes/Characters/dutyra_character.tscn
+```
+
+Full animated DUTYRA character model.
+
+```text
+Game/police-simulator/Scenes/Equipment/held_flashlight.tscn
+```
+
+Physical flashlight model.
+
+```text
+Game/police-simulator/Scripts/equipment_pose_modifier.gd
+```
+
+Unused or abandoned experimental full-body arm pose script.
+
+---
+
+# 18. Current Cleanup Tasks
+
+The following prototype remnants should be cleaned up later:
+
+* Temporary capsule forearm.
+* Temporary sphere hand.
+* Experimental equipment pose modifier.
+* Duplicate or backup character scenes.
+* Unused hand-attached flashlight resources.
+* Placeholder equipment entries.
+* Prototype flashlight model.
+* Prototype career values.
+* Prototype call subjects.
+* Prototype dialogue.
+* Unused code left from previous equipment attempts.
+
+Do not perform cleanup until the replacement system is working.
+
+---
+
+# 19. Immediate Next Development Task
+
+The next task is:
+
+> Create a real first-person arm and hand rig that matches the DUTYRA character and replaces `RightForearm` and `RightHand`.
+
+## Required result
+
+The replacement should include:
+
+* Real forearm shape.
+* Real wrist.
+* Real hand.
+* Visible fingers.
+* Correct skin material.
+* Correct uniform sleeve.
+* Correct proportions.
+* Flashlight attachment point.
+* Natural flashlight grip.
+* No clipping through the camera.
+* No connection to the full-body walking arm animation.
+
+## Preferred structure
+
+The future structure should approximately become:
+
+```text
+PlayerCamera
+└── FirstPersonRig
+    └── FirstPersonArms
+        ├── Skeleton3D
+        ├── ArmMesh
+        ├── HandMesh
+        └── RightHandEquipmentSocket
+            └── HeldFlashlight
+```
+
+The first-person arm model should have its own skeleton and animations.
+
+---
+
+# 20. First-Person Animation Plan
+
+After the proper arm and hand model is installed, add these animations in order:
+
+1. Flashlight idle.
+2. Flashlight equip.
+3. Flashlight holster.
+4. Flashlight walking movement.
+5. Flashlight sprint lowering.
+6. Flashlight raised or search position.
+7. Hands-empty idle.
+8. Hands-empty walking.
+9. Hand interaction or reaching animation.
+
+Later equipment can reuse the same arm rig.
+
+---
+
+# 21. Systems That Should Not Be Started Yet
+
+Do not prioritize these until the player arms and equipment presentation are stable:
+
+* Firearms.
+* Taser mechanics.
+* Handcuff animations.
+* Traffic stops.
+* Driveable police vehicles.
+* Vehicle pursuits.
+* Full NPC AI.
+* Advanced interaction wheel.
+* Injury and EMS systems.
+* SWAT systems.
+* K9 systems.
+* Court systems.
+* Internal Affairs.
+* Full report writing.
+* Open-world traffic population.
+
+Small fixes to existing systems are acceptable, but the main development focus should remain the player.
+
+---
+
+# 22. Instructions for Future Chat Sessions
+
+At the beginning of a new DUTYRA development chat, provide this instruction:
+
+```text
+Read these files from my hoovflip1999/DUTYRA repository before making changes:
+
+Docs/DUTYRA_DESIGN_BIBLE.md
+Docs/CURRENT_DEVELOPMENT_STATUS.md
+```
+
+The assistant should then:
+
+1. Read both documents.
+2. Inspect current repository files when necessary.
+3. Confirm the current system before suggesting replacements.
+4. Avoid rebuilding systems that already work.
+5. Continue from the immediate next task in this document.
+6. Update this document after major development milestones.
+
+---
+
+# 23. Current Milestone Definition
+
+The current milestone is complete when:
+
+* The capsule forearm is gone.
+* The sphere hand is gone.
+* A real uniformed arm is visible.
+* A real hand grips the flashlight.
+* The flashlight remains correctly positioned.
+* The flashlight beam follows the camera.
+* The arm remains visible while walking.
+* The arm lowers while sprinting.
+* The arm does not swing with the full-body character.
+* Equipping Hands hides the flashlight rig.
+* Equipping Flashlight displays the complete flashlight pose.
+* No script errors are present.
+
+After this milestone, the next player-equipment item should be selected.
