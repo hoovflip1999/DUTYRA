@@ -98,7 +98,11 @@ const EQUIPMENT_DATABASE := {
 	$CameraPivot/PlayerCamera/Flashlight
 )
 @onready var held_flashlight: Node3D = (
-	$CameraPivot/PlayerCamera/HeldFlashlight
+	$DUTYRA_Character.find_child(
+		"HeldFlashlight",
+		true,
+		false
+	) as Node3D
 )
 @onready var interaction_ray: RayCast3D = (
 	$CameraPivot/PlayerCamera/InteractionRay
