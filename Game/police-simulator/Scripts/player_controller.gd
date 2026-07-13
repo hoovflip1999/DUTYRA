@@ -212,13 +212,18 @@ var sprint_locked: bool = false
 var camera_base_position: Vector3 = Vector3.ZERO
 var camera_bob_time: float = 0.0
 
+
 var current_equipment_id: String = "hands"
 
-var carried_equipment_ids: Array[String] = [
+var equipment_slots: Array[String] = [
+	"hands",
 	"flashlight",
 	"taser",
 	"handgun",
-	"handcuffs"
+	"handcuffs",
+	"",
+	"",
+	""
 ]
 
 var utility_wheel_container: Control
@@ -233,7 +238,6 @@ var utility_wheel_center_hint_label: Label
 var utility_wheel_segment_polygons: Array[Polygon2D] = []
 var utility_wheel_segment_outlines: Array[Line2D] = []
 var utility_wheel_option_labels: Array[Label] = []
-
 
 var utility_wheel_key_held: bool = false
 var utility_wheel_hold_time: float = 0.0
@@ -487,7 +491,6 @@ func _physics_process(delta: float) -> void:
 	if (
 		is_radio_wheel_visible
 		or is_mdt_visible
-		or is_utility_wheel_visible
 	):
 		update_stamina(
 			delta,
@@ -852,6 +855,7 @@ func lock_player_movement(delta: float) -> void:
 			1.0
 		)
 
+
 func create_utility_wheel() -> void:
 	utility_wheel_container = Control.new()
 	utility_wheel_container.name = "UtilityWheel"
@@ -874,7 +878,7 @@ func create_utility_wheel() -> void:
 		0.0,
 		0.0,
 		0.0,
-		0.58
+		0.16
 	)
 	utility_wheel_background.mouse_filter = (
 		Control.MOUSE_FILTER_IGNORE
@@ -890,8 +894,8 @@ func create_utility_wheel() -> void:
 
 	utility_wheel_backplate = Panel.new()
 	utility_wheel_backplate.size = Vector2(
-		690.0,
-		690.0
+		500.0,
+		500.0
 	)
 	utility_wheel_backplate.mouse_filter = (
 		Control.MOUSE_FILTER_IGNORE
@@ -900,19 +904,19 @@ func create_utility_wheel() -> void:
 		"panel",
 		make_utility_circle_style(
 			Color(
-				0.012,
-				0.016,
-				0.021,
-				0.97
+				0.010,
+				0.014,
+				0.018,
+				0.66
 			),
 			Color(
-				0.16,
-				0.19,
-				0.22,
-				0.96
+				0.18,
+				0.21,
+				0.24,
+				0.72
 			),
-			345,
-			3
+			250,
+			2
 		)
 	)
 
@@ -926,7 +930,7 @@ func create_utility_wheel() -> void:
 			0.030,
 			0.036,
 			0.043,
-			0.98
+			0.66
 		)
 
 		utility_wheel_container.add_child(
@@ -938,12 +942,12 @@ func create_utility_wheel() -> void:
 		)
 
 		var outline := Line2D.new()
-		outline.width = 2.0
+		outline.width = 1.5
 		outline.default_color = Color(
-			0.13,
-			0.16,
-			0.19,
-			1.0
+			0.17,
+			0.20,
+			0.23,
+			0.76
 		)
 		outline.closed = true
 		outline.antialiased = true
@@ -958,8 +962,8 @@ func create_utility_wheel() -> void:
 
 		var option_label := Label.new()
 		option_label.size = Vector2(
-			156.0,
-			74.0
+			116.0,
+			58.0
 		)
 		option_label.horizontal_alignment = (
 			HORIZONTAL_ALIGNMENT_CENTER
@@ -975,7 +979,7 @@ func create_utility_wheel() -> void:
 		)
 		option_label.add_theme_font_size_override(
 			"font_size",
-			14
+			12
 		)
 		option_label.add_theme_color_override(
 			"font_color",
@@ -983,7 +987,7 @@ func create_utility_wheel() -> void:
 				0.78,
 				0.82,
 				0.86,
-				1.0
+				0.92
 			)
 		)
 		option_label.add_theme_color_override(
@@ -992,12 +996,12 @@ func create_utility_wheel() -> void:
 				0.0,
 				0.0,
 				0.0,
-				0.90
+				0.86
 			)
 		)
 		option_label.add_theme_constant_override(
 			"outline_size",
-			4
+			3
 		)
 
 		utility_wheel_container.add_child(
@@ -1010,8 +1014,8 @@ func create_utility_wheel() -> void:
 
 	utility_wheel_center_panel = Panel.new()
 	utility_wheel_center_panel.size = Vector2(
-		230.0,
-		230.0
+		166.0,
+		166.0
 	)
 	utility_wheel_center_panel.mouse_filter = (
 		Control.MOUSE_FILTER_IGNORE
@@ -1023,16 +1027,16 @@ func create_utility_wheel() -> void:
 				0.008,
 				0.012,
 				0.017,
-				1.0
+				0.80
 			),
 			Color(
-				0.23,
-				0.28,
-				0.32,
-				1.0
+				0.25,
+				0.29,
+				0.33,
+				0.82
 			),
-			115,
-			3
+			83,
+			2
 		)
 	)
 
@@ -1042,12 +1046,12 @@ func create_utility_wheel() -> void:
 
 	utility_wheel_center_name_label = Label.new()
 	utility_wheel_center_name_label.position = Vector2(
-		20.0,
-		52.0
+		14.0,
+		35.0
 	)
 	utility_wheel_center_name_label.size = Vector2(
-		190.0,
-		70.0
+		138.0,
+		55.0
 	)
 	utility_wheel_center_name_label.horizontal_alignment = (
 		HORIZONTAL_ALIGNMENT_CENTER
@@ -1063,7 +1067,7 @@ func create_utility_wheel() -> void:
 	)
 	utility_wheel_center_name_label.add_theme_font_size_override(
 		"font_size",
-		22
+		17
 	)
 	utility_wheel_center_name_label.add_theme_color_override(
 		"font_color",
@@ -1076,12 +1080,12 @@ func create_utility_wheel() -> void:
 
 	utility_wheel_center_category_label = Label.new()
 	utility_wheel_center_category_label.position = Vector2(
-		20.0,
-		122.0
+		14.0,
+		91.0
 	)
 	utility_wheel_center_category_label.size = Vector2(
-		190.0,
-		24.0
+		138.0,
+		20.0
 	)
 	utility_wheel_center_category_label.horizontal_alignment = (
 		HORIZONTAL_ALIGNMENT_CENTER
@@ -1094,7 +1098,7 @@ func create_utility_wheel() -> void:
 	)
 	utility_wheel_center_category_label.add_theme_font_size_override(
 		"font_size",
-		12
+		10
 	)
 	utility_wheel_center_category_label.add_theme_color_override(
 		"font_color",
@@ -1102,7 +1106,7 @@ func create_utility_wheel() -> void:
 			0.56,
 			0.68,
 			0.76,
-			1.0
+			0.96
 		)
 	)
 
@@ -1112,12 +1116,12 @@ func create_utility_wheel() -> void:
 
 	utility_wheel_center_hint_label = Label.new()
 	utility_wheel_center_hint_label.position = Vector2(
-		20.0,
-		158.0
+		14.0,
+		119.0
 	)
 	utility_wheel_center_hint_label.size = Vector2(
-		190.0,
-		28.0
+		138.0,
+		22.0
 	)
 	utility_wheel_center_hint_label.horizontal_alignment = (
 		HORIZONTAL_ALIGNMENT_CENTER
@@ -1130,15 +1134,15 @@ func create_utility_wheel() -> void:
 	)
 	utility_wheel_center_hint_label.add_theme_font_size_override(
 		"font_size",
-		11
+		9
 	)
 	utility_wheel_center_hint_label.add_theme_color_override(
 		"font_color",
 		Color(
-			0.44,
-			0.52,
-			0.58,
-			1.0
+			0.48,
+			0.56,
+			0.62,
+			0.96
 		)
 	)
 
@@ -1179,9 +1183,9 @@ func make_utility_circle_style(
 		0.0,
 		0.0,
 		0.0,
-		0.65
+		0.40
 	)
-	style.shadow_size = 18
+	style.shadow_size = 10
 
 	return style
 
@@ -1194,7 +1198,7 @@ func create_utility_segment_points(
 	end_angle: float
 ) -> PackedVector2Array:
 	var points := PackedVector2Array()
-	var curve_points: int = 22
+	var curve_points: int = 18
 
 	for point_index in range(
 		curve_points + 1
@@ -1271,41 +1275,14 @@ func position_utility_wheel() -> void:
 		* 0.5
 	)
 
-	var available_equipment: Array[String] = (
-		get_available_equipment_ids()
-	)
-
-	var option_count: int = (
-		available_equipment.size()
-	)
-
-	for index in range(
-		utility_wheel_segment_polygons.size()
-	):
-		var is_available: bool = (
-			index < option_count
-		)
-
-		utility_wheel_segment_polygons[index].visible = (
-			is_available
-		)
-		utility_wheel_segment_outlines[index].visible = (
-			is_available
-		)
-		utility_wheel_option_labels[index].visible = (
-			is_available
-		)
-
-	if option_count <= 0:
-		return
-
-	var inner_radius: float = 122.0
-	var outer_radius: float = 325.0
-	var label_radius: float = 228.0
+	var option_count: int = MAX_UTILITY_SLOTS
+	var inner_radius: float = 90.0
+	var outer_radius: float = 235.0
+	var label_radius: float = 165.0
 	var angle_size: float = (
 		TAU / float(option_count)
 	)
-	var angle_gap: float = 0.018
+	var angle_gap: float = 0.022
 
 	for index in range(option_count):
 		var center_angle: float = (
@@ -1338,11 +1315,13 @@ func position_utility_wheel() -> void:
 		var segment: Polygon2D = (
 			utility_wheel_segment_polygons[index]
 		)
+		segment.visible = true
 		segment.polygon = segment_points
 
 		var outline: Line2D = (
 			utility_wheel_segment_outlines[index]
 		)
+		outline.visible = true
 		outline.points = segment_points
 
 		var option_direction := Vector2(
@@ -1353,7 +1332,7 @@ func position_utility_wheel() -> void:
 		var option_label: Label = (
 			utility_wheel_option_labels[index]
 		)
-
+		option_label.visible = true
 		option_label.position = (
 			screen_center
 			+ option_direction * label_radius
@@ -1462,17 +1441,6 @@ func update_utility_wheel_selection() -> void:
 	if not is_utility_wheel_visible:
 		return
 
-	var available_equipment: Array[String] = (
-		get_available_equipment_ids()
-	)
-
-	var option_count: int = (
-		available_equipment.size()
-	)
-
-	if option_count <= 0:
-		return
-
 	var viewport_center: Vector2 = (
 		get_viewport().get_visible_rect().size
 		* 0.5
@@ -1485,9 +1453,9 @@ func update_utility_wheel_selection() -> void:
 
 	var new_highlighted_slot: int = -1
 
-	if mouse_offset.length() >= 112.0:
+	if mouse_offset.length() >= 82.0:
 		var option_angle_size: float = (
-			TAU / float(option_count)
+			TAU / float(MAX_UTILITY_SLOTS)
 		)
 
 		var mouse_angle: float = atan2(
@@ -1509,9 +1477,16 @@ func update_utility_wheel_selection() -> void:
 			)
 		)
 
-		new_highlighted_slot = (
+		var possible_slot: int = (
 			option_index + 1
 		)
+
+		if get_equipment_id_for_slot(
+			possible_slot
+		) != "":
+			new_highlighted_slot = (
+				possible_slot
+			)
 
 	if (
 		new_highlighted_slot
@@ -1530,13 +1505,7 @@ func refresh_utility_wheel() -> void:
 	if utility_wheel_container == null:
 		return
 
-	var available_equipment: Array[String] = (
-		get_available_equipment_ids()
-	)
-
-	for index in range(
-		utility_wheel_segment_polygons.size()
-	):
+	for index in range(MAX_UTILITY_SLOTS):
 		var segment: Polygon2D = (
 			utility_wheel_segment_polygons[index]
 		)
@@ -1549,28 +1518,24 @@ func refresh_utility_wheel() -> void:
 			utility_wheel_option_labels[index]
 		)
 
-		if index >= available_equipment.size():
-			segment.visible = false
-			outline.visible = false
-			label.visible = false
-			continue
-
-		segment.visible = true
-		outline.visible = true
-		label.visible = true
-
 		var slot: int = index + 1
 		var equipment_id: String = (
-			available_equipment[index]
+			get_equipment_id_for_slot(slot)
+		)
+
+		var is_empty: bool = (
+			equipment_id == ""
 		)
 
 		var is_equipped: bool = (
-			equipment_id
+			not is_empty
+			and equipment_id
 			== current_equipment_id
 		)
 
 		var is_highlighted: bool = (
-			slot
+			not is_empty
+			and slot
 			== highlighted_utility_slot
 		)
 
@@ -1578,38 +1543,60 @@ func refresh_utility_wheel() -> void:
 			0.030,
 			0.036,
 			0.043,
-			0.98
+			0.66
 		)
 
 		var outline_color := Color(
-			0.13,
-			0.16,
-			0.19,
-			1.0
+			0.17,
+			0.20,
+			0.23,
+			0.76
 		)
 
 		var text_color := Color(
 			0.78,
 			0.82,
 			0.86,
-			1.0
+			0.92
 		)
 
-		var font_size: int = 14
+		var font_size: int = 12
 
-		if is_equipped:
+		if is_empty:
+			segment_color = Color(
+				0.018,
+				0.021,
+				0.025,
+				0.42
+			)
+
+			outline_color = Color(
+				0.10,
+				0.11,
+				0.13,
+				0.50
+			)
+
+			text_color = Color(
+				0.33,
+				0.36,
+				0.39,
+				0.70
+			)
+
+		elif is_equipped:
 			segment_color = Color(
 				0.026,
 				0.105,
 				0.145,
-				0.99
+				0.72
 			)
 
 			outline_color = Color(
 				0.16,
 				0.65,
 				0.88,
-				1.0
+				0.90
 			)
 
 			text_color = Color(
@@ -1621,15 +1608,15 @@ func refresh_utility_wheel() -> void:
 
 		if is_highlighted:
 			segment_color = Color(
-				0.64,
-				0.77,
-				0.83,
-				0.99
+				0.70,
+				0.80,
+				0.84,
+				0.84
 			)
 
 			outline_color = Color(
-				0.90,
-				0.97,
+				0.92,
+				0.98,
 				1.0,
 				1.0
 			)
@@ -1641,19 +1628,26 @@ func refresh_utility_wheel() -> void:
 				1.0
 			)
 
-			font_size = 16
+			font_size = 14
 
 		segment.color = segment_color
 		outline.default_color = outline_color
 
-		label.text = (
-			"0"
-			+ str(slot)
-			+ "\n"
-			+ get_equipment_name(
-				equipment_id
+		if is_empty:
+			label.text = (
+				"0"
+				+ str(slot)
+				+ "\nEMPTY"
 			)
-		)
+		else:
+			label.text = (
+				"0"
+				+ str(slot)
+				+ "\n"
+				+ get_equipment_name(
+					equipment_id
+				)
+			)
 
 		label.add_theme_color_override(
 			"font_color",
@@ -1682,7 +1676,7 @@ func refresh_utility_wheel() -> void:
 					0.0,
 					0.0,
 					0.0,
-					0.90
+					0.82
 				)
 			)
 
@@ -1720,7 +1714,7 @@ func refresh_utility_wheel() -> void:
 		)
 	else:
 		utility_wheel_center_hint_label.text = (
-			"MOVE MOUSE TO SELECT"
+			"KEEP MOVING — SELECT ITEM"
 		)
 
 
@@ -1731,6 +1725,8 @@ func update_equipment_visuals() -> void:
 
 	flashlight.visible = flashlight_equipped
 	held_flashlight.visible = flashlight_equipped
+
+
 func equip_equipment_item(
 	equipment_id: String
 ) -> void:
@@ -1739,11 +1735,8 @@ func equip_equipment_item(
 	):
 		return
 
-	if (
-		equipment_id != "hands"
-		and not carried_equipment_ids.has(
-			equipment_id
-		)
+	if not has_equipment(
+		equipment_id
 	):
 		return
 
@@ -1752,29 +1745,12 @@ func equip_equipment_item(
 	update_equipment_visuals()
 	refresh_utility_wheel()
 
+
 func get_available_equipment_ids() -> Array[String]:
-	var available_equipment: Array[String] = [
-		"hands"
-	]
+	var available_equipment: Array[String] = []
 
-	for equipment_id: String in carried_equipment_ids:
-		if (
-			available_equipment.size()
-			>= MAX_UTILITY_SLOTS
-		):
-			break
-
-		if equipment_id == "hands":
-			continue
-
-		if not EQUIPMENT_DATABASE.has(
-			equipment_id
-		):
-			continue
-
-		if available_equipment.has(
-			equipment_id
-		):
+	for equipment_id: String in equipment_slots:
+		if equipment_id == "":
 			continue
 
 		available_equipment.append(
@@ -1787,24 +1763,23 @@ func get_available_equipment_ids() -> Array[String]:
 func get_equipment_id_for_slot(
 	slot: int
 ) -> String:
-	var available_equipment: Array[String] = (
-		get_available_equipment_ids()
-	)
-
 	var index: int = slot - 1
 
 	if (
 		index < 0
-		or index >= available_equipment.size()
+		or index >= equipment_slots.size()
 	):
 		return ""
 
-	return available_equipment[index]
+	return equipment_slots[index]
 
 
 func get_equipment_name(
 	equipment_id: String
 ) -> String:
+	if equipment_id == "":
+		return "EMPTY"
+
 	if not EQUIPMENT_DATABASE.has(
 		equipment_id
 	):
@@ -1825,6 +1800,9 @@ func get_equipment_name(
 func get_equipment_category(
 	equipment_id: String
 ) -> String:
+	if equipment_id == "":
+		return ""
+
 	if not EQUIPMENT_DATABASE.has(
 		equipment_id
 	):
@@ -1845,10 +1823,10 @@ func get_equipment_category(
 func has_equipment(
 	equipment_id: String
 ) -> bool:
-	if equipment_id == "hands":
-		return true
+	if equipment_id == "":
+		return false
 
-	return carried_equipment_ids.has(
+	return equipment_slots.has(
 		equipment_id
 	)
 
@@ -1868,58 +1846,76 @@ func add_equipment(
 		)
 		return false
 
-	if carried_equipment_ids.has(
+	if has_equipment(
 		equipment_id
 	):
 		return false
 
-	if (
-		carried_equipment_ids.size()
-		>= MAX_UTILITY_SLOTS - 1
+	for slot_index in range(
+		1,
+		MAX_UTILITY_SLOTS
 	):
-		push_warning(
-			"Utility wheel is full."
-		)
-		return false
+		if equipment_slots[slot_index] == "":
+			equipment_slots[slot_index] = (
+				equipment_id
+			)
 
-	carried_equipment_ids.append(
-		equipment_id
+			update_utility_wheel_inventory()
+			return true
+
+	push_warning(
+		"Utility wheel is full."
 	)
-
-	update_utility_wheel_inventory()
-	return true
+	return false
 
 
 func remove_equipment(
 	equipment_id: String
 ) -> bool:
-	if not carried_equipment_ids.has(
-		equipment_id
-	):
+	if equipment_id == "hands":
 		return false
 
-	carried_equipment_ids.erase(
-		equipment_id
-	)
+	for slot_index in range(
+		1,
+		MAX_UTILITY_SLOTS
+	):
+		if (
+			equipment_slots[slot_index]
+			== equipment_id
+		):
+			equipment_slots[slot_index] = ""
 
-	if current_equipment_id == equipment_id:
-		current_equipment_id = "hands"
-		update_equipment_visuals()
+			if (
+				current_equipment_id
+				== equipment_id
+			):
+				current_equipment_id = "hands"
+				update_equipment_visuals()
 
-	update_utility_wheel_inventory()
-	return true
+			update_utility_wheel_inventory()
+			return true
+
+	return false
 
 
 func set_shift_loadout(
 	equipment_ids: Array[String]
 ) -> void:
-	carried_equipment_ids.clear()
+	equipment_slots = [
+		"hands",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		""
+	]
+
+	var next_slot: int = 1
 
 	for equipment_id: String in equipment_ids:
-		if (
-			carried_equipment_ids.size()
-			>= MAX_UTILITY_SLOTS - 1
-		):
+		if next_slot >= MAX_UTILITY_SLOTS:
 			break
 
 		if equipment_id == "hands":
@@ -1930,14 +1926,16 @@ func set_shift_loadout(
 		):
 			continue
 
-		if carried_equipment_ids.has(
+		if equipment_slots.has(
 			equipment_id
 		):
 			continue
 
-		carried_equipment_ids.append(
+		equipment_slots[next_slot] = (
 			equipment_id
 		)
+
+		next_slot += 1
 
 	if not has_equipment(
 		current_equipment_id
@@ -1948,6 +1946,44 @@ func set_shift_loadout(
 	update_utility_wheel_inventory()
 
 
+func set_equipment_in_slot(
+	slot: int,
+	equipment_id: String
+) -> bool:
+	if (
+		slot < 2
+		or slot > MAX_UTILITY_SLOTS
+	):
+		return false
+
+	if equipment_id == "":
+		equipment_slots[slot - 1] = ""
+		update_utility_wheel_inventory()
+		return true
+
+	if equipment_id == "hands":
+		return false
+
+	if not EQUIPMENT_DATABASE.has(
+		equipment_id
+	):
+		return false
+
+	var existing_index: int = (
+		equipment_slots.find(
+			equipment_id
+		)
+	)
+
+	if existing_index >= 1:
+		equipment_slots[existing_index] = ""
+
+	equipment_slots[slot - 1] = equipment_id
+
+	update_utility_wheel_inventory()
+	return true
+
+
 func update_utility_wheel_inventory() -> void:
 	highlighted_utility_slot = -1
 
@@ -1956,7 +1992,6 @@ func update_utility_wheel_inventory() -> void:
 
 	position_utility_wheel()
 	refresh_utility_wheel()
-
 
 # KEEP YOUR EXISTING:
 # func create_main_status_hud() -> void:
